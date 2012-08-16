@@ -16,18 +16,32 @@ public final class R {
         public static final int padding_small=0x7f040000;
     }
     public static final class drawable {
-        public static final int ic_action_search=0x7f020000;
-        public static final int ic_launcher=0x7f020001;
+        public static final int firstpage=0x7f020000;
+        public static final int homepage=0x7f020001;
+        public static final int host=0x7f020002;
+        public static final int ic_action_search=0x7f020003;
+        public static final int ic_launcher=0x7f020004;
+        public static final int join=0x7f020005;
+        public static final int start=0x7f020006;
     }
     public static final class id {
+        public static final int Host=0x7f080005;
         public static final int RelativeLayout1=0x7f080000;
-        public static final int imageButton1=0x7f080003;
-        public static final int menu_settings=0x7f080004;
-        public static final int surfaceView1=0x7f080001;
-        public static final int textView1=0x7f080002;
+        public static final int join=0x7f080004;
+        public static final int linearLayout1=0x7f080002;
+        public static final int linearLayout2=0x7f080003;
+        public static final int listView1=0x7f080001;
+        public static final int menu_settings=0x7f080009;
+        public static final int start=0x7f080006;
+        public static final int surfaceView1=0x7f080007;
+        public static final int textView1=0x7f080008;
     }
     public static final class layout {
-        public static final int surface=0x7f030000;
+        public static final int activity_main=0x7f030000;
+        public static final int find=0x7f030001;
+        public static final int frontpage=0x7f030002;
+        public static final int host=0x7f030003;
+        public static final int surface=0x7f030004;
     }
     public static final class menu {
         public static final int activity_main=0x7f070000;
