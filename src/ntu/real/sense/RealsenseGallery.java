@@ -12,21 +12,20 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.Gallery;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
+import android.widget.Toast;
 
-public class RealsenseGallery extends Activity {
+public class RealsenseGallery extends Activity implements View.OnLongClickListener, View.OnTouchListener{
 	
 	List<String> pics = new ArrayList<String>();
 	List<TableRow> TRs = new ArrayList<TableRow>();
@@ -52,6 +51,8 @@ public class RealsenseGallery extends Activity {
 	    		}
 	    		IBs.add(new ImageButton(this));
 	    		bmp = decodeBitmap(pics.get(pics.size()-i-1));
+	    		IBs.get(i).setOnLongClickListener(this);
+	    		IBs.get(i).setOnTouchListener(this);
 	    		IBs.get(i).setImageBitmap(bmp);
 	    		TRs.get(currentRowNum).addView(IBs.get(i), 200, 200);
 	    }  
@@ -135,5 +136,25 @@ public class RealsenseGallery extends Activity {
 	public TypedArray obtainStyledAttributes(int theme) {  
 	    // TODO Auto-generated method stub  
 	    return null;  
-	}  
+	}
+
+
+	public boolean onLongClick(View v) {
+		Toast.makeText(RealsenseGallery.this, "Long Click", Toast.LENGTH_SHORT) .show();
+		return false;
+	}
+
+	public boolean onTouch(View v, MotionEvent event) {
+		 if (event.getAction() == MotionEvent.ACTION_UP)  
+	        {  
+	            Toast.makeText(RealsenseGallery.this, "Touch UP", Toast.LENGTH_SHORT) .show();
+	            
+	        }
+	        if(event.getAction() == MotionEvent.ACTION_DOWN){
+	        	
+	        }
+	        return super.onTouchEvent(event); 
+	}
+	
+	
 }
