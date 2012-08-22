@@ -1,4 +1,4 @@
-package ntu.real.sense;
+package com.example.why;
 
 import java.io.File;
 import java.io.InputStream;
@@ -30,10 +30,10 @@ import android.widget.Toast;
 		
 		 public  void print(File mFile, int mlevel){
 			for(int i = 0; i < mlevel; i++){
-			    Log.e("word","¶i¤J¥Ø¿ı");
+			    Log.e("word","é€²å…¥ç›®éŒ„");
 			}
 			    if (mFile.isDirectory()){  
-			    	Log.e("word","__¥Ø¿ı¡G<" + getPath(mFile) + ">");  
+			    	Log.e("word","__ç›®éŒ„ï¼š<" + getPath(mFile) + ">");  
 			    	if(getPath(mFile).endsWith(".thumbnails")){
 			    		return;
 			    	}
@@ -57,11 +57,11 @@ import android.widget.Toast;
 
  
 
-//­ì³Ğ§@ªÌ ³n¿ß³nÅé http://toimy.blogspot.com/ 
-public class Gallery_houpan extends Activity implements OnTouchListener, OnLongClickListener {
+//åŸå‰µä½œè€… è»Ÿè²“è»Ÿé«” http://toimy.blogspot.com/ 
+public class MainActivity extends Activity implements OnTouchListener, OnLongClickListener {
   RelativeLayout layout;
   private Button btn1;
-  private int CurrentButtonNumber = 0; //CurrentButtonNumber¬y¤ô¸¹ ³]©wª«¥óID
+  private int CurrentButtonNumber = 0; //CurrentButtonNumberæµæ°´è™Ÿ è¨­å®šç‰©ä»¶ID
   
 	private Bitmap decodeBitmap(String path){
         BitmapFactory.Options op = new BitmapFactory.Options();
@@ -77,7 +77,7 @@ public class Gallery_houpan extends Activity implements OnTouchListener, OnLongC
    @Override
    public void onCreate(Bundle savedInstanceState) {
        super.onCreate(savedInstanceState);
-       //¥ı«Ø¥ß¤@­Ó ­±ªO©ñ¸m©Ò¦³¤¸¥ó
+       //å…ˆå»ºç«‹ä¸€å€‹ é¢æ¿æ”¾ç½®æ‰€æœ‰å…ƒä»¶
        int i;
        
        layout= new RelativeLayout(this);
@@ -85,11 +85,11 @@ public class Gallery_houpan extends Activity implements OnTouchListener, OnLongC
        btn1.setId(CurrentButtonNumber);      
        CurrentButtonNumber++;
        btn1.setText("SoftCat Go Button");
-       btn1.setOnClickListener(this);    //¦pªG­n³o¼Ë¼g »İ¥[¤J implements OnClickListener ©ó Activity
+       btn1.setOnClickListener(this);    //å¦‚æœè¦é€™æ¨£å¯« éœ€åŠ å…¥ implements OnClickListener æ–¼ Activity
        btn1.setOnLongClickListener(this);
-       layout.addView(btn1, 150, 50); //addView(ª«¥ó,¼e«×°ª«×)
+       layout.addView(btn1, 150, 50); //addView(ç‰©ä»¶,å¯¬åº¦é«˜åº¦)
        */
-       setContentView(layout);   //³]©wµe­±Åã¥Ü¦Û¤vªº­±ªO
+       setContentView(layout);   //è¨­å®šç•«é¢é¡¯ç¤ºè‡ªå·±çš„é¢æ¿
        
 
 		ListAllPath demoTest = new ListAllPath();
@@ -108,8 +108,8 @@ public class Gallery_houpan extends Activity implements OnTouchListener, OnLongC
 		
 		for (i=1;i<demoTest.file_list.size();i++){
 			/*
-			Log.e("¦a´X­Ó¡G" ,Integer.toString(i));
-			if(i%3==0){//¦æ­ºªº±ø¥ó
+			Log.e("åœ°å¹¾å€‹ï¼š" ,Integer.toString(i));
+			if(i%3==0){//è¡Œé¦–çš„æ¢ä»¶
 				params = new RelativeLayout.LayoutParams(
 										RelativeLayout.LayoutParams.WRAP_CONTENT,
 										RelativeLayout.LayoutParams.WRAP_CONTENT);
@@ -117,7 +117,7 @@ public class Gallery_houpan extends Activity implements OnTouchListener, OnLongC
 				params.addRule(RelativeLayout.CENTER_HORIZONTAL, RelativeLayout.TRUE);
 				params.setMargins(0, 30, 0, 0);
 
-				if(i==0){//ªì©l¤Æ
+				if(i==0){//åˆå§‹åŒ–
 					RL_temp.setId(10000);
 					params.addRule(RelativeLayout.ALIGN_PARENT_TOP, RelativeLayout.TRUE);
 				}else{
@@ -138,14 +138,14 @@ public class Gallery_houpan extends Activity implements OnTouchListener, OnLongC
 	        }  
 			
 	        */
-			Log.e("¹Ï¤ùºô§}¡G",demoTest.file_list.get(i));
+			Log.e("åœ–ç‰‡ç¶²å€ï¼š",demoTest.file_list.get(i));
 			Bitmap bitmap = decodeBitmap(demoTest.file_list.get(i));
 	        
 			ImageButton image_temp = new ImageButton(this);   
 			image_temp.setImageBitmap(bitmap);
 			image_temp.setBackgroundColor(Color.BLUE);
 			Log.e("oriID",Integer.toString(image_temp.getId()));
-			image_temp.setId(i);  //ID¤£¯à¬O¹s¡A¤£µM·|Äê±¼¡I
+			image_temp.setId(i);  //IDä¸èƒ½æ˜¯é›¶ï¼Œä¸ç„¶æœƒçˆ›æ‰ï¼
 			Log.e("newID",Integer.toString(image_temp.getId()));
 	        image_temp.setLayoutParams(params);
 	        params = new RelativeLayout.LayoutParams(150,150);
@@ -157,7 +157,7 @@ public class Gallery_houpan extends Activity implements OnTouchListener, OnLongC
 	        	params.addRule(RelativeLayout.RIGHT_OF, (i-1));
 	        }*/
 	        
-	        Log.e("¡I§Ú¬O",Integer.toString(i));
+	        Log.e("ï¼æˆ‘æ˜¯",Integer.toString(i));
 	        //params.addRule(RelativeLayout.RIGHT_OF, (i-1));
 	        /*
 	        if((i+3)<demoTest.file_list.size()){
@@ -169,17 +169,17 @@ public class Gallery_houpan extends Activity implements OnTouchListener, OnLongC
 	        
 	        
 	        if(i>3){
-	        	Log.e("¦b½Öªº¤U­±¡G",Integer.toString(i-3));
+	        	Log.e("åœ¨èª°çš„ä¸‹é¢ï¼š",Integer.toString(i-3));
 	        	params.addRule(RelativeLayout.BELOW, (i-3));
 	        }
-	        if(i%3!=1){//«D¦C­ºªº±ø¥ó¡A­nmargin
-	        	Log.e("¦b½Öªº¥kÃä¡G",Integer.toString(i-1));
+	        if(i%3!=1){//éåˆ—é¦–çš„æ¢ä»¶ï¼Œè¦margin
+	        	Log.e("åœ¨èª°çš„å³é‚Šï¼š",Integer.toString(i-1));
 	        	params.addRule(RelativeLayout.RIGHT_OF, (i-1));
 	        }
 	        
 	        
 	        image_temp.setLayoutParams(params);
-	        image_temp.setOnTouchListener(this);    //¦pªG­n³o¼Ë¼g »İ¥[¤J implements OnClickListener ©ó Activity
+	        image_temp.setOnTouchListener(this);    //å¦‚æœè¦é€™æ¨£å¯« éœ€åŠ å…¥ implements OnClickListener æ–¼ Activity
 	        image_temp.setOnLongClickListener(this);
 	        RL_temp.addView(image_temp); 
 
@@ -205,7 +205,7 @@ public class Gallery_houpan extends Activity implements OnTouchListener, OnLongC
 	  	  Toast.makeText(this, "Long click:" +v.getId(), Toast.LENGTH_SHORT).show();
 	  	  
 	    }
-	    return true;//³oÃä­nreturn true¤£µMonclick·|±µ¨«
+	    return true;//é€™é‚Šè¦return trueä¸ç„¶onclickæœƒæ¥èµ°
 		
 	}
 	
