@@ -26,7 +26,7 @@ public class TouchPoint {
 
 	boolean removeTouch(float x,float y){
 		isTouch = false;
-		if ((x - tx) * (x - tx) + (y - ty) * (y - ty) < 2500) {
+		if ((x - tx) * (x - tx) + (y - ty) * (y - ty) < 150*150) {
 			return false;
 		}
 		return true;

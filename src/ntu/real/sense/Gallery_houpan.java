@@ -1,4 +1,4 @@
-package com.example.why;
+package ntu.real.sense;
 
 import java.io.File;
 import java.io.InputStream;
@@ -58,7 +58,7 @@ import android.widget.Toast;
  
 
 //原創作者 軟貓軟體 http://toimy.blogspot.com/ 
-public class MainActivity extends Activity implements OnTouchListener, OnLongClickListener {
+public class Gallery_houpan extends Activity implements OnTouchListener, OnLongClickListener {
   RelativeLayout layout;
   private Button btn1;
   private int CurrentButtonNumber = 0; //CurrentButtonNumber流水號 設定物件ID

@@ -43,9 +43,6 @@ import android.widget.Toast;
 
 public class ServerActivity extends Activity implements SensorEventListener {
 
-	ArrayList<Target> target = new ArrayList<Target>();
-	Set<Target> selected = new HashSet<Target>();
-
 	RealSurface surface;
 	TextView tv;
 
@@ -58,7 +55,6 @@ public class ServerActivity extends Activity implements SensorEventListener {
 			Color.YELLOW };
 	int degs[];
 	int sId;
-	int myDeg;
 	Thread[] readClientThread;
 
 	List<String> pics = new ArrayList<String>();
@@ -74,13 +70,19 @@ public class ServerActivity extends Activity implements SensorEventListener {
 			// 改變角度時廣播給所有client
 			case 0x101:
 
-				target.get(m.arg1).degree = m.arg2;
+				surface.target.get(m.arg1).degree = m.arg2;
 				msa.writeAll("setdeg");
 				msa.writeAll("" + m.arg1);
 				msa.writeAll("" + m.arg2);
 				break;
 
+			case 0x103:
+				String show = (String) m.obj;
+				Toast.makeText(ServerActivity.this, show, Toast.LENGTH_SHORT)
+						.show();
+				break;
 			}
+
 		}
 	};
 
@@ -94,35 +96,6 @@ public class ServerActivity extends Activity implements SensorEventListener {
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 		Global.flagIsPlaying = true;
-
-		sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-		List<Sensor> sensors = sensorManager
-				.getSensorList(Sensor.TYPE_ORIENTATION);
-		if (sensors.size() > 0) {
-			sensorManager.registerListener(this, sensors.get(0),
-					SensorManager.SENSOR_DELAY_NORMAL);
-		}
-
-		sId = msa.getCount();
-		users = sId + 1;
-
-		for (int i = 0; i < users; i++) {
-			target.add(new Target(userName[i], 0, userColor[i]));
-		}
-
-		degs = new int[sId + 1];
-		Log.e("cnt", "" + sId);
-		readClientThread = new Thread[sId];
-		for (int i = 0; i < sId; i++) {
-			msa.writeToId("init", i);
-			msa.writeToId("" + i, i);
-			msa.writeToId("" + users, i);
-			readClientThread[i] = new Thread(new ReadClientThread(i, handler));
-			readClientThread[i].start();
-		}
-
-	
-		// setContentView(R.layout.activity_main);
 
 		ScrollView sv = new ScrollView(this);
 		TableLayout layout = new TableLayout(this);
@@ -149,6 +122,16 @@ public class ServerActivity extends Activity implements SensorEventListener {
 			TRs.get(currentRowNum).addView(IBs.get(i), 200, 200);
 		}
 
+		sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+		List<Sensor> sensors = sensorManager
+				.getSensorList(Sensor.TYPE_ORIENTATION);
+		if (sensors.size() > 0) {
+			sensorManager.registerListener(this, sensors.get(0),
+					SensorManager.SENSOR_DELAY_NORMAL);
+		}
+
+		// setContentView(R.layout.activity_main);
+
 		// surface = (SurfaceView) findViewById(R.id.surfaceView1);
 		//
 		// tv = (TextView) findViewById(R.id.textView1);
@@ -162,8 +145,26 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		this.addContentView(surface, new LayoutParams(LayoutParams.FILL_PARENT,
 				LayoutParams.FILL_PARENT));
 
-//		this.addContentView(tv, new LayoutParams(LayoutParams.FILL_PARENT,
-//				LayoutParams.WRAP_CONTENT));
+		// this.addContentView(tv, new LayoutParams(LayoutParams.FILL_PARENT,
+		// LayoutParams.WRAP_CONTENT));
+
+		sId = msa.getCount();
+		users = sId + 1;
+
+		for (int i = 0; i < users; i++) {
+			surface.target.add(new Target(userName[i], 0, userColor[i]));
+		}
+
+		degs = new int[sId + 1];
+
+		readClientThread = new Thread[sId];
+		for (int i = 0; i < sId; i++) {
+			msa.writeToId("init", i);
+			msa.writeToId("" + i, i);
+			msa.writeToId("" + users, i);
+			readClientThread[i] = new Thread(new ReadClientThread(i, handler));
+			readClientThread[i].start();
+		}
 
 		new Thread(new Runnable() {
 
@@ -171,7 +172,20 @@ public class ServerActivity extends Activity implements SensorEventListener {
 			public void run() {
 				// TODO Auto-generated method stub
 				while (Global.flagIsPlaying) {
-					surface.drawView(target,myDeg);
+					surface.drawView();
+					if (surface.flagCanSend) {
+						surface.flagCanSend = false;
+						String show = "Send to:";
+						for (Target t : surface.selected) {
+							show += (t.name + " ");
+						}
+						Message m = new Message();
+						m.what = 0x103;
+						m.obj = show;
+						handler.sendMessage(m);
+						surface.selected.clear();
+					}
+
 					try {
 						Thread.sleep(100);
 					} catch (InterruptedException e) {
@@ -232,8 +246,6 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		return bmp;
 	}
 
-	
-
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
 		// TODO Auto-generated method stub
@@ -243,15 +255,18 @@ public class ServerActivity extends Activity implements SensorEventListener {
 	@Override
 	public void onSensorChanged(SensorEvent event) {
 		// TODO Auto-generated method stub
-		if (myDeg - event.values[0] > 10 || event.values[0] - myDeg > 10) {
-			myDeg = (int) event.values[0];
-			Message m = new Message();
-			m.what = 0x101;
-			m.arg1 = sId;
-			m.arg2 = (int) event.values[0];
-			handler.sendMessage(m);
+		if (!surface.flagLongTouch) {
+			if (surface.myDeg - event.values[0] > 10
+					|| event.values[0] - surface.myDeg > 10) {
+				surface.myDeg = (int) event.values[0];
+				Message m = new Message();
+				m.what = 0x101;
+				m.arg1 = sId;
+				m.arg2 = (int) event.values[0];
+				handler.sendMessage(m);
+			}
 		}
-		tv.setText("" + myDeg);
+		tv.setText("" + surface.myDeg);
 
 	}
 
@@ -297,9 +312,9 @@ public class ServerActivity extends Activity implements SensorEventListener {
 			// if (e.getAction() == MotionEvent.ACTION_CANCEL) {
 			// return false;
 			// }
-			// Toast.makeText(RealsenseGallery.this, "test",
-			// Toast.LENGTH_LONG).show();
-			return false;
+			Toast.makeText(ServerActivity.this, "test", Toast.LENGTH_LONG)
+					.show();
+			return true;
 		}
 
 	}
