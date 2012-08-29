@@ -1,20 +1,30 @@
 package ntu.real.sense;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import ntu.real.sense.RealsenseGallery.MyImage;
+
 import android.app.Activity;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PixelFormat;
+import android.graphics.PorterDuff.Mode;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -23,6 +33,11 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.ImageButton;
+import android.widget.ScrollView;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,7 +46,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 	ArrayList<Target> target = new ArrayList<Target>();
 	Set<Target> selected = new HashSet<Target>();
 
-	SurfaceView surface;
+	RealSurface surface;
 	TextView tv;
 
 	ServerAgent msa = Global.mServerAgent;
@@ -45,6 +60,12 @@ public class ServerActivity extends Activity implements SensorEventListener {
 	int sId;
 	int myDeg;
 	Thread[] readClientThread;
+
+	List<String> pics = new ArrayList<String>();
+	List<TableRow> TRs = new ArrayList<TableRow>();
+	List<MyImage> IBs = new ArrayList<MyImage>();
+	Bitmap bmp;
+	int currentRowNum = -1;
 
 	Handler handler = new Handler() {
 		@Override
@@ -67,7 +88,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		setContentView(R.layout.surface);
+		// setContentView(R.layout.surface);
 
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -100,9 +121,49 @@ public class ServerActivity extends Activity implements SensorEventListener {
 			readClientThread[i].start();
 		}
 
-		surface = (SurfaceView) findViewById(R.id.surfaceView1);
+	
+		// setContentView(R.layout.activity_main);
 
-		tv = (TextView) findViewById(R.id.textView1);
+		ScrollView sv = new ScrollView(this);
+		TableLayout layout = new TableLayout(this);
+
+		this.addContentView(sv, new LayoutParams(LayoutParams.FILL_PARENT,
+				LayoutParams.WRAP_CONTENT));
+		sv.addView(layout, 0, new LayoutParams(LayoutParams.FILL_PARENT,
+				LayoutParams.FILL_PARENT));
+
+		pics = readSDCard();
+
+		for (int i = 0; i < pics.size(); i++) {
+			if (i / 3 > currentRowNum) {
+				currentRowNum++;
+				TRs.add(new TableRow(this));
+				layout.addView(TRs.get(currentRowNum), new LayoutParams(
+						LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+			}
+			IBs.add(new MyImage(this, i));
+			bmp = decodeBitmap(pics.get(pics.size() - i - 1));
+			// IBs.get(i).setOnLongClickListener(this);
+			// IBs.get(i).setOnTouchListener(this);
+			IBs.get(i).setImageBitmap(bmp);
+			TRs.get(currentRowNum).addView(IBs.get(i), 200, 200);
+		}
+
+		// surface = (SurfaceView) findViewById(R.id.surfaceView1);
+		//
+		// tv = (TextView) findViewById(R.id.textView1);
+		surface = new RealSurface(this);
+		surface.setZOrderOnTop(true);
+		SurfaceHolder holder = surface.getHolder();
+		holder.setFormat(PixelFormat.TRANSPARENT);
+
+		tv = new TextView(this);
+
+		this.addContentView(surface, new LayoutParams(LayoutParams.FILL_PARENT,
+				LayoutParams.FILL_PARENT));
+
+//		this.addContentView(tv, new LayoutParams(LayoutParams.FILL_PARENT,
+//				LayoutParams.WRAP_CONTENT));
 
 		new Thread(new Runnable() {
 
@@ -110,7 +171,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 			public void run() {
 				// TODO Auto-generated method stub
 				while (Global.flagIsPlaying) {
-					drawView();
+					surface.drawView(target,myDeg);
 					try {
 						Thread.sleep(100);
 					} catch (InterruptedException e) {
@@ -120,7 +181,6 @@ public class ServerActivity extends Activity implements SensorEventListener {
 				}
 			}
 		}).start();
-		// setContentView(R.layout.activity_main);
 	}
 
 	@Override
@@ -130,49 +190,49 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		Global.flagIsPlaying = false;
 	}
 
-	void drawView() {
+	private List<String> readSDCard() {
+		List<String> tFileList = new ArrayList<String>();
 
-		SurfaceHolder holder = surface.getHolder();
-		Canvas canvas = holder.lockCanvas();
+		// It have to be matched with the directory in SDCard
+		File f = new File(
+				Environment
+						.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM)
+						+ "/");
+		File[] files = f.listFiles();
 
-		if (canvas != null) {
-			canvas.drawColor(Color.WHITE);
-
-			Paint p = new Paint();
-			p.setColor(Color.RED);
-			// 除去title bar跟notification bar的高度
-			canvas.drawCircle(300, 500, 150, p);
-
-			for (Target t : target) {
-
-				float deg = (int) (t.degree - myDeg) % 360;
-				Paint p3 = new Paint();
-				p3.setColor(t.color);
-				p3.setTextSize(32);
-
-				RectF oval = new RectF();
-				oval.left = 150;
-				oval.top = 350;
-				oval.right = 450;
-				oval.bottom = 650;
-				canvas.drawArc(oval, deg + 60, 60, true, p3);
-
-				Log.e("deg", deg + "");
-
-				double ox = 200 * Math.cos((deg + 90) / 180 * Math.PI);
-				double oy = 200 * Math.sin((deg + 90) / 180 * Math.PI);
-
-				canvas.drawText(t.name, (float) (300 + ox) - 50,
-						(float) (500 + oy), p3);
+		for (int i = 0; i < files.length; i++) {
+			File file = files[i];
+			/*
+			 * It's assumed that all file in the path are in supported type
+			 */
+			if (file.isDirectory() && !file.toString().endsWith(".thumbnails")) {
+				File[] moreFiles = file.listFiles();
+				for (int j = 0; j < moreFiles.length; j++) {
+					File moreFile = moreFiles[j];
+					tFileList.add(moreFile.getPath());
+					if (tFileList.size() > 10) {
+						return tFileList;
+					}
+				}
 			}
-
-			Paint p2 = new Paint();
-			p2.setColor(Color.WHITE);
-			canvas.drawCircle(300, 500, 145, p2);
-
-			holder.unlockCanvasAndPost(canvas);
+			if (!file.isDirectory())
+				tFileList.add(file.getPath());
 		}
+
+		return tFileList;
 	}
+
+	private Bitmap decodeBitmap(String path) {
+		BitmapFactory.Options op = new BitmapFactory.Options();
+		op.inJustDecodeBounds = true;
+		op.inSampleSize = 4;
+		Bitmap bmp = BitmapFactory.decodeFile(path, op);
+		op.inJustDecodeBounds = false;
+		bmp = BitmapFactory.decodeFile(path, op);
+		return bmp;
+	}
+
+	
 
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -216,5 +276,31 @@ public class ServerActivity extends Activity implements SensorEventListener {
 	 * 
 	 * return true; }
 	 */
+	class MyImage extends ImageButton {
+		int id;
 
+		public MyImage(Context context, int i) {
+			super(context);
+			id = i;
+			// TODO Auto-generated constructor stub
+		}
+
+		@Override
+		public boolean onTouchEvent(MotionEvent e) {
+			// if (e.getAction() != MotionEvent.ACTION_MOVE) {
+			// Log.e("ges", id + ":" + e.getAction());
+			// }
+			// if (e.getAction() == MotionEvent.ACTION_UP) {
+			// Toast.makeText(RealsenseGallery.this, "aaa" + id,
+			// Toast.LENGTH_LONG).show();
+			// }
+			// if (e.getAction() == MotionEvent.ACTION_CANCEL) {
+			// return false;
+			// }
+			// Toast.makeText(RealsenseGallery.this, "test",
+			// Toast.LENGTH_LONG).show();
+			return false;
+		}
+
+	}
 }
