@@ -8,6 +8,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PixelFormat;
 import android.graphics.RectF;
 import android.graphics.PorterDuff.Mode;
 import android.os.Handler;
@@ -21,12 +22,14 @@ import android.widget.Toast;
 public class RealSurface extends SurfaceView {
 	boolean flagTouchUp = false;
 	boolean flagLongTouch = false;
-	int myDeg;
 	boolean flagCanSend = false;
+	int myDeg;
+	final int radius = 150;
 	float px, py;
+	SurfaceHolder holder;
 	ArrayList<Target> target = new ArrayList<Target>();
 	Set<Target> selected = new HashSet<Target>();
-	TouchPoint tp = new TouchPoint();
+	TouchPoint tp = new TouchPoint(radius);
 
 	Handler h = new Handler() {
 		@Override
@@ -45,13 +48,14 @@ public class RealSurface extends SurfaceView {
 
 	public RealSurface(Context context) {
 		super(context);
-
+		setZOrderOnTop(true);
+		holder = getHolder();
+		holder.setFormat(PixelFormat.TRANSPARENT);
 		// TODO Auto-generated constructor stub
 	}
 
 	void drawView() {
 
-		SurfaceHolder holder = getHolder();
 		Canvas canvas = holder.lockCanvas();
 
 		if (canvas != null) {
@@ -62,12 +66,12 @@ public class RealSurface extends SurfaceView {
 
 				Paint p2 = new Paint();
 				p2.setColor(Color.WHITE);
-				canvas.drawCircle(px, py, 245, p2);
+				canvas.drawCircle(px, py, radius * 1.5f, p2);
 
 				Paint p = new Paint();
 				p.setColor(Color.RED);
 				// 除去title bar跟notification bar的高度
-				canvas.drawCircle(px, py, 150, p);
+				canvas.drawCircle(px, py, radius, p);
 
 				for (Target t : target) {
 
@@ -77,10 +81,10 @@ public class RealSurface extends SurfaceView {
 					p3.setTextSize(32);
 
 					RectF oval = new RectF();
-					oval.left = px - 150;
-					oval.top = py - 150;
-					oval.right = px + 150;
-					oval.bottom = py + 150;
+					oval.left = px - radius;
+					oval.top = py - radius;
+					oval.right = px + radius;
+					oval.bottom = py + radius;
 					canvas.drawArc(oval, deg + 60, 60, true, p3);
 
 					Log.e("deg", deg + "");
@@ -92,7 +96,7 @@ public class RealSurface extends SurfaceView {
 							(float) (py + oy), p3);
 				}
 
-				canvas.drawCircle(px, py, 145, p2);
+				canvas.drawCircle(px, py, radius - 5, p2);
 			}
 			holder.unlockCanvasAndPost(canvas);
 		}
@@ -139,7 +143,7 @@ public class RealSurface extends SurfaceView {
 				flagLongTouch = false;
 
 				boolean inrange = tp.removeTouch(e.getX(), e.getY());
-				if (inrange) {
+				if (inrange && selected.size() > 0) {
 
 					flagCanSend = true;
 				}
