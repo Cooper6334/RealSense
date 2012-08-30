@@ -91,9 +91,9 @@ public class ClientActivity extends Activity implements SensorEventListener {
 		// 注意顯示太多照片會out of memory
 		int index = demoTest.file_list.size();
 		if (index > 15) {
-			index = 12;
+			index = 13;
 		}
-		for (int i = 1; i <= index; i++) {
+		for (int i = 1; i < index; i++) {
 
 			Log.e("圖片網址：", demoTest.file_list.get(i));
 			Bitmap bitmap = decodeBitmap(demoTest.file_list.get(i));

@@ -111,6 +111,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		if (index > 13) {
 			index = 13;
 		}
+
 		for (int i = 1; i < index; i++) {
 
 			Log.e("圖片網址：", demoTest.file_list.get(i));
