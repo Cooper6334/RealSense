@@ -25,8 +25,8 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 public class ClientActivity extends Activity implements SensorEventListener {
-	int imgBtnSize=150;
-	int imgMargin=5;
+	int imgBtnSize = 150;
+	int imgMargin = 5;
 
 	SensorManager sensorManager;
 
@@ -57,11 +57,11 @@ public class ClientActivity extends Activity implements SensorEventListener {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		DisplayMetrics dm = new DisplayMetrics(); 
-	    this.getWindowManager().getDefaultDisplay().getMetrics(dm);
-	    imgBtnSize = dm.widthPixels / 4;
-	    imgMargin = dm.widthPixels / 100;
-	    Log.e("123", dm.widthPixels + "" + dm.heightPixels);
+		DisplayMetrics dm = new DisplayMetrics();
+		this.getWindowManager().getDefaultDisplay().getMetrics(dm);
+		imgBtnSize = dm.widthPixels / 4;
+		imgMargin = dm.widthPixels / 100;
+		Log.e("123", dm.widthPixels + "" + dm.heightPixels);
 		// 隱藏title bar&notifiaction bar
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -135,15 +135,6 @@ public class ClientActivity extends Activity implements SensorEventListener {
 		this.addContentView(surface, new LayoutParams(LayoutParams.FILL_PARENT,
 				LayoutParams.FILL_PARENT));
 
-		String m = mca.read();
-		if ("init".equals(m)) {
-			cId = Integer.parseInt(mca.read());
-			users = Integer.parseInt(mca.read());
-			Log.e("init", cId + ":" + users);
-			for (int i = 0; i < users; i++) {
-				surface.target.add(new Target(Global.userName[i], 0, Global.userColor[i]));
-			}
-		}
 		// 設定繪圖與傳遞照片之Thread
 		new Thread(new Runnable() {
 
@@ -189,7 +180,15 @@ public class ClientActivity extends Activity implements SensorEventListener {
 				// TODO Auto-generated method stub
 				while (Global.flagIsPlaying) {
 					String m = mca.read();
-
+					if ("init".equals(m)) {
+						cId = Integer.parseInt(mca.read());
+						users = Integer.parseInt(mca.read());
+						Log.e("init", cId + ":" + users);
+						for (int i = 0; i < users; i++) {
+							surface.target.add(new Target(Global.userName[i],
+									0, Global.userColor[i]));
+						}
+					}
 					if ("setdeg".equals(m)) {
 						int who = Integer.parseInt(mca.read());
 						int deg = Integer.parseInt(mca.read());
