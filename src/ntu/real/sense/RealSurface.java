@@ -203,7 +203,7 @@ public class RealSurface extends SurfaceView {
 		}
 		float minDeg = 180 / tmp.length;
 		minDeg = 45;
-		if (cnt == 0) {
+		if (cnt <= 0) {
 			for (int j = 1; j < tmp.length; j++) {
 				for (int i = 0; i < tmp.length - j; i++) {
 					if (tmp[i].degree > tmp[i + 1].degree) {
