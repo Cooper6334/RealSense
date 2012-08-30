@@ -3,7 +3,12 @@ package ntu.real.sense;
 public class TouchPoint {
 	float tx;
 	float ty;
+	float radius;
 	boolean isTouch = false;
+
+	TouchPoint(float r) {
+		radius = r;
+	}
 
 	void setTouch(float x, float y) {
 		isTouch = true;
@@ -14,9 +19,9 @@ public class TouchPoint {
 		ty = y;
 
 	}
-	
-	double moveTouch(float x,float y){
-		if ((x - tx) * (x - tx) + (y - ty) * (y - ty) < 2500) {
+
+	double moveTouch(float x, float y) {
+		if ((x - tx) * (x - tx) + (y - ty) * (y - ty) < radius * radius) {
 			return -1;
 		}
 
@@ -24,9 +29,9 @@ public class TouchPoint {
 		return deg;
 	}
 
-	boolean removeTouch(float x,float y){
+	boolean removeTouch(float x, float y) {
 		isTouch = false;
-		if ((x - tx) * (x - tx) + (y - ty) * (y - ty) < 2500) {
+		if ((x - tx) * (x - tx) + (y - ty) * (y - ty) < radius * radius) {
 			return false;
 		}
 		return true;

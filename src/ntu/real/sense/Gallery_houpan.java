@@ -1,4 +1,4 @@
-package com.example.why;
+package ntu.real.sense;
 
 import java.io.File;
 import java.io.InputStream;
@@ -19,46 +19,13 @@ import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
-	class ListAllPath{
-		
-		public ArrayList<String> file_list=new ArrayList<String>();
-		ListAllPath(){
-			file_list=new ArrayList<String>();
-			file_list.add(null);
-			}
-		
-		
-		 public  void print(File mFile, int mlevel){
-			for(int i = 0; i < mlevel; i++){
-			    Log.e("word","進入目錄");
-			}
-			    if (mFile.isDirectory()){  
-			    	Log.e("word","__目錄：<" + getPath(mFile) + ">");  
-			    	if(getPath(mFile).endsWith(".thumbnails")){
-			    		return;
-			    	}
-			   String[] str = mFile.list();
-			   for (int i = 0; i < str.length; i++){
-			  print(new File(mFile.getPath() + "/" + str[i]) , mlevel + 1);
-			   }  
-			    }else{
-			    	Log.e("word",getPath(mFile));
-			    	file_list.add(getPath(mFile));
-			    }   
-			}
-
-			public  String  getPath(File mFile){
-			    String fullPath = mFile.getPath();
-			    String[] str = fullPath.split("//");
-			    return str[str.length - 1];
-			}
-	}
+	
 
 
  
 
 //原創作者 軟貓軟體 http://toimy.blogspot.com/ 
-public class MainActivity extends Activity implements OnTouchListener, OnLongClickListener {
+public class Gallery_houpan extends Activity implements OnTouchListener, OnLongClickListener {
   RelativeLayout layout;
   private Button btn1;
   private int CurrentButtonNumber = 0; //CurrentButtonNumber流水號 設定物件ID

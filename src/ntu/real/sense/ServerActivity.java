@@ -1,49 +1,55 @@
 package ntu.real.sense;
 
+import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import android.app.Activity;
-import android.graphics.Canvas;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.RectF;
+import android.graphics.PixelFormat;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.RelativeLayout;
+import android.widget.ScrollView;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class ServerActivity extends Activity implements SensorEventListener {
 
-	ArrayList<Target> target = new ArrayList<Target>();
-	Set<Target> selected = new HashSet<Target>();
+	String[] userName = { "Allen", "Bob", "Cooper", "David", "Eric" };
+	int[] userColor = { Color.BLACK, Color.BLUE, Color.GREEN, Color.GRAY,
+			Color.YELLOW };
 
-	SurfaceView surface;
-	TextView tv;
+	RealSurface surface;
+	RelativeLayout layout;
+	int CurrentButtonNumber = 0; // CurrentButtonNumber流水號 設定物件ID
 
 	ServerAgent msa = Global.mServerAgent;
 	SensorManager sensorManager;
 
 	int users;
-	String[] userName = { "Allen", "Bob", "Cooper", "David", "Eric" };
-	int[] userColor = { Color.BLACK, Color.BLUE, Color.GREEN, Color.GRAY,
-			Color.YELLOW };
 	int degs[];
 	int sId;
-	int myDeg;
 	Thread[] readClientThread;
 
 	Handler handler = new Handler() {
@@ -53,27 +59,86 @@ public class ServerActivity extends Activity implements SensorEventListener {
 			// 改變角度時廣播給所有client
 			case 0x101:
 
-				target.get(m.arg1).degree = m.arg2;
+				surface.target.get(m.arg1).degree = m.arg2;
 				msa.writeAll("setdeg");
 				msa.writeAll("" + m.arg1);
 				msa.writeAll("" + m.arg2);
 				break;
 
+			// 收到傳遞照片的訊息
+			case 0x103:
+				String show = (String) m.obj;
+				Toast.makeText(ServerActivity.this, show, Toast.LENGTH_SHORT)
+						.show();
+				break;
 			}
+
 		}
 	};
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		// 隱藏title bar&notifiaction bar
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		setContentView(R.layout.surface);
-
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
+		// 設定顯示照片的layout
+		layout = new RelativeLayout(this);
+		layout.setBackgroundColor(Color.BLACK);
+		setContentView(layout);
+		// 讀取照片
+		ListAllPath demoTest = new ListAllPath();
+		File rootFile = new File("/sdcard/DCIM");
+		demoTest.print(rootFile, 0);
+
+		RelativeLayout RL_temp = new RelativeLayout(this);
+		RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
+				RelativeLayout.LayoutParams.WRAP_CONTENT,
+				RelativeLayout.LayoutParams.WRAP_CONTENT);
+		params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+		RL_temp.setLayoutParams(params);
+		layout.addView(RL_temp);
+		// 注意顯示太多照片會out of memory
+		int index = demoTest.file_list.size();
+		if (index > 13) {
+			index = 13;
+		}
+		for (int i = 1; i < index; i++) {
+
+			Log.e("圖片網址：", demoTest.file_list.get(i));
+			Bitmap bitmap = decodeBitmap(demoTest.file_list.get(i));
+
+			ImageButton image_temp = new ImageButton(this);
+			image_temp.setImageBitmap(bitmap);
+			image_temp.setBackgroundColor(Color.BLUE);
+			Log.e("oriID", Integer.toString(image_temp.getId()));
+			image_temp.setId(i); // ID不能是零，不然會爛掉！
+			Log.e("newID", Integer.toString(image_temp.getId()));
+			image_temp.setLayoutParams(params);
+			params = new RelativeLayout.LayoutParams(180, 180);
+			params.setMargins(15, 15, 15, 15);
+			if (i == 1) {
+
+			}
+			if (i > 3) {
+				Log.e("在誰的下面：", Integer.toString(i - 3));
+				params.addRule(RelativeLayout.BELOW, (i - 3));
+			}
+			if (i % 3 != 1) {// 非列首的條件，要margin
+				Log.e("在誰的右邊：", Integer.toString(i - 1));
+				params.addRule(RelativeLayout.RIGHT_OF, (i - 1));
+			}
+
+			image_temp.setLayoutParams(params);
+			RL_temp.addView(image_temp);
+
+		}
+
 		Global.flagIsPlaying = true;
 
+		// 註冊orientation sensor
 		sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 		List<Sensor> sensors = sensorManager
 				.getSensorList(Sensor.TYPE_ORIENTATION);
@@ -82,15 +147,21 @@ public class ServerActivity extends Activity implements SensorEventListener {
 					SensorManager.SENSOR_DELAY_NORMAL);
 		}
 
+		// 加入RealSense
+		surface = new RealSurface(this);
+		this.addContentView(surface, new LayoutParams(LayoutParams.FILL_PARENT,
+				LayoutParams.FILL_PARENT));
+
+		// 加入使用者名單到RealSense
 		sId = msa.getCount();
 		users = sId + 1;
 
 		for (int i = 0; i < users; i++) {
-			target.add(new Target(userName[i], 0, userColor[i]));
+			surface.target.add(new Target(userName[i], 0, userColor[i]));
 		}
 
 		degs = new int[sId + 1];
-		Log.e("cnt", "" + sId);
+
 		readClientThread = new Thread[sId];
 		for (int i = 0; i < sId; i++) {
 			msa.writeToId("init", i);
@@ -100,17 +171,27 @@ public class ServerActivity extends Activity implements SensorEventListener {
 			readClientThread[i].start();
 		}
 
-		surface = (SurfaceView) findViewById(R.id.surfaceView1);
-
-		tv = (TextView) findViewById(R.id.textView1);
-
+		// 設定繪圖與傳遞照片之Thread
 		new Thread(new Runnable() {
 
 			@Override
 			public void run() {
 				// TODO Auto-generated method stub
 				while (Global.flagIsPlaying) {
-					drawView();
+					surface.drawView();
+					if (surface.flagCanSend) {
+						surface.flagCanSend = false;
+						String show = "Send to:";
+						for (Target t : surface.selected) {
+							show += (t.name + " ");
+						}
+						Message m = new Message();
+						m.what = 0x103;
+						m.obj = show;
+						handler.sendMessage(m);
+						surface.selected.clear();
+					}
+
 					try {
 						Thread.sleep(100);
 					} catch (InterruptedException e) {
@@ -120,7 +201,6 @@ public class ServerActivity extends Activity implements SensorEventListener {
 				}
 			}
 		}).start();
-		// setContentView(R.layout.activity_main);
 	}
 
 	@Override
@@ -128,50 +208,6 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		super.onPause();
 		sensorManager.unregisterListener(this);
 		Global.flagIsPlaying = false;
-	}
-
-	void drawView() {
-
-		SurfaceHolder holder = surface.getHolder();
-		Canvas canvas = holder.lockCanvas();
-
-		if (canvas != null) {
-			canvas.drawColor(Color.WHITE);
-
-			Paint p = new Paint();
-			p.setColor(Color.RED);
-			// 除去title bar跟notification bar的高度
-			canvas.drawCircle(300, 500, 150, p);
-
-			for (Target t : target) {
-
-				float deg = (int) (t.degree - myDeg) % 360;
-				Paint p3 = new Paint();
-				p3.setColor(t.color);
-				p3.setTextSize(32);
-
-				RectF oval = new RectF();
-				oval.left = 150;
-				oval.top = 350;
-				oval.right = 450;
-				oval.bottom = 650;
-				canvas.drawArc(oval, deg + 60, 60, true, p3);
-
-				Log.e("deg", deg + "");
-
-				double ox = 200 * Math.cos((deg + 90) / 180 * Math.PI);
-				double oy = 200 * Math.sin((deg + 90) / 180 * Math.PI);
-
-				canvas.drawText(t.name, (float) (300 + ox) - 50,
-						(float) (500 + oy), p3);
-			}
-
-			Paint p2 = new Paint();
-			p2.setColor(Color.WHITE);
-			canvas.drawCircle(300, 500, 145, p2);
-
-			holder.unlockCanvasAndPost(canvas);
-		}
 	}
 
 	@Override
@@ -183,38 +219,27 @@ public class ServerActivity extends Activity implements SensorEventListener {
 	@Override
 	public void onSensorChanged(SensorEvent event) {
 		// TODO Auto-generated method stub
-		if (myDeg - event.values[0] > 10 || event.values[0] - myDeg > 10) {
-			myDeg = (int) event.values[0];
-			Message m = new Message();
-			m.what = 0x101;
-			m.arg1 = sId;
-			m.arg2 = (int) event.values[0];
-			handler.sendMessage(m);
+		if (!surface.flagLongTouch) {
+			if (surface.myDeg - event.values[0] > 10
+					|| event.values[0] - surface.myDeg > 10) {
+				surface.myDeg = (int) event.values[0];
+				Message m = new Message();
+				m.what = 0x101;
+				m.arg1 = sId;
+				m.arg2 = (int) event.values[0];
+				handler.sendMessage(m);
+			}
 		}
-		tv.setText("" + myDeg);
 
 	}
 
-	/*
-	 * @Override public boolean onTouchEvent(MotionEvent e) {
-	 * 
-	 * switch (e.getAction()) { case MotionEvent.ACTION_DOWN: tv.setText("");
-	 * tp.setTouch(e.getX(), e.getY()); break; case MotionEvent.ACTION_MOVE:
-	 * double deg = tp.moveTouch(e.getX(), e.getY());
-	 * 
-	 * if (deg == -1) { selected.clear(); } else { for (Target t : target) { if
-	 * (t.degree - deg < 30 && t.degree - deg > -30) { selected.add(t); } } }
-	 * break; case MotionEvent.ACTION_UP: // double deg =
-	 * tp.removeTouch(e.getX(), e.getY()); Toast.makeText(MainActivity.this,
-	 * "Touch UP", Toast.LENGTH_LONG) .show(); boolean inrange =
-	 * tp.removeTouch(e.getX(), e.getY()); if (!inrange) { tv.setText("cancel");
-	 * } else { if (selected.size() == 0) { tv.setText("No target"); } else {
-	 * String s = "Send to:"; for (Target t : selected) { s = s + t.name + ",";
-	 * } tv.setText(s); }
-	 * 
-	 * // Toast.makeText(this, (int)deg + "", // Toast.LENGTH_SHORT).show(); } }
-	 * 
-	 * return true; }
-	 */
-
+	private Bitmap decodeBitmap(String path) {
+		BitmapFactory.Options op = new BitmapFactory.Options();
+		op.inJustDecodeBounds = true;
+		op.inSampleSize = 4;
+		Bitmap bmp = BitmapFactory.decodeFile(path, op);
+		op.inJustDecodeBounds = false;
+		bmp = BitmapFactory.decodeFile(path, op);
+		return bmp;
+	}
 }
