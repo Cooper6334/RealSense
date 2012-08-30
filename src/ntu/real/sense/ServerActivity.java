@@ -232,16 +232,15 @@ public class ServerActivity extends Activity implements SensorEventListener {
 	@Override
 	public void onSensorChanged(SensorEvent event) {
 		// TODO Auto-generated method stub
-		if (!surface.flagLongTouch) {
-			if (surface.myDeg - event.values[0] > 10
-					|| event.values[0] - surface.myDeg > 10) {
-				surface.myDeg = (int) event.values[0];
-				Message m = new Message();
-				m.what = 0x101;
-				m.arg1 = sId;
-				m.arg2 = (int) event.values[0];
-				handler.sendMessage(m);
-			}
+
+		if (surface.myDeg - event.values[0] > 10
+				|| event.values[0] - surface.myDeg > 10) {
+			surface.myDeg = (int) event.values[0];
+			Message m = new Message();
+			m.what = 0x101;
+			m.arg1 = sId;
+			m.arg2 = (int) event.values[0];
+			handler.sendMessage(m);
 		}
 
 	}

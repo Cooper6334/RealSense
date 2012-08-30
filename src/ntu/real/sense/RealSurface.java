@@ -25,10 +25,12 @@ public class RealSurface extends SurfaceView {
 	boolean flagCanSend = false;
 	boolean flagClick = false;
 	int myDeg;
+	int showMyDeg;
 	final int radius = 150;
 	float px, py;
 	SurfaceHolder holder;
 	ArrayList<Target> target = new ArrayList<Target>();
+	ArrayList<Target> showTarget = new ArrayList<Target>();
 	Set<Target> selected = new HashSet<Target>();
 	TouchPoint tp = new TouchPoint(radius);
 
@@ -38,6 +40,11 @@ public class RealSurface extends SurfaceView {
 			switch (m.what) {
 			case 0x101:
 				if (!flagTouchUp) {
+					showTarget.clear();
+					for (Target t : target) {
+						showTarget.add(t.clone());
+					}
+					showMyDeg = myDeg;
 					flagLongTouch = true;
 				}
 				flagTouchUp = false;
@@ -74,9 +81,9 @@ public class RealSurface extends SurfaceView {
 				// 除去title bar跟notification bar的高度
 				canvas.drawCircle(px, py, radius, p);
 
-				for (Target t : target) {
+				for (Target t : showTarget) {
 
-					float deg = (int) (t.degree - myDeg) % 360;
+					float deg = (int) (t.degree - showMyDeg) % 360;
 					Paint p3 = new Paint();
 					p3.setColor(t.color);
 					p3.setTextSize(32);
@@ -125,9 +132,9 @@ public class RealSurface extends SurfaceView {
 				if (deg == -1) {
 					selected.clear();
 				} else {
-					for (Target t : target) {
+					for (Target t : showTarget) {
 
-						float td = t.degree - myDeg;
+						float td = t.degree - showMyDeg;
 						while (td < 0) {
 							td += 360;
 						}

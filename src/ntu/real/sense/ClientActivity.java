@@ -220,11 +220,10 @@ public class ClientActivity extends Activity implements SensorEventListener {
 	@Override
 	public void onSensorChanged(SensorEvent event) {
 		// TODO Auto-generated method stub
-		if (!surface.flagLongTouch) {
-			surface.myDeg = (int) event.values[0];
-			mca.write("setdeg");
-			mca.write("" + surface.myDeg);
-		}
+
+		surface.myDeg = (int) event.values[0];
+		mca.write("setdeg");
+		mca.write("" + surface.myDeg);
 
 	}
 
