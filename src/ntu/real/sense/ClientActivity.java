@@ -38,11 +38,11 @@ public class ClientActivity extends Activity implements SensorEventListener {
 			Color.YELLOW };
 
 	SensorManager sensorManager;
-	
+
 	RealSurface surface;
 	RelativeLayout layout;
 	int CurrentButtonNumber = 0; // CurrentButtonNumber流水號 設定物件ID
-	
+
 	Agent mca = Global.mClientAgent;
 	int cId;
 	int users;
@@ -167,6 +167,12 @@ public class ClientActivity extends Activity implements SensorEventListener {
 						m.obj = show;
 						handler.sendMessage(m);
 						surface.selected.clear();
+					}
+					if (surface.flagClick) {
+						surface.flagClick = false;
+						Message m = new Message();
+						m.what = 0x102;
+						handler.sendMessage(m);
 					}
 
 					try {

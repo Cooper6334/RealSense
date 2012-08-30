@@ -23,6 +23,7 @@ public class RealSurface extends SurfaceView {
 	boolean flagTouchUp = false;
 	boolean flagLongTouch = false;
 	boolean flagCanSend = false;
+	boolean flagClick = false;
 	int myDeg;
 	final int radius = 150;
 	float px, py;
@@ -112,6 +113,7 @@ public class RealSurface extends SurfaceView {
 		}
 		switch (e.getAction()) {
 		case MotionEvent.ACTION_DOWN:
+			h.removeMessages(0x101);
 			h.sendEmptyMessageDelayed(0x101, 500);
 			flagTouchUp = false;
 			return true;
@@ -151,6 +153,8 @@ public class RealSurface extends SurfaceView {
 				// Toast.makeText(this.getContext(), "not in range",
 				// Toast.LENGTH_LONG).show();
 				// }
+			} else {
+				flagClick = true;
 			}
 			return false;
 		}
