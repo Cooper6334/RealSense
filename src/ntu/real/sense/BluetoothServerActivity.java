@@ -1,10 +1,11 @@
 package ntu.real.sense;
 
 import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.Set;
 
 import android.app.Activity;
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
@@ -12,6 +13,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.DhcpInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -24,17 +27,17 @@ import android.widget.Toast;
 
 public class BluetoothServerActivity extends Activity {
 
-	private BluetoothAdapter mBluetoothAdapter;
+	// private BluetoothAdapter mBluetoothAdapter;
 	ServerAgent msa;
 	Agent mca;
 	// String title = "";
 	boolean flagGameStart = false;
 	boolean flagGamePrepare = false;
 	boolean flagExit = false;
-	BluetoothServerSocket serverSocket;
+	ServerSocket serverSocket;
 	ListView lv;
 	ArrayAdapter<String> adapter;
-
+	WifiManager mWifiManager;
 	Handler myHandler = new Handler() {
 		@Override
 		public void handleMessage(Message m) {
@@ -114,7 +117,6 @@ public class BluetoothServerActivity extends Activity {
 
 		if (Global.flagIsServer) {
 			startServer();
-			Global.mMAC = mBluetoothAdapter.getAddress();
 		} else {
 			searchClient();
 		}
@@ -166,30 +168,28 @@ public class BluetoothServerActivity extends Activity {
 	}
 
 	void initBluetooth() {
-		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-		if (mBluetoothAdapter == null) {
-			Toast.makeText(this, "There is no Bluetooth", Toast.LENGTH_SHORT)
-					.show();
-		}
-		if (!mBluetoothAdapter.isEnabled()) {
-			mBluetoothAdapter.enable();
-			while (!mBluetoothAdapter.isEnabled()) {
-
-			}
-		}
+		// mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+		// if (mBluetoothAdapter == null) {
+		// Toast.makeText(this, "There is no Bluetooth", Toast.LENGTH_SHORT)
+		// .show();
+		// }
+		// if (!mBluetoothAdapter.isEnabled()) {
+		// mBluetoothAdapter.enable();
+		// while (!mBluetoothAdapter.isEnabled()) {
+		//
+		// }
+		// }
 
 		// title = mBluetoothAdapter.getName();
+		mWifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
 
-		if (Global.flagIsServer) {
-			Intent discoverableIntent = new Intent(
-					BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-			discoverableIntent.putExtra(
-					BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
-			startActivity(discoverableIntent);
-		}
 		Message m = new Message();
 		m.what = Msg.joined;
-		m.obj = mBluetoothAdapter.getName();
+		if (Global.flagIsServer) {
+			m.obj = "Server";
+		} else {
+			m.obj = "Client";
+		}
 		myHandler.sendMessage(m);
 		// myHandler.sendEmptyMessage(Msg.joined);
 		msa = new ServerAgent();
@@ -207,23 +207,21 @@ public class BluetoothServerActivity extends Activity {
 	private class AcceptThread extends Thread {
 
 		public void run() {
-			BluetoothSocket socket = null;
+			Socket socket = null;
 			// Keep listening until exception occurs or a socket is returned
 			while (true) {
 				Log.e("ba", "server finding");
 
 				try {
-					serverSocket = mBluetoothAdapter
-							.listenUsingRfcommWithServiceRecord("TouchConnect",
-									Global.mUUID);
+					serverSocket = new ServerSocket(Global.PORT);
+					Log.e("ip", serverSocket.getLocalSocketAddress().toString());
 					socket = serverSocket.accept();
-					String dn = socket.getRemoteDevice().getName();
+					String dn = socket.getInetAddress().toString();
 					serverSocket.close();
 					Log.e("ser", "accept " + dn);
 					if (socket != null) {
 						Log.e("ba", "" + adapter.getCount());
-						Agent a = msa.addClient(socket, socket
-								.getRemoteDevice().getAddress());
+						Agent a = msa.addClient(socket, dn);
 						for (int i = 0; i < adapter.getCount(); i++) {
 							a.write("readname");
 							a.write(adapter.getItem(i));
@@ -254,127 +252,50 @@ public class BluetoothServerActivity extends Activity {
 			Log.e("bsa", "start client thread");
 			boolean flagInPair = false;
 
-			Set<BluetoothDevice> pairedDevices = mBluetoothAdapter
-					.getBondedDevices();
-			for (BluetoothDevice device : pairedDevices) {
+			// Set<BluetoothDevice> pairedDevices = mBluetoothAdapter
+			// .getBondedDevices();
+			Socket mmSocket = null;
+			Log.e("ba", "connect in paired");
+			flagInPair = true;
+			while (true) {
 
-				BluetoothSocket mmSocket = null;
-				if (device.getAddress().equals(Global.mMAC)) {
-					Log.e("ba", "connect in paired");
-					flagInPair = true;
-					while (true) {
+				try {
+					// mmSocket = device
+					// .createRfcommSocketToServiceRecord(Global.mUUID);
 
-						try {
-							mmSocket = device
-									.createRfcommSocketToServiceRecord(Global.mUUID);
+					DhcpInfo mDhcpInfo = mWifiManager.getDhcpInfo();
+					int ipadd = mDhcpInfo.gateway;
+					Global.IP = ((ipadd & 0xFF) + "." + (ipadd >> 8 & 0xFF)
+							+ "." + (ipadd >> 16 & 0xFF) + "." + (ipadd >> 24 & 0xFF));
+					Log.e("ip", Global.IP);
+					mmSocket = new Socket(Global.IP, Global.PORT);
 
-							Log.e("bc", "start connect " + device.getName());
-							mmSocket.connect();
-
-							mca = new Agent(mmSocket, mmSocket
-									.getRemoteDevice().getAddress(), 0);
-							Log.e("bc", "connect ok");
-							new Thread(new ReadThread(mca)).start();
+					mca = new Agent(mmSocket, mmSocket.getInetAddress()
+							.toString(), 0);
+					Log.e("bc", "connect ok");
+					new Thread(new ReadThread(mca)).start();
+					return;
+					// Global.mClientAgent = new Agent(mmSocket);
+				} catch (IOException connectException) {
+					try {
+						if (flagExit) {
 							return;
-							// Global.mClientAgent = new Agent(mmSocket);
-						} catch (IOException connectException) {
-							try {
-								if (flagExit) {
-									return;
-								}
-								Thread.sleep(1000);
-							} catch (InterruptedException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-							Log.e("ba", "client exception ");
-							try {
-								if (mmSocket != null) {
-									mmSocket.close();
-								}
-							} catch (IOException closeException) {
-							}
-
 						}
-
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
+					Log.e("ba", "client exception ");
+					try {
+						if (mmSocket != null) {
+							mmSocket.close();
+						}
+					} catch (IOException closeException) {
+					}
+
 				}
-			}
-			if (!flagInPair) {
 
-				Log.e("bsa", "not in pair");
-				BroadcastReceiver mReceiver = new BroadcastReceiver() {
-
-					@Override
-					public void onReceive(Context arg0, Intent arg1) {
-						// TODO Auto-generated method stub
-						int cnt = 0;
-						BluetoothSocket mmSocket = null;
-						String act = arg1.getAction();
-						if (BluetoothDevice.ACTION_FOUND.equals(act)) {
-							BluetoothServerActivity.this
-									.unregisterReceiver(this);
-							BluetoothDevice device = arg1
-									.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-
-							Log.e("bsa", "find " + device.getName());
-							if (device.getAddress().equals(Global.mMAC)) {
-								Log.e("bsa", "connect with " + device.getName());
-								while (true) {
-									cnt++;
-									try {
-										mmSocket = device
-												.createRfcommSocketToServiceRecord(Global.mUUID);
-
-										Log.e("bc",
-												"start connect "
-														+ device.getName());
-										mmSocket.connect();
-
-										mca = new Agent(mmSocket,
-												mmSocket.getRemoteDevice()
-														.getAddress(), 0);
-										Log.e("bc", "connect ok");
-										new Thread(new ReadThread(mca)).start();
-										return;
-										// Global.mClientAgent = new
-										// Agent(mmSocket);
-									} catch (IOException connectException) {
-										try {
-											if (cnt > 5) {
-												flagExit = true;
-											}
-											if (flagExit) {
-												return;
-											}
-											Thread.sleep(1000);
-										} catch (InterruptedException e) {
-											// TODO Auto-generated catch block
-											e.printStackTrace();
-										}
-										Log.e("ba", "client exception ");
-										try {
-											if (mmSocket != null) {
-												mmSocket.close();
-											}
-										} catch (IOException closeException) {
-										}
-
-									}
-
-								}
-
-							}
-						}
-					}
-
-				};
-
-				IntentFilter f = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-				registerReceiver(mReceiver, f);
-
-				Log.e("bsa", "start discovery");
-				mBluetoothAdapter.startDiscovery();
 			}
 
 		}
@@ -422,7 +343,7 @@ public class BluetoothServerActivity extends Activity {
 
 						Message m6 = new Message();
 						m6.what = Msg.remove;
-						m6.obj = mca.socket.getRemoteDevice().getName();
+						m6.obj = mca.socket.getInetAddress().toString();
 
 						if (msa != null && mca != null) {
 							Log.e("bsa", "remove id:" + mca.id);

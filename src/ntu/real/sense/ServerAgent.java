@@ -3,6 +3,7 @@ package ntu.real.sense;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.Socket;
 import java.util.ArrayList;
 
 
@@ -21,7 +22,7 @@ public class ServerAgent {
 		clients = new ArrayList<Agent>();
 	}
 
-	public Agent addClient(BluetoothSocket b, String add) {
+	public Agent addClient(Socket b, String add) {
 		Log.e("sa", clients.size()+":id");
 //		for (Agent a : clients) {
 //			if (a.address.equals(add)) {

@@ -13,14 +13,14 @@ import android.os.Message;
 import android.util.Log;
 
 public class Agent {
-	BluetoothSocket socket;
+	Socket socket;
 	String address;
 	BufferedReader reader;
 	PrintWriter writer;
 	int id;
 	int team;
 
-	public Agent(BluetoothSocket b, String add, int inId) {
+	public Agent(Socket b, String add, int inId) {
 		socket = b;
 		address = add;
 		id = inId;

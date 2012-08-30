@@ -19,11 +19,12 @@ public class Global {
 	static final int[] userColor = { Color.BLACK, Color.BLUE, Color.GREEN,
 			Color.GRAY, Color.YELLOW, Color.DKGRAY };
 
-	static String mMAC = "";
-	final static UUID mUUID = UUID
-			.fromString("d4925895-0722-4252-a969-03be18b8ffba");
-	final static String nfctag = "text/bombPlus";
-	static boolean flagFromNFC = false;
+	// static String mMAC = "";
+	// final static UUID mUUID = UUID
+	// .fromString("d4925895-0722-4252-a969-03be18b8ffba");
+	static String IP = "192.168.5.1";
+	static int PORT = 6334;
+
 	static boolean flagGamePlayed = false;
 	static boolean flagIsServer = true;
 	static BluetoothDevice device = null;
