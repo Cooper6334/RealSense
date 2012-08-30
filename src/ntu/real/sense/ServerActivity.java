@@ -65,6 +65,12 @@ public class ServerActivity extends Activity implements SensorEventListener {
 				msa.writeAll("" + m.arg2);
 				break;
 
+			// 點擊
+			case 0x102:
+				Toast.makeText(ServerActivity.this, "click", Toast.LENGTH_SHORT)
+						.show();
+				break;
+
 			// 收到傳遞照片的訊息
 			case 0x103:
 				String show = (String) m.obj;
@@ -190,6 +196,12 @@ public class ServerActivity extends Activity implements SensorEventListener {
 						m.obj = show;
 						handler.sendMessage(m);
 						surface.selected.clear();
+					}
+					if (surface.flagClick) {
+						surface.flagClick = false;
+						Message m = new Message();
+						m.what = 0x102;
+						handler.sendMessage(m);
 					}
 
 					try {
