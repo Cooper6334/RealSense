@@ -21,4 +21,7 @@ public class Target {
 		return false;
 	}
 
+	protected Target clone(){
+		return new Target(name,degree,color);
+	}
 }
