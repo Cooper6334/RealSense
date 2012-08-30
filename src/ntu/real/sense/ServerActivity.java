@@ -39,8 +39,6 @@ public class ServerActivity extends Activity implements SensorEventListener {
 	int imgBtnSize=150;
 	int imgMargin=5;
 
-
-
 	RealSurface surface;
 	RelativeLayout layout;
 	int CurrentButtonNumber = 0; // CurrentButtonNumber流水號 設定物件ID
