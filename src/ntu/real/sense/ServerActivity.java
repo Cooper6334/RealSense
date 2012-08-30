@@ -19,6 +19,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -35,9 +36,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class ServerActivity extends Activity implements SensorEventListener {
+	int imgBtnSize=150;
+	int imgMargin=5;
 
 	String[] userName = { "Allen", "Bob", "Cooper", "David", "Eric" };
-	int[] userColor = { Color.BLACK, Color.BLUE, Color.GREEN, Color.GRAY,
+	int[] userColor = { Color.YELLOW, Color.BLUE, Color.GREEN, Color.GRAY,
 			Color.YELLOW };
 
 	RealSurface surface;
@@ -85,6 +88,11 @@ public class ServerActivity extends Activity implements SensorEventListener {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		DisplayMetrics dm = new DisplayMetrics(); 
+	    this.getWindowManager().getDefaultDisplay().getMetrics(dm);
+	    imgBtnSize = dm.widthPixels / 4;
+	    imgMargin = dm.widthPixels / 100;
+	    Log.e("123", dm.widthPixels + "" + dm.heightPixels);
 		// 隱藏title bar&notifiaction bar
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -124,8 +132,8 @@ public class ServerActivity extends Activity implements SensorEventListener {
 			image_temp.setId(i); // ID不能是零，不然會爛掉！
 			Log.e("newID", Integer.toString(image_temp.getId()));
 			image_temp.setLayoutParams(params);
-			params = new RelativeLayout.LayoutParams(180, 180);
-			params.setMargins(15, 15, 15, 15);
+			params = new RelativeLayout.LayoutParams(imgBtnSize, imgBtnSize);
+			params.setMargins(imgMargin, imgMargin, imgMargin, imgMargin);
 			if (i == 1) {
 
 			}
@@ -155,7 +163,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		}
 
 		// 加入RealSense
-		surface = new RealSurface(this);
+		surface = new RealSurface(this, dm.widthPixels, dm.heightPixels);
 		this.addContentView(surface, new LayoutParams(LayoutParams.FILL_PARENT,
 				LayoutParams.FILL_PARENT));
 

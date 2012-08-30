@@ -20,13 +20,16 @@ import android.view.SurfaceView;
 import android.widget.Toast;
 
 public class RealSurface extends SurfaceView {
+	int selectedPhoto;
 	boolean flagTouchUp = false;
 	boolean flagLongTouch = false;
 	boolean flagCanSend = false;
 	boolean flagClick = false;
+	int displayWidth = 480;
+	int displayHeight = 800;
 	int myDeg;
 	int showMyDeg;
-	final int radius = 150;
+	int radius = 150;
 	float px, py;
 	SurfaceHolder holder;
 	ArrayList<Target> target = new ArrayList<Target>();
@@ -59,6 +62,17 @@ public class RealSurface extends SurfaceView {
 		setZOrderOnTop(true);
 		holder = getHolder();
 		holder.setFormat(PixelFormat.TRANSPARENT);
+		// TODO Auto-generated constructor stub
+	}
+	
+	public RealSurface(Context context, int width, int height) {
+		super(context);
+		setZOrderOnTop(true);
+		holder = getHolder();
+		holder.setFormat(PixelFormat.TRANSPARENT);
+		displayWidth = width;
+		displayHeight = height;
+		radius = radius * displayWidth / 768;
 		// TODO Auto-generated constructor stub
 	}
 
@@ -117,6 +131,7 @@ public class RealSurface extends SurfaceView {
 			px = e.getX();
 			py = e.getY();
 			tp.setTouch(e.getX(), e.getY());
+			
 		}
 		switch (e.getAction()) {
 		case MotionEvent.ACTION_DOWN:
