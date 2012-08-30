@@ -127,7 +127,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 		}
 
 		// 加入RealSense
-		surface = new RealSurface(this);
+		surface = new RealSurface(this, dm.widthPixels, dm.heightPixels);
 		this.addContentView(surface, new LayoutParams(LayoutParams.FILL_PARENT,
 				LayoutParams.FILL_PARENT));
 
