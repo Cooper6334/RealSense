@@ -20,7 +20,7 @@ import android.view.SurfaceView;
 import android.widget.Toast;
 
 public class RealSurface extends SurfaceView {
-	int selectedPhoto;
+	int selectedPhoto = -1;
 	boolean flagTouchUp = false;
 	boolean flagLongTouch = false;
 	boolean flagCanSend = false;
@@ -127,13 +127,13 @@ public class RealSurface extends SurfaceView {
 			px = e.getX();
 			py = e.getY();
 			tp.setTouch(e.getX(), e.getY());
-
 		}
 		switch (e.getAction()) {
 		case MotionEvent.ACTION_DOWN:
 			h.removeMessages(0x101);
 			h.sendEmptyMessageDelayed(0x101, 500);
 			flagTouchUp = false;
+			setSelectedNumber(e.getX(), e.getY());
 			return true;
 		case MotionEvent.ACTION_MOVE:
 			Log.e("tar", "  ");
@@ -177,6 +177,54 @@ public class RealSurface extends SurfaceView {
 			return false;
 		}
 		return true;
+	}
+	
+	public void setSelectedNumber(float x, float y){
+		int centerWidth = displayWidth / 2;
+		int centerHeight = displayHeight / 2;
+		int imgWidth = displayWidth / 4;
+		int imgHeight = displayHeight / 4;
+		
+		if(x >= centerWidth - imgWidth / 2 - displayWidth / 100 - imgWidth && x <= centerWidth - imgWidth / 2 - displayWidth / 100){
+			if(y >= centerHeight - (displayHeight / 100) * 1.5 - imgWidth * 2 && y<= centerHeight - (displayHeight / 100) * 1.5 - imgWidth){
+				selectedPhoto = 1;
+			}else if(y >= centerHeight - (displayHeight / 100) * 0.5 - imgWidth && y<= centerHeight - (displayHeight / 100) * 0.5){
+				selectedPhoto = 4;
+			}else if(y >= centerHeight + (displayHeight / 100) * 0.5 && y <= centerHeight + (displayHeight / 100) * 0.5 + imgWidth){
+				selectedPhoto = 7;
+			}else if(y >= centerHeight + (displayHeight / 100) * 1.5 + imgWidth && y <= centerHeight + (displayHeight / 100) * 1.5 + 2 * imgWidth){
+				selectedPhoto = 10;
+			}else{
+				selectedPhoto = -1;
+			}
+		}else if(x >= centerWidth - imgWidth / 2 && x <= centerWidth + imgWidth / 2){
+			if(y >= centerHeight - (displayHeight / 100) * 1.5 - imgWidth * 2 && y<= centerHeight - (displayHeight / 100) * 1.5 - imgWidth){
+				selectedPhoto = 2;
+			}else if(y >= centerHeight - (displayHeight / 100) * 0.5 - imgWidth && y<= centerHeight - (displayHeight / 100) * 0.5){
+				selectedPhoto = 5;
+			}else if(y >= centerHeight + (displayHeight / 100) * 0.5 && y <= centerHeight + (displayHeight / 100) * 0.5 + imgWidth){
+				selectedPhoto = 8;
+			}else if(y >= centerHeight + (displayHeight / 100) * 1.5 + imgWidth && y <= centerHeight + (displayHeight / 100) * 1.5 + 2 * imgWidth){
+				selectedPhoto = 11;
+			}else{
+				selectedPhoto = -1;
+			}
+		}else if(x >= centerWidth + imgWidth / 2 + displayWidth / 100 && x <= centerWidth + imgWidth / 2 + displayWidth / 100 + imgWidth){
+			if(y >= centerHeight - (displayHeight / 100) * 1.5 - imgWidth * 2 && y<= centerHeight - (displayHeight / 100) * 1.5 - imgWidth){
+				selectedPhoto = 3;
+			}else if(y >= centerHeight - (displayHeight / 100) * 0.5 - imgWidth && y<= centerHeight - (displayHeight / 100) * 0.5){
+				selectedPhoto = 6;
+			}else if(y >= centerHeight + (displayHeight / 100) * 0.5 && y <= centerHeight + (displayHeight / 100) * 0.5 + imgWidth){
+				selectedPhoto = 9;
+			}else if(y >= centerHeight + (displayHeight / 100) * 1.5 + imgWidth && y <= centerHeight + (displayHeight / 100) * 1.5 + 2 * imgWidth){
+				selectedPhoto = 12;
+			}else{
+				selectedPhoto = -1;
+			}
+		}else{
+			selectedPhoto = -1;
+		}
+		Log.e("selectedPhotoIndex", selectedPhoto + "");
 	}
 
 	void setTempTarget() {

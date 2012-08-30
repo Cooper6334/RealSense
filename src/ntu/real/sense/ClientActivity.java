@@ -25,6 +25,8 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 public class ClientActivity extends Activity implements SensorEventListener {
+	int imgBtnSize=150;
+	int imgMargin=5;
 
 	SensorManager sensorManager;
 
@@ -57,6 +59,8 @@ public class ClientActivity extends Activity implements SensorEventListener {
 		super.onCreate(savedInstanceState);
 		DisplayMetrics dm = new DisplayMetrics(); 
 	    this.getWindowManager().getDefaultDisplay().getMetrics(dm);
+	    imgBtnSize = dm.widthPixels / 4;
+	    imgMargin = dm.widthPixels / 100;
 	    Log.e("123", dm.widthPixels + "" + dm.heightPixels);
 		// 隱藏title bar&notifiaction bar
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -97,8 +101,8 @@ public class ClientActivity extends Activity implements SensorEventListener {
 			image_temp.setId(i); // ID不能是零，不然會爛掉！
 			Log.e("newID", Integer.toString(image_temp.getId()));
 			image_temp.setLayoutParams(params);
-			params = new RelativeLayout.LayoutParams(180, 180);
-			params.setMargins(15, 15, 15, 15);
+			params = new RelativeLayout.LayoutParams(imgBtnSize, imgBtnSize);
+			params.setMargins(imgMargin, imgMargin, imgMargin, imgMargin);
 			if (i == 1) {
 
 			}
