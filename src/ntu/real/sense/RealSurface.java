@@ -28,8 +28,8 @@ public class RealSurface extends SurfaceView {
 	int displayWidth = 480;
 	int displayHeight = 800;
 	int myDeg;
-	int showMyDeg;
 	int radius = 150;
+	int cnt = -1;//0 for testing mode
 	float px, py;
 	SurfaceHolder holder;
 	ArrayList<Target> target = new ArrayList<Target>();
@@ -43,11 +43,7 @@ public class RealSurface extends SurfaceView {
 			switch (m.what) {
 			case 0x101:
 				if (!flagTouchUp) {
-					showTarget.clear();
-					for (Target t : target) {
-						showTarget.add(t.clone());
-					}
-					showMyDeg = myDeg;
+					setTempTarget();
 					flagLongTouch = true;
 				}
 				flagTouchUp = false;
@@ -64,7 +60,7 @@ public class RealSurface extends SurfaceView {
 		holder.setFormat(PixelFormat.TRANSPARENT);
 		// TODO Auto-generated constructor stub
 	}
-	
+
 	public RealSurface(Context context, int width, int height) {
 		super(context);
 		setZOrderOnTop(true);
@@ -97,7 +93,7 @@ public class RealSurface extends SurfaceView {
 
 				for (Target t : showTarget) {
 
-					float deg = (int) (t.degree - showMyDeg) % 360;
+					float deg = (int) (t.degree) % 360;
 					Paint p3 = new Paint();
 					p3.setColor(t.color);
 					p3.setTextSize(32);
@@ -131,7 +127,7 @@ public class RealSurface extends SurfaceView {
 			px = e.getX();
 			py = e.getY();
 			tp.setTouch(e.getX(), e.getY());
-			
+
 		}
 		switch (e.getAction()) {
 		case MotionEvent.ACTION_DOWN:
@@ -149,7 +145,7 @@ public class RealSurface extends SurfaceView {
 				} else {
 					for (Target t : showTarget) {
 
-						float td = t.degree - showMyDeg;
+						float td = t.degree;
 						while (td < 0) {
 							td += 360;
 						}
@@ -181,5 +177,67 @@ public class RealSurface extends SurfaceView {
 			return false;
 		}
 		return true;
+	}
+
+	void setTempTarget() {
+		showTarget.clear();
+
+		if (cnt >= 0) {
+			cnt = (cnt + 1) % 2;
+		}
+
+		Target tmp[] = null;
+		if (cnt < 0) {
+			tmp = new Target[target.size()];
+			for (int i = 0; i < tmp.length; i++) {
+				tmp[i] = target.get(i).clone(myDeg);
+			}
+		} else {
+
+			tmp = new Target[5];
+			tmp[0] = new Target(Global.userName[0], 0, Global.userColor[0]);
+			tmp[1] = new Target(Global.userName[1], 30, Global.userColor[1]);
+			tmp[2] = new Target(Global.userName[2], 50, Global.userColor[2]);
+			tmp[3] = new Target(Global.userName[3], 260, Global.userColor[3]);
+			tmp[4] = new Target(Global.userName[4], 280, Global.userColor[4]);
+		}
+		float minDeg = 180 / tmp.length;
+		minDeg = 45;
+		if (cnt == 0) {
+			for (int j = 1; j < tmp.length; j++) {
+				for (int i = 0; i < tmp.length - j; i++) {
+					if (tmp[i].degree > tmp[i + 1].degree) {
+						Target t = tmp[i];
+						tmp[i] = tmp[i + 1];
+						tmp[i + 1] = t;
+					}
+				}
+			}
+
+			for (int i = 1; i < tmp.length; i++) {
+				if (tmp[i].degree - tmp[i - 1].degree < minDeg) {
+					float d = tmp[i - 1].degree + minDeg;
+					if (d < 360 - minDeg) {
+						tmp[i].degree = tmp[i - 1].degree + minDeg;
+					}
+				}
+
+			}
+			if (360 - tmp[tmp.length - 1].degree < minDeg) {
+				tmp[tmp.length - 1].degree = 360 - minDeg;
+			}
+			for (int i = tmp.length - 2; i > 0; i--) {
+				if (tmp[i + 1].degree - tmp[i].degree < minDeg) {
+					float d = tmp[i].degree - minDeg;
+					if (d > 0) {
+						tmp[i].degree = tmp[i + 1].degree - minDeg;
+					}
+				}
+
+			}
+		}
+		for (int i = 0; i < tmp.length; i++) {
+			showTarget.add(tmp[i]);
+		}
 	}
 }

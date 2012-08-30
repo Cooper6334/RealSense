@@ -21,7 +21,16 @@ public class Target {
 		return false;
 	}
 
-	protected Target clone(){
-		return new Target(name,degree,color);
+	protected Target clone() {
+		return new Target(name, degree, color);
+	}
+
+	protected Target clone(float d) {
+		float deg = degree - d;
+		while (deg < 0) {
+			deg += 360;
+		}
+
+		return new Target(name, deg, color);
 	}
 }

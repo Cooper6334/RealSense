@@ -39,9 +39,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 	int imgBtnSize=150;
 	int imgMargin=5;
 
-	String[] userName = { "Allen", "Bob", "Cooper", "David", "Eric" };
-	int[] userColor = { Color.YELLOW, Color.BLUE, Color.GREEN, Color.GRAY,
-			Color.YELLOW };
+
 
 	RealSurface surface;
 	RelativeLayout layout;
@@ -172,7 +170,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		users = sId + 1;
 
 		for (int i = 0; i < users; i++) {
-			surface.target.add(new Target(userName[i], 0, userColor[i]));
+			surface.target.add(new Target(Global.userName[i], 0, Global.userColor[i]));
 		}
 
 		degs = new int[sId + 1];

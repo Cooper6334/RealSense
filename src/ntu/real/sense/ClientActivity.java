@@ -25,9 +25,6 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 public class ClientActivity extends Activity implements SensorEventListener {
-	String[] userName = { "Allen", "Bob", "Cooper", "David", "Eric" };
-	int[] userColor = { Color.BLACK, Color.BLUE, Color.GREEN, Color.GRAY,
-			Color.YELLOW };
 
 	SensorManager sensorManager;
 
@@ -140,7 +137,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 			users = Integer.parseInt(mca.read());
 			Log.e("init", cId + ":" + users);
 			for (int i = 0; i < users; i++) {
-				surface.target.add(new Target(userName[i], 0, userColor[i]));
+				surface.target.add(new Target(Global.userName[i], 0, Global.userColor[i]));
 			}
 		}
 		// 設定繪圖與傳遞照片之Thread

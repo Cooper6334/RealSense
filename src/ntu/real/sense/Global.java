@@ -3,6 +3,7 @@ package ntu.real.sense;
 import java.util.UUID;
 
 import android.bluetooth.BluetoothDevice;
+import android.graphics.Color;
 
 public class Global {
 	protected static final String TAG = "WifiDev";
@@ -12,6 +13,12 @@ public class Global {
 	// static String SERVER_SSID = "Bombaaa";
 	// static String SERVER_KEY = "bombplus";
 	// static String mMAC = "3C:5A:37:89:3F:38";
+
+	static final String[] userName = { "Allen", "Bob", "Cooper", "David",
+			"Eric", "Frank" };
+	static final int[] userColor = { Color.BLACK, Color.BLUE, Color.GREEN,
+			Color.GRAY, Color.YELLOW, Color.DKGRAY };
+
 	static String mMAC = "";
 	final static UUID mUUID = UUID
 			.fromString("d4925895-0722-4252-a969-03be18b8ffba");
