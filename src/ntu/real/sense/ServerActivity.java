@@ -246,9 +246,10 @@ public class ServerActivity extends Activity implements SensorEventListener {
 
 		RelativeLayout RL_temp = new RelativeLayout(this);
 		RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
-				RelativeLayout.LayoutParams.WRAP_CONTENT,
-				RelativeLayout.LayoutParams.WRAP_CONTENT);
-		params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+				RelativeLayout.LayoutParams.FILL_PARENT,
+				RelativeLayout.LayoutParams.FILL_PARENT);
+//		params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+		params.setMargins(dm.widthPixels / 10, dm.widthPixels / 10, dm.widthPixels / 10, dm.widthPixels / 10);
 		RL_temp.setLayoutParams(params);
 		layout.addView(RL_temp);
 		// 注意顯示太多照片會out of memory

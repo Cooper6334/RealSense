@@ -184,39 +184,41 @@ public class RealSurface extends SurfaceView {
 		int centerHeight = displayHeight / 2;
 		int imgWidth = displayWidth / 4;
 		int imgHeight = displayHeight / 4;
+		int layoutMargin = displayWidth / 10;
+		int imgMargin = displayWidth / 100;
 		
-		if(x >= centerWidth - imgWidth / 2 - displayWidth / 100 - imgWidth && x <= centerWidth - imgWidth / 2 - displayWidth / 100){
-			if(y >= centerHeight - (displayHeight / 100) * 1.5 - imgWidth * 2 && y<= centerHeight - (displayHeight / 100) * 1.5 - imgWidth){
+		if(x >= layoutMargin + imgMargin && x <= layoutMargin + imgMargin + imgWidth){
+			if(y >= layoutMargin + imgMargin && y<= layoutMargin + imgMargin + imgWidth){
 				selectedPhoto = 1;
-			}else if(y >= centerHeight - (displayHeight / 100) * 0.5 - imgWidth && y<= centerHeight - (displayHeight / 100) * 0.5){
+			}else if(y >= layoutMargin + imgMargin * 3 + imgWidth && y <= layoutMargin + imgMargin * 3 + imgWidth * 2){
 				selectedPhoto = 4;
-			}else if(y >= centerHeight + (displayHeight / 100) * 0.5 && y <= centerHeight + (displayHeight / 100) * 0.5 + imgWidth){
+			}else if(y >= layoutMargin + imgMargin * 5 + imgWidth * 2 && y <= layoutMargin + imgMargin * 5 + imgWidth * 3){
 				selectedPhoto = 7;
-			}else if(y >= centerHeight + (displayHeight / 100) * 1.5 + imgWidth && y <= centerHeight + (displayHeight / 100) * 1.5 + 2 * imgWidth){
+			}else if(y >= layoutMargin + imgMargin * 7 + imgWidth * 3 && y <= layoutMargin + imgMargin * 7 + imgWidth * 4){
 				selectedPhoto = 10;
 			}else{
 				selectedPhoto = -1;
 			}
-		}else if(x >= centerWidth - imgWidth / 2 && x <= centerWidth + imgWidth / 2){
-			if(y >= centerHeight - (displayHeight / 100) * 1.5 - imgWidth * 2 && y<= centerHeight - (displayHeight / 100) * 1.5 - imgWidth){
+		}else if(x >= layoutMargin + imgMargin * 3 + imgWidth && x <= layoutMargin + imgMargin * 3 + imgWidth * 2){
+			if(y >= layoutMargin + imgMargin && y<= layoutMargin + imgMargin + imgWidth){
 				selectedPhoto = 2;
-			}else if(y >= centerHeight - (displayHeight / 100) * 0.5 - imgWidth && y<= centerHeight - (displayHeight / 100) * 0.5){
+			}else if(y >= layoutMargin + imgMargin * 3 + imgWidth && y <= layoutMargin + imgMargin * 3 + imgWidth * 2){
 				selectedPhoto = 5;
-			}else if(y >= centerHeight + (displayHeight / 100) * 0.5 && y <= centerHeight + (displayHeight / 100) * 0.5 + imgWidth){
+			}else if(y >= layoutMargin + imgMargin * 5 + imgWidth * 2 && y <= layoutMargin + imgMargin * 5 + imgWidth * 3){
 				selectedPhoto = 8;
-			}else if(y >= centerHeight + (displayHeight / 100) * 1.5 + imgWidth && y <= centerHeight + (displayHeight / 100) * 1.5 + 2 * imgWidth){
+			}else if(y >= layoutMargin + imgMargin * 7 + imgWidth * 3 && y <= layoutMargin + imgMargin * 7 + imgWidth * 4){
 				selectedPhoto = 11;
 			}else{
 				selectedPhoto = -1;
 			}
-		}else if(x >= centerWidth + imgWidth / 2 + displayWidth / 100 && x <= centerWidth + imgWidth / 2 + displayWidth / 100 + imgWidth){
-			if(y >= centerHeight - (displayHeight / 100) * 1.5 - imgWidth * 2 && y<= centerHeight - (displayHeight / 100) * 1.5 - imgWidth){
+		}else if(x >= layoutMargin + imgMargin * 5 + imgWidth * 2 && x <= layoutMargin + imgMargin * 5 + imgWidth * 3){
+			if(y >= layoutMargin + imgMargin && y<= layoutMargin + imgMargin + imgWidth){
 				selectedPhoto = 3;
-			}else if(y >= centerHeight - (displayHeight / 100) * 0.5 - imgWidth && y<= centerHeight - (displayHeight / 100) * 0.5){
+			}else if(y >= layoutMargin + imgMargin * 3 + imgWidth && y <= layoutMargin + imgMargin * 3 + imgWidth * 2){
 				selectedPhoto = 6;
-			}else if(y >= centerHeight + (displayHeight / 100) * 0.5 && y <= centerHeight + (displayHeight / 100) * 0.5 + imgWidth){
+			}else if(y >= layoutMargin + imgMargin * 5 + imgWidth * 2 && y <= layoutMargin + imgMargin * 5 + imgWidth * 3){
 				selectedPhoto = 9;
-			}else if(y >= centerHeight + (displayHeight / 100) * 1.5 + imgWidth && y <= centerHeight + (displayHeight / 100) * 1.5 + 2 * imgWidth){
+			}else if(y >= layoutMargin + imgMargin * 7 + imgWidth * 3 && y <= layoutMargin + imgMargin * 7 + imgWidth * 4){
 				selectedPhoto = 12;
 			}else{
 				selectedPhoto = -1;
