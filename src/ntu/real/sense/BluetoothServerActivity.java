@@ -209,7 +209,7 @@ public class BluetoothServerActivity extends Activity {
 		public void run() {
 			Socket socket = null;
 			// Keep listening until exception occurs or a socket is returned
-			while (true) {
+			while (!flagGameStart) {
 				Log.e("ba", "server finding");
 
 				try {
@@ -238,7 +238,7 @@ public class BluetoothServerActivity extends Activity {
 						new Thread(new ReadThread(a)).start();
 					}
 				} catch (IOException e) {
-					Log.e("ba", "accept thread end");
+					Log.e("ba", "accept thread finish");
 
 					return;
 				}
