@@ -28,7 +28,7 @@ public class RealSurface extends SurfaceView {
 	int displayWidth = 480;
 	int displayHeight = 800;
 	int myDeg;
-	int radius = 150;
+	int radius = 140;
 	int cnt = -1;//0 for testing mode
 	float px, py;
 	SurfaceHolder holder;
@@ -79,18 +79,20 @@ public class RealSurface extends SurfaceView {
 		if (canvas != null) {
 			// canvas.drawColor(Color.argb(0, 0, 0, 0));
 			canvas.drawColor(Color.TRANSPARENT, Mode.CLEAR);
-
+			//左右兩排相片的radius設成較小
 			if (flagLongTouch) {
-
+				if(selectedPhoto != 2 && selectedPhoto != 5 && selectedPhoto != 8 && selectedPhoto != 11){
+					radius = radius * 8 / 10;
+				}
 				Paint p2 = new Paint();
 				p2.setColor(Color.WHITE);
 				canvas.drawCircle(px, py, radius * 1.5f, p2);
-
 				Paint p = new Paint();
 				p.setColor(Color.RED);
 				// 除去title bar跟notification bar的高度
+				
 				canvas.drawCircle(px, py, radius, p);
-
+				
 				for (Target t : showTarget) {
 
 					float deg = (int) (t.degree) % 360;
@@ -115,6 +117,9 @@ public class RealSurface extends SurfaceView {
 				}
 
 				canvas.drawCircle(px, py, radius - 5, p2);
+				if(selectedPhoto != 2 && selectedPhoto != 5 && selectedPhoto != 8 && selectedPhoto != 11){
+					radius = radius * 10 / 8;
+				}
 			}
 			holder.unlockCanvasAndPost(canvas);
 		}
@@ -227,6 +232,7 @@ public class RealSurface extends SurfaceView {
 			selectedPhoto = -1;
 		}
 		Log.e("selectedPhotoIndex", selectedPhoto + "");
+		
 	}
 
 	
