@@ -98,20 +98,22 @@ public class ClientActivity extends Activity implements SensorEventListener {
 				
 			
 			case Global.SERVER_SEND_FILE_START://由server而來的傳輸
+				Global.flagIsReceiving=true;
 				Toast.makeText(ClientActivity.this, "收到圖片，開始傳遞", Toast.LENGTH_SHORT)
 				.show();
-				Global.flagIsReceiving=true;
+				
 				//要送出去的檔案
 				Log.e("houpan","要收摟");
 				new Thread(new ClinetFileInputTransferThread_fromServer()).start();
 				break;
 				
 			case Global.SERVER_SEND_FILE_COMPLETED://傳完囉
+				Global.flagIsReceiving=false;
 				Toast.makeText(ClientActivity.this, "接收完成", Toast.LENGTH_SHORT)
 				.show();
 				//要送出去的檔案
 				Log.e("houpan","收結束");
-				Global.flagIsReceiving=false;
+				
 				break;
 
 			case Global.SERVER_RECEIVE_FILE_COMPLETED://直接傳給server結束了
@@ -123,22 +125,25 @@ public class ClientActivity extends Activity implements SensorEventListener {
 				
 				
 			case Global.CLIENT_SEND_FILE_START://收到其他client的資料
+				Global.flagIsReceiving=true;
 				Toast.makeText(ClientActivity.this, "收到圖片，開始傳遞", Toast.LENGTH_SHORT)
 				.show();
-				Global.flagIsReceiving=true;
+				
 				//要送出去的檔案
 				Log.e("houpan","要收摟");
-				new Thread(new ClinetFileInputTransferThread_fromClient()).start();
+				
+				new Thread(new ClinetFileInputTransferThread_fromClient(Integer.parseInt((String) m.obj),null)).start();
 				break;
 				
 			case Global.CLIENT_SEND_FILE_COMPLETED://收到其他client的資料
+				Global.flagIsReceiving=false;
 				Toast.makeText(ClientActivity.this, "接收完成(fromClient)", Toast.LENGTH_SHORT)
 				.show();
-				Global.flagIsReceiving=false;
+				
 				break;
 				
 			case Global.CLIENT_SEND_FILE_COMPLETED_REMOTE://傳給client結束了(收到對方的回報)
-				Toast.makeText(ClientActivity.this, "傳輸完成", Toast.LENGTH_SHORT)
+				Toast.makeText(ClientActivity.this, "傳輸完成(toClient，ACK)", Toast.LENGTH_SHORT)
 				.show();
 				//要送出去的檔案
 				Log.e("houpan","收結束");
@@ -263,22 +268,22 @@ public class ClientActivity extends Activity implements SensorEventListener {
 	
 
 	public class ClinetFileInputTransferThread_fromClient implements Runnable {
-		Integer targetId;//為了把內thread不能改動外變數的錯誤濾掉
+		Integer sourceId;//為了把內thread不能改動外變數的錯誤濾掉
 		Uri outputFileUri;
-		/*
+		
 		ClinetFileInputTransferThread_fromClient(Integer i,Uri outputFileUri){
-			this.targetId=i;
-			this.outputFileUri=outputFileUri;
-		}*/
+			this.sourceId=i;
+			//this.outputFileUri=outputFileUri;
+		}
 		
 		@Override
-		public void run() {//&&
+		public void run() {
 
 			Message tempMessage = new Message();
 			tempMessage.what = Global.CLIENT_SEND_FILE_COMPLETED;//傳完了
 			handler.sendMessage(tempMessage);
 			
-			mca.write("ClientReceive_completed_client");	
+			mca.write("ClientReceive_completed_client_"+sourceId);	
 		}
 	}
 	
@@ -379,10 +384,14 @@ public class ClientActivity extends Activity implements SensorEventListener {
 						//要送的目標的id們
 						ArrayList<Integer> sendTargetList=new ArrayList<Integer>();
 						int i;
+						Log.e("houpan","自己id:"+Global.mClientAgent.id);
 						for (Target t : surface.selected) {
 							//先把target拿出來，比對id是不是自己，如果是的話就不加入要傳的list中
+							Log.e("houpan","要找的是是"+t.name);
 							for (i=0;i<Global.userName.length;i++){//不知為何順序是反的，用查的比較安全
+								Log.e("houpan","找"+Global.userName[i]);
 								if(t.name.equals(Global.userName[i])){
+									
 									break;
 								}
 							}
@@ -421,42 +430,45 @@ public class ClientActivity extends Activity implements SensorEventListener {
 			@Override
 			public void run() {
 				// TODO Auto-generated method stub
-				while (Global.flagIsPlaying&&!Global.flagIsReceiving) {
-					String m = mca.read();
-					if ("init".equals(m)) {
-						cId = Integer.parseInt(mca.read());
-						users = Integer.parseInt(mca.read());
-						//cId表client自己的id
-						Log.e("init", cId + ":" + users);
-						for (int i = 0; i < users; i++) {
-							surface.target.add(new Target(Global.userName[i],
-									0, Global.userColor[i]));
+				while (Global.flagIsPlaying) {
+					if(!Global.flagIsReceiving){
+						String m = mca.read();
+						if ("init".equals(m)) {
+							cId = Integer.parseInt(mca.read());
+							users = Integer.parseInt(mca.read());
+							//cId表client自己的id
+							Log.e("init", cId + ":" + users);
+							Global.mClientAgent.id=cId;
+							for (int i = 0; i < users; i++) {
+								surface.target.add(new Target(Global.userName[i],
+										0, Global.userColor[i]));
+							}
+						}else if ("ServerSendFile_start".equals(m)) {//server傳檔案過來
+							
+							Message tempMessage = new Message();
+							tempMessage.what = Global.SERVER_SEND_FILE_START;//server傳檔案
+							handler.sendMessage(tempMessage);
+							
+						}else if(m.startsWith("ClinetSendFile_start_")){
+							
+							Message tempMessage = new Message();
+							tempMessage.what = Global.CLIENT_SEND_FILE_START;//client傳檔案
+							tempMessage.obj=m.split("_")[2];
+							Log.e("houpan","client("+tempMessage.obj+")送檔案過來");
+							handler.sendMessage(tempMessage);
+						}else if("ClientReceive_completed_client".equals(m)){
+							Message tempMessage = new Message();
+							tempMessage.what = Global.CLIENT_SEND_FILE_COMPLETED_REMOTE;//從對面的client得到資訊：他收完了
+							handler.sendMessage(tempMessage);
+							
+						}else if ("setdeg".equals(m)) {
+							int who = Integer.parseInt(mca.read());
+							int deg = Integer.parseInt(mca.read());
+							surface.target.get(who).degree = deg;
 						}
-					}else if ("ServerSendFile_start".equals(m)) {//server傳檔案過來
-						
-						Message tempMessage = new Message();
-						tempMessage.what = Global.SERVER_SEND_FILE_START;//server傳檔案
-						handler.sendMessage(tempMessage);
-						
-					}else if(m.startsWith("ClinetSendFile_start_")){
-						Log.e("houpan","client送檔案過來");
-						Message tempMessage = new Message();
-						tempMessage.what = Global.CLIENT_SEND_FILE_START;//client傳檔案
-						tempMessage.obj=m.split("_")[2];
-						handler.sendMessage(tempMessage);
-					}else if("ClientReceive_completed_client".equals(m)){
-						Message tempMessage = new Message();
-						tempMessage.what = Global.CLIENT_SEND_FILE_COMPLETED_REMOTE;//從對面的client得到資訊：他收完了
-						handler.sendMessage(tempMessage);
-						
-						
-						
-					}else if ("setdeg".equals(m)) {
-						int who = Integer.parseInt(mca.read());
-						int deg = Integer.parseInt(mca.read());
-						surface.target.get(who).degree = deg;
+	
 					}
-					
+										
 				}
 			}
 		}).start();
