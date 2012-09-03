@@ -43,6 +43,9 @@ public class ReadClientThread implements Runnable {
 					//把訊息送回server端
 					gameHandler.sendMessage(m);
 						
+				}else if(tmp.startsWith("ClientReceive_completed_client_")){//接收的client接收結束，回傳給原傳的client
+					Global.mServerAgent.writeToId("ClientReceive_completed_client", Integer.parseInt(tmp.split("_")[3]));
+					
 				}
 			}
 		}

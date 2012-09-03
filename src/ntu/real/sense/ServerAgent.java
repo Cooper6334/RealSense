@@ -52,7 +52,7 @@ public class ServerAgent {
 
 	public void writeAll(String str) {
 		ii++;
-		Log.e("sa", ii + " write all " + str);
+		//Log.e("sa", ii + " write all " + str);
 		for (Agent b : clients) {
 			b.write(str);
 		}
@@ -68,7 +68,7 @@ public class ServerAgent {
 	}
 
 	public void writeToId(String str, int id) {
-		Log.e("sa", "write " + str);
+		//Log.e("sa", "write " + str);
 		if (id < clients.size()) {
 			clients.get(id).write(str);
 		}
