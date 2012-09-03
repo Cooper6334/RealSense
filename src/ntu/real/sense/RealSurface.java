@@ -80,7 +80,7 @@ public class RealSurface extends SurfaceView {
 		Canvas canvas = holder.lockCanvas();
 		locked = true;
 		
-		if (canvas != null && selectedPhoto < photoNum) {
+		if (canvas != null && selectedPhoto < photoNum && selectedPhoto >=1) {
 			// canvas.drawColor(Color.argb(0, 0, 0, 0));
 			canvas.drawColor(Color.TRANSPARENT, Mode.CLEAR);
 			//左右兩排相片的radius設成較小
