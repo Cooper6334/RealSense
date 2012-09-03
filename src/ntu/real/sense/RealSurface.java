@@ -28,7 +28,7 @@ public class RealSurface extends SurfaceView {
 	int displayWidth = 480;
 	int displayHeight = 800;
 	int myDeg;
-	int radius = 140;
+	int radius = 130;
 	int cnt = -1;//0 for testing mode
 	float px, py;
 	SurfaceHolder holder;
