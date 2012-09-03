@@ -1,38 +1,37 @@
 package ntu.real.sense;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+
 import android.app.Activity;
-import android.content.Context;
+import android.content.ContentResolver;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.PixelFormat;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.MotionEvent;
-import android.view.SurfaceHolder;
+import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.view.WindowManager;
-import android.view.ViewGroup.LayoutParams;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
-import android.widget.ScrollView;
-import android.widget.TableLayout;
-import android.widget.TableRow;
-import android.widget.TextView;
 import android.widget.Toast;
 
 public class ServerActivity extends Activity implements SensorEventListener {
@@ -50,7 +49,12 @@ public class ServerActivity extends Activity implements SensorEventListener {
 	int degs[];
 	int sId;
 	Thread[] readClientThread;
-
+	
+	//儲存每張圖片資訊的arraylist
+	ListAllPath demoTest;
+	UriRelatedOperation UriRelatedOperation;
+	
+	//接收來自某client(ReadClientThread傳來的)或server的自己的角度轉變等msg，並作處理(廣播給所有人之類的)
 	Handler handler = new Handler() {
 		@Override
 		public void handleMessage(Message m) {
@@ -70,16 +74,153 @@ public class ServerActivity extends Activity implements SensorEventListener {
 						.show();
 				break;
 
-			// 收到傳遞照片的訊息
+			// 由自己傳遞照片(server傳給client，不需重新建立連線)
 			case 0x103:
-				String show = (String) m.obj;
-				Toast.makeText(ServerActivity.this, show, Toast.LENGTH_SHORT)
+				ArrayList<Integer> sendTargetList = (ArrayList<Integer>) m.obj;
+				Integer picNumber=sendTargetList.remove(sendTargetList.size()-1);//要傳的圖片id
+				String toastTemp="The selected picture: "+picNumber+". The selected nominances: ";
+				//要傳的圖片檔案
+				File tmpFile = new File(demoTest.file_list.get(picNumber));
+				Uri outputFileUri = Uri.fromFile(tmpFile);
+				
+				
+				//一個一個target送出
+				Integer i;
+				Integer t;
+				for (i=0;i<sendTargetList.size();i++){
+					t=sendTargetList.get(i);
+					toastTemp+=t+",";
+					Log.e("houpan","開始傳摟到:"+t);
+					new Thread(new ServerFileOutputTransferThread(t, outputFileUri)).start();
+					
+				}
+				toastTemp+="\n圖片實際位址："+outputFileUri.toString();
+				Toast.makeText(ServerActivity.this, toastTemp, Toast.LENGTH_SHORT)
 						.show();
+
+				
+				
+				//開socket，傳IP跟port，讓另外一端連上來
+				
 				break;
+				//傳照片給client且結束了
+				case Global.CLIENT_RECEIVE_COMPLETED:
+					Toast.makeText(ServerActivity.this, "傳輸完成", Toast.LENGTH_SHORT)
+					.show();
+				break;
+
+				
+				//接收由client而來的傳輸
+				case Global.CLIENT_SEND_FILE_START:
+					if(((String)m.obj).split("_").length==1){//直接傳到server
+						//開始接收
+						Log.e("houpan","收到來自client的訊息(toServer)");
+						Toast.makeText(ServerActivity.this, "開始接收", Toast.LENGTH_SHORT)
+						.show();
+						new Thread(new ServerFileInputTransferThread()).start();
+						
+					}else{//經server傳到另一client
+						int sourceId=Integer.parseInt(((String)m.obj).split("_")[0]);
+						int targetId=Integer.parseInt(((String)m.obj).split("_")[1]);
+						Log.e("houpan","收到來自client的訊息(toClient):"+sourceId+","+targetId);
+						msa.writeToId("ClinetSendFile_start_"+sourceId, targetId);
+						Toast.makeText(ServerActivity.this, "轉傳至"+targetId, Toast.LENGTH_SHORT)
+						.show();						
+					}
+				break;
+				
+				
+				case Global.CLIENT_SEND_FILE_COMPLETED:
+					Toast.makeText(ServerActivity.this, "接收完成", Toast.LENGTH_SHORT)
+					.show();
+				break;
+				
+				
 			}
 
 		}
 	};
+	
+	//直接收client的資料
+	public class ServerFileInputTransferThread implements Runnable {
+		Integer sourceId;//為了把內thread不能改動外變數的錯誤濾掉
+		Uri outputFileUri;
+				
+		
+		@Override
+		public void run() {
+			
+			
+			Message tempMessage = new Message();
+			tempMessage.what = Global.CLIENT_SEND_FILE_COMPLETED;//傳完了
+			handler.sendMessage(tempMessage);
+			
+		}
+	}
+	
+	//
+	public class ServerFileOutputTransferThread implements Runnable {
+		Integer targetId;//為了把內thread不能改動外變數的錯誤濾掉
+		Uri outputFileUri;
+		
+		
+		ServerFileOutputTransferThread(Integer i,Uri outputFileUri){
+			this.targetId=i;
+			this.outputFileUri=outputFileUri;
+		}
+		@Override
+		public void run() {
+			Socket socket = null;
+			Log.e("houpan","why");
+			/*try {
+				serverSocket = new ServerSocket(Global.PORT);
+				socket = serverSocket.accept();
+				Log.e("ip", serverSocket.getLocalSocketAddress().toString());*/
+			
+				msa.writeToId("ServerSendFile_start", targetId);
+				
+				/*
+				String dn = socket.getInetAddress().toString();
+				serverSocket.close();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			if (socket != null) {
+				
+				Log.e("houpan","傳L1");
+				ContentResolver cr = getContentResolver();
+			    //要傳出去的圖片
+				InputStream inputUriStream = null;
+			    //要收下的client
+				OutputStream outputDataStream=null;
+				
+			    try {
+					inputUriStream = cr.openInputStream(outputFileUri);
+					Log.e("houpan","傳L2");
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			    try {
+			    	Log.e("houpan","傳L2");
+					outputDataStream = socket.getOutputStream();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			      
+			    Log.e("houpan","傳L3");
+			    ntu.real.sense.UriRelatedOperation.copyFile(inputUriStream, outputDataStream);
+			    Log.e("houpan","傳L4");
+				
+			}*/
+			Message m = new Message();
+			m.what = Global.CLIENT_RECEIVE_COMPLETED;
+			handler.sendMessage(m);
+		}
+	}
+
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -99,7 +240,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		layout.setBackgroundColor(Color.BLACK);
 		setContentView(layout);
 		// 讀取照片
-		ListAllPath demoTest = new ListAllPath();
+		demoTest = new ListAllPath();
 		File rootFile = new File("/sdcard/DCIM");
 		demoTest.print(rootFile, 0);
 
@@ -164,10 +305,12 @@ public class ServerActivity extends Activity implements SensorEventListener {
 				LayoutParams.FILL_PARENT));
 
 		// 加入使用者名單到RealSense
-		sId = msa.getCount();
-		users = sId + 1;
+		sId = msa.getCount();//Server的id
+		users = sId + 1;//總共的user數
+		//沒有意外的話，users的最後一個表server
 
 		for (int i = 0; i < users; i++) {
+			Log.e("HP","id:"+i+". is"+Global.userName[i]);
 			surface.target.add(new Target(Global.userName[i], 0, Global.userColor[i]));
 		}
 
@@ -175,14 +318,19 @@ public class ServerActivity extends Activity implements SensorEventListener {
 
 		readClientThread = new Thread[sId];
 		for (int i = 0; i < sId; i++) {
+			//傳某client的id與總使用者數量給那個client 
 			msa.writeToId("init", i);
 			msa.writeToId("" + i, i);
 			msa.writeToId("" + users, i);
+			//對每一個client都用一個thread來管控它
+			//此thread會一直去讀client有沒有要送什麼訊息server
+			//ReadClientThread拿到的handler可以用來送server
 			readClientThread[i] = new Thread(new ReadClientThread(i, handler));
 			readClientThread[i].start();
 		}
 
 		// 設定繪圖與傳遞照片之Thread
+		// server自己處理自己的事情
 		new Thread(new Runnable() {
 
 			@Override
@@ -192,13 +340,39 @@ public class ServerActivity extends Activity implements SensorEventListener {
 					surface.drawView();
 					if (surface.flagCanSend) {
 						surface.flagCanSend = false;
-						String show = "Send to:";
+						//要送的目標的id們
+						ArrayList<Integer> sendTargetList=new ArrayList<Integer>();
+						int i;
+						//String show = "Send to:";
 						for (Target t : surface.selected) {
-							show += (t.name + " ");
+							//先把target拿出來，比對id是不是自己，如果是的話就不加入要傳的list中
+							for (i=0;i<Global.userName.length;i++){//不知為何順序是反的，用查的比較安全
+								if(t.name.equals(Global.userName[i])){
+									break;
+								}
+							}
+							if(sId!=i){
+								sendTargetList.add(i);	
+							}
+							
+							
+							//temp=surface.showTarget.indexOf(t);
+							//Log.e("HP",surface.showTarget.get(temp).name); 
+
+							
+							
+							//show += (t.name + "  whose id is"+surface.showTarget.indexOf(t));
+							//Log.e("HP",surface.showTarget.get(0).name); 可以拿名字
+							//server不用考慮經過第三者傳遞的問題，可以直接開socket傳
 						}
+						//show=". The selected pic:"+Integer.toString(surface.selectedPhoto);
+						
+						//sendTargetList最後一格用來放要傳的圖片的id
+						sendTargetList.add(surface.selectedPhoto);
+						
 						Message m = new Message();
 						m.what = 0x103;
-						m.obj = show;
+						m.obj = sendTargetList;
 						handler.sendMessage(m);
 						surface.selected.clear();
 					}

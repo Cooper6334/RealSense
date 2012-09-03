@@ -35,7 +35,7 @@ public class Agent {
 	}
 
 	public void write(String str) {
-		Log.e("age", "write " + str);
+		//Log.e("age", "write " + str);
 		writer.println(str);
 		writer.flush();
 	}
@@ -45,7 +45,7 @@ public class Agent {
 			return reader.readLine();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			Log.e("age", "read exception");
+			//Log.e("age", "read exception");
 			return "";
 		}
 

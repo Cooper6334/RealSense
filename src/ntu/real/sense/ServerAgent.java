@@ -22,8 +22,12 @@ public class ServerAgent {
 		clients = new ArrayList<Agent>();
 	}
 
+	//回傳某個特定client的socket
+	public Socket returnSpecifiedSocket(int id){
+		return clients.get(id).socket;
+	}
 	public Agent addClient(Socket b, String add) {
-		Log.e("sa", clients.size()+":id");
+		//Log.e("sa", clients.size()+":id");
 //		for (Agent a : clients) {
 //			if (a.address.equals(add)) {
 //				Log.e("sag", "return null");

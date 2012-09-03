@@ -36,7 +36,7 @@ public class RealSurface extends SurfaceView {
 	ArrayList<Target> showTarget = new ArrayList<Target>();
 	Set<Target> selected = new HashSet<Target>();
 	TouchPoint tp = new TouchPoint(radius);
-
+	
 	Handler h = new Handler() {
 		@Override
 		public void handleMessage(Message m) {
@@ -227,6 +227,8 @@ public class RealSurface extends SurfaceView {
 		Log.e("selectedPhotoIndex", selectedPhoto + "");
 	}
 
+	
+	//建立圓弧
 	void setTempTarget() {
 		showTarget.clear();
 

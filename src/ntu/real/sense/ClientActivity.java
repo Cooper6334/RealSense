@@ -1,8 +1,16 @@
 package ntu.real.sense;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
+
+import ntu.real.sense.ServerActivity.ServerFileOutputTransferThread;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
@@ -12,6 +20,9 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.net.DhcpInfo;
+import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -34,25 +45,243 @@ public class ClientActivity extends Activity implements SensorEventListener {
 	RelativeLayout layout;
 	int CurrentButtonNumber = 0; // CurrentButtonNumber流水號 設定物件ID
 
+	ListAllPath demoTest;
+	UriRelatedOperation UriRelatedOperation;
+	
 	Agent mca = Global.mClientAgent;
 	int cId;
 	int users;
-
+	//用來handle client本身要傳的訊息
 	Handler handler = new Handler() {
 		@Override
 		public void handleMessage(Message m) {
 			switch (m.what) {
 
-			// 收到傳遞照片的訊息
+			// 傳遞照片(可能是往server或往client)
 			case 0x103:
-				String show = (String) m.obj;
-				Toast.makeText(ClientActivity.this, show, Toast.LENGTH_SHORT)
+				
+				ArrayList<Integer> sendTargetList = (ArrayList<Integer>) m.obj;
+				Integer picNumber=sendTargetList.remove(sendTargetList.size()-1);//要傳的圖片id
+				String toastTemp="The selected picture: "+picNumber+". The selected nominances: ";
+				//要傳的圖片檔案
+				File tmpFile = new File(demoTest.file_list.get(picNumber));
+				Uri outputFileUri = Uri.fromFile(tmpFile);
+				
+				
+				//一個一個target送出
+				Integer i;
+				Integer t;
+				for (i=0;i<sendTargetList.size();i++){
+					
+					
+					t=sendTargetList.get(i);
+					toastTemp+=t+",";
+					Log.e("houpan","開始傳摟到:"+t);
+					if(t==(users-1)){//對象是server
+						Log.e("houpan","對象是server");
+						new Thread(new ClientFileOutputTransferThread_toServer(t, outputFileUri)).start();
+					}else{
+						new Thread(new ClientFileOutputTransferThread_toClient(t, outputFileUri)).start();
+					}
+					
+					
+				}
+				toastTemp+="\n圖片實際位址："+outputFileUri.toString();
+				Toast.makeText(ClientActivity.this, toastTemp, Toast.LENGTH_SHORT)
 						.show();
+
+				
+				
+				//開socket，傳IP跟port，讓另外一端連上來
+				
+				break;
+				
+			
+			case Global.SERVER_SEND_FILE_START://由server而來的傳輸
+				Toast.makeText(ClientActivity.this, "收到圖片，開始傳遞", Toast.LENGTH_SHORT)
+				.show();
+				Global.flagIsReceiving=true;
+				//要送出去的檔案
+				Log.e("houpan","要收摟");
+				new Thread(new ClinetFileInputTransferThread_fromServer()).start();
+				break;
+				
+			case Global.SERVER_SEND_FILE_COMPLETED://傳完囉
+				Toast.makeText(ClientActivity.this, "接收完成", Toast.LENGTH_SHORT)
+				.show();
+				//要送出去的檔案
+				Log.e("houpan","收結束");
+				Global.flagIsReceiving=false;
+				break;
+
+			case Global.SERVER_RECEIVE_FILE_COMPLETED://直接傳給server結束了
+				Toast.makeText(ClientActivity.this, "傳輸完成(toServer)", Toast.LENGTH_SHORT)
+				.show();
+				//要送出去的檔案
+				Log.e("houpan","收結束");
+				break;
+				
+				
+			case Global.CLIENT_SEND_FILE_START://收到其他client的資料
+				Toast.makeText(ClientActivity.this, "收到圖片，開始傳遞", Toast.LENGTH_SHORT)
+				.show();
+				Global.flagIsReceiving=true;
+				//要送出去的檔案
+				Log.e("houpan","要收摟");
+				new Thread(new ClinetFileInputTransferThread_fromClient()).start();
+				break;
+				
+			case Global.CLIENT_SEND_FILE_COMPLETED://收到其他client的資料
+				Toast.makeText(ClientActivity.this, "接收完成(fromClient)", Toast.LENGTH_SHORT)
+				.show();
+				Global.flagIsReceiving=false;
+				break;
+				
+			case Global.CLIENT_SEND_FILE_COMPLETED_REMOTE://傳給client結束了(收到對方的回報)
+				Toast.makeText(ClientActivity.this, "傳輸完成", Toast.LENGTH_SHORT)
+				.show();
+				//要送出去的檔案
+				Log.e("houpan","收結束");
 				break;
 			}
 
 		}
 	};
+	
+	public class ClientFileOutputTransferThread_toServer implements Runnable {
+		Integer targetId;//為了把內thread不能改動外變數的錯誤濾掉
+		Uri outputFileUri;
+		
+		
+		ClientFileOutputTransferThread_toServer(Integer i,Uri outputFileUri){
+			this.targetId=i;
+			this.outputFileUri=outputFileUri;
+		}
+		@Override
+		public void run() {
+			Socket socket = null;
+			Log.e("houpan","why");
+			
+			mca.write("ClientSend_start_server");
+				
+			
+			Message m = new Message();
+			m.what = Global.SERVER_RECEIVE_FILE_COMPLETED;
+			handler.sendMessage(m);
+		}
+	}
+	
+	public class ClientFileOutputTransferThread_toClient implements Runnable {
+		Integer targetId;//為了把內thread不能改動外變數的錯誤濾掉
+		Uri outputFileUri;
+		
+		
+		ClientFileOutputTransferThread_toClient(Integer i,Uri outputFileUri){
+			this.targetId=i;
+			this.outputFileUri=outputFileUri;
+		}
+		@Override
+		public void run() {
+			Socket socket = null;
+			Log.e("houpan","why");
+			
+			mca.write("ClientSend_start_"+Global.mClientAgent.id+"_"+targetId);
+				
+			
+			Message m = new Message();
+			m.what = Global.SERVER_RECEIVE_FILE_COMPLETED;
+			handler.sendMessage(m);
+		}
+	}
+	
+	public class ClinetFileInputTransferThread_fromServer implements Runnable {
+		Integer targetId;//為了把內thread不能改動外變數的錯誤濾掉
+		Uri outputFileUri;
+		
+		
+		@Override
+		public void run() {
+			/*
+			Socket mmSocket = null;
+			while(mmSocket!=null){
+				WifiManager mWifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
+				DhcpInfo mDhcpInfo = mWifiManager.getDhcpInfo();
+				int ipadd = mDhcpInfo.gateway;
+				Global.IP = ((ipadd & 0xFF) + "." + (ipadd >> 8 & 0xFF)
+						+ "." + (ipadd >> 16 & 0xFF) + "." + (ipadd >> 24 & 0xFF));
+				Log.e("ip", Global.IP);
+				try {
+					mmSocket = new Socket(Global.IP, Global.FILE_PORT);
+				} catch (UnknownHostException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
+			Log.e("houpan","收L1");
+			File fileOutputStream= new File("/sdcard/DCIM/wifihpshared-" + System.currentTimeMillis()	+ ".jpg");
+			InputStream inputstream =null;//client自己的socket input處
+			
+			 File dirs = new File(fileOutputStream.getParent());
+			 
+	         if (!dirs.exists())
+	              dirs.mkdirs();
+	         try {
+	        	 fileOutputStream.createNewFile();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+			 }
+			
+ 			  try {
+ 				  inputstream = mmSocket.getInputStream();
+ 				 Log.e("houpan","收L2");
+ 			  } catch (IOException e) {
+ 				// TODO Auto-generated catch block
+ 				e.printStackTrace();
+ 			  }
+			try {
+				Log.e("houpan","收L3");
+				ntu.real.sense.UriRelatedOperation.copyFile(inputstream, new FileOutputStream(fileOutputStream));
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			Log.e("houpan","收L4");
+			
+			*/
+			Message tempMessage = new Message();
+			tempMessage.what = Global.SERVER_SEND_FILE_COMPLETED;//傳完了
+			handler.sendMessage(tempMessage);
+			
+			mca.write("ClientReceive_completed_server");	
+		}
+	}
+	
+
+	public class ClinetFileInputTransferThread_fromClient implements Runnable {
+		Integer targetId;//為了把內thread不能改動外變數的錯誤濾掉
+		Uri outputFileUri;
+		/*
+		ClinetFileInputTransferThread_fromClient(Integer i,Uri outputFileUri){
+			this.targetId=i;
+			this.outputFileUri=outputFileUri;
+		}*/
+		
+		@Override
+		public void run() {//&&
+
+			Message tempMessage = new Message();
+			tempMessage.what = Global.CLIENT_SEND_FILE_COMPLETED;//傳完了
+			handler.sendMessage(tempMessage);
+			
+			mca.write("ClientReceive_completed_client");	
+		}
+	}
+	
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -72,7 +301,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 		layout.setBackgroundColor(Color.BLACK);
 		setContentView(layout);
 		// 讀取照片
-		ListAllPath demoTest = new ListAllPath();
+		demoTest = new ListAllPath();
 		File rootFile = new File("/sdcard/DCIM");
 		demoTest.print(rootFile, 0);
 
@@ -145,13 +374,26 @@ public class ClientActivity extends Activity implements SensorEventListener {
 					surface.drawView();
 					if (surface.flagCanSend) {
 						surface.flagCanSend = false;
-						String show = "Send to:";
+						
+						//要送的目標的id們
+						ArrayList<Integer> sendTargetList=new ArrayList<Integer>();
+						int i;
 						for (Target t : surface.selected) {
-							show += (t.name + " ");
+							//先把target拿出來，比對id是不是自己，如果是的話就不加入要傳的list中
+							for (i=0;i<Global.userName.length;i++){//不知為何順序是反的，用查的比較安全
+								if(t.name.equals(Global.userName[i])){
+									break;
+								}
+							}
+							if(Global.mClientAgent.id!=i){
+								sendTargetList.add(i);	
+							}
 						}
+						sendTargetList.add(surface.selectedPhoto);
+						
 						Message m = new Message();
 						m.what = 0x103;
-						m.obj = show;
+						m.obj = sendTargetList;
 						handler.sendMessage(m);
 						surface.selected.clear();
 					}
@@ -178,22 +420,42 @@ public class ClientActivity extends Activity implements SensorEventListener {
 			@Override
 			public void run() {
 				// TODO Auto-generated method stub
-				while (Global.flagIsPlaying) {
+				while (Global.flagIsPlaying&&!Global.flagIsReceiving) {
 					String m = mca.read();
 					if ("init".equals(m)) {
 						cId = Integer.parseInt(mca.read());
 						users = Integer.parseInt(mca.read());
+						//cId表client自己的id
 						Log.e("init", cId + ":" + users);
 						for (int i = 0; i < users; i++) {
 							surface.target.add(new Target(Global.userName[i],
 									0, Global.userColor[i]));
 						}
-					}
-					if ("setdeg".equals(m)) {
+					}else if ("ServerSendFile_start".equals(m)) {//server傳檔案過來
+						
+						Message tempMessage = new Message();
+						tempMessage.what = Global.SERVER_SEND_FILE_START;//server傳檔案
+						handler.sendMessage(tempMessage);
+						
+					}else if(m.startsWith("ClinetSendFile_start_")){
+						Log.e("houpan","client送檔案過來");
+						Message tempMessage = new Message();
+						tempMessage.what = Global.CLIENT_SEND_FILE_START;//client傳檔案
+						tempMessage.obj=m.split("_")[2];
+						handler.sendMessage(tempMessage);
+					}else if("ClientReceive_completed_client".equals(m)){
+						Message tempMessage = new Message();
+						tempMessage.what = Global.CLIENT_SEND_FILE_COMPLETED_REMOTE;//從對面的client得到資訊：他收完了
+						handler.sendMessage(tempMessage);
+						
+						
+						
+					}else if ("setdeg".equals(m)) {
 						int who = Integer.parseInt(mca.read());
 						int deg = Integer.parseInt(mca.read());
 						surface.target.get(who).degree = deg;
 					}
+					
 				}
 			}
 		}).start();
