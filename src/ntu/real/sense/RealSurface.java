@@ -21,6 +21,7 @@ import android.widget.Toast;
 
 public class RealSurface extends SurfaceView {
 	int selectedPhoto = -1;
+	int photoNum = 0;
 	boolean flagTouchUp = false;
 	boolean flagLongTouch = false;
 	boolean flagCanSend = false;
@@ -61,7 +62,7 @@ public class RealSurface extends SurfaceView {
 		// TODO Auto-generated constructor stub
 	}
 
-	public RealSurface(Context context, int width, int height) {
+	public RealSurface(Context context, int width, int height, int num) {
 		super(context);
 		setZOrderOnTop(true);
 		holder = getHolder();
@@ -69,14 +70,17 @@ public class RealSurface extends SurfaceView {
 		displayWidth = width;
 		displayHeight = height;
 		radius = radius * displayWidth / 768;
+		photoNum = num;
 		// TODO Auto-generated constructor stub
 	}
 
 	void drawView() {
-
+		
+		boolean locked = false;
 		Canvas canvas = holder.lockCanvas();
-
-		if (canvas != null) {
+		locked = true;
+		
+		if (canvas != null && selectedPhoto < photoNum) {
 			// canvas.drawColor(Color.argb(0, 0, 0, 0));
 			canvas.drawColor(Color.TRANSPARENT, Mode.CLEAR);
 			//左右兩排相片的radius設成較小
@@ -121,6 +125,9 @@ public class RealSurface extends SurfaceView {
 					radius = radius * 10 / 8;
 				}
 			}
+			holder.unlockCanvasAndPost(canvas);
+			locked = false;
+		}if (canvas != null && locked == true){
 			holder.unlockCanvasAndPost(canvas);
 		}
 	}
