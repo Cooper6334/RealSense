@@ -90,6 +90,10 @@ public class RealSurface extends SurfaceView {
 				p.setColor(Color.RED);
 				// 除去title bar跟notification bar的高度
 				canvas.drawCircle(px, py, radius, p);
+				
+				for(Target t : target){
+					Log.e("WeiChen" , t.degree + "Name: " + t.name);
+				}
 
 				for (Target t : showTarget) {
 
@@ -107,8 +111,8 @@ public class RealSurface extends SurfaceView {
 
 					Log.e("deg", deg + "");
 
-					double ox = 200 * Math.cos((deg + 90) / 180 * Math.PI);
-					double oy = 200 * Math.sin((deg + 90) / 180 * Math.PI);
+					double ox = (radius + 40) * Math.cos((deg + 90) / 180 * Math.PI);
+					double oy = (radius + 40) * Math.sin((deg + 90) / 180 * Math.PI);
 
 					canvas.drawText(t.name, (float) (px + ox) - 50,
 							(float) (py + oy), p3);

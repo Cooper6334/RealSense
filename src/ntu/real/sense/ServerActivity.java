@@ -69,11 +69,11 @@ public class ServerActivity extends Activity implements SensorEventListener {
 				msa.writeAll("setdeg");
 				msa.writeAll("" + m.arg1);
 				msa.writeAll("" + m.arg2);;
-				int k;
-				for(k=0; k < Global.mServerAgent.clients.size(); k++){
-					Log.e("WeiChen", surface.target.get(k).degree + "ID " + k);
-				}
-//				Log.e("WeiChen", surface.target.get(k + 1).degree + "ID " + k);
+//				int k;
+//				for(k=0; k < Global.mServerAgent.clients.size(); k++){
+//					Log.e("WeiChen", surface.target.get(k).degree + "ID " + k);
+//				}
+//				Log.e("WeiChen", surface.target.get(k).degree + "ID " + k);
 				break;
 
 			// 點擊
