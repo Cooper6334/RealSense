@@ -152,7 +152,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 					Log.e("houpan","picCycling:"+picCycling);
 					Bitmap bitmap = decodeBitmap(demoTest.file_list.get(picCycling));
 					image_temp.setImageBitmap(bitmap);
-					picCycling=((picCycling-1)%12+2)%12;
+					picCycling=(picCycling-6)%6+7;
 					Log.e("houpan","picCycling:"+picCycling);
 					
 					Toast.makeText(ServerActivity.this, "接收完成", Toast.LENGTH_SHORT)
@@ -396,10 +396,9 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		layout.addView(RL_temp);
 		// 注意顯示太多照片會out of memory
 		int index = demoTest.file_list.size();
-		picCycling=index;//把cycling先設在下一個要補的地方
-		if (index >= 13) {
-			index = 13;
-			picCycling=1;
+		picCycling=7;//把cycling先設在下一個要補的地方
+		if (index >= 6) {
+			index = 6;
 		}
 		
 		
@@ -411,12 +410,16 @@ public class ServerActivity extends Activity implements SensorEventListener {
 				Log.e("圖片網址：", demoTest.file_list.get(i));
 				Bitmap bitmap = decodeBitmap(demoTest.file_list.get(i));
 				image_temp.setImageBitmap(bitmap);
-				
 			}else{
 				demoTest.file_list.add(null);
 			}
+			if(i<=6){
+				image_temp.setBackgroundColor(Color.RED);
+			}else{
+				image_temp.setBackgroundColor(Color.BLUE);
+			}
 			
-			image_temp.setBackgroundColor(Color.BLUE);
+			
 			image_temp.setId(i); // ID不能是零，不然會爛掉！
 			image_temp.setLayoutParams(params);
 			params = new RelativeLayout.LayoutParams(imgBtnSize, imgBtnSize);
