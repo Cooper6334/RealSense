@@ -188,7 +188,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 			while(true){
 				if(operationQueue.size()!=0){//queue裡面有東西
 					operationQueue.remove(0);
-					new Thread(new ServerFileOutputTransferThread(outputTransfer_t.remove(0),outputTransfer_outputFileUri.remove(0))).start();
+					new ServerFileOutputTransferThread(outputTransfer_t.remove(0),outputTransfer_outputFileUri.remove(0)).run();
 					
 				}else{
 					try {
