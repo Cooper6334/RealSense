@@ -21,7 +21,6 @@ import android.widget.Toast;
 
 public class RealSurface extends SurfaceView {
 	int selectedPhoto = -1;
-	int photoNum = 0;
 	boolean flagTouchUp = false;
 	boolean flagLongTouch = false;
 	boolean flagCanSend = false;
@@ -29,7 +28,7 @@ public class RealSurface extends SurfaceView {
 	int displayWidth = 480;
 	int displayHeight = 800;
 	int myDeg;
-	int radius = 130;
+	int radius = 150;
 	int cnt = -1;//0 for testing mode
 	float px, py;
 	SurfaceHolder holder;
@@ -62,7 +61,7 @@ public class RealSurface extends SurfaceView {
 		// TODO Auto-generated constructor stub
 	}
 
-	public RealSurface(Context context, int width, int height, int num) {
+	public RealSurface(Context context, int width, int height) {
 		super(context);
 		setZOrderOnTop(true);
 		holder = getHolder();
@@ -70,33 +69,28 @@ public class RealSurface extends SurfaceView {
 		displayWidth = width;
 		displayHeight = height;
 		radius = radius * displayWidth / 768;
-		photoNum = num;
 		// TODO Auto-generated constructor stub
 	}
 
 	void drawView() {
-		
-		boolean locked = false;
+
 		Canvas canvas = holder.lockCanvas();
-		locked = true;
-		
-		if (canvas != null && selectedPhoto < photoNum && selectedPhoto >=1) {
+
+		if (canvas != null) {
 			// canvas.drawColor(Color.argb(0, 0, 0, 0));
 			canvas.drawColor(Color.TRANSPARENT, Mode.CLEAR);
-			//左右兩排相片的radius設成較小
+
 			if (flagLongTouch) {
-				if(selectedPhoto != 2 && selectedPhoto != 5 && selectedPhoto != 8 && selectedPhoto != 11){
-					radius = radius * 8 / 10;
-				}
+
 				Paint p2 = new Paint();
 				p2.setColor(Color.WHITE);
 				canvas.drawCircle(px, py, radius * 1.5f, p2);
+
 				Paint p = new Paint();
 				p.setColor(Color.RED);
 				// 除去title bar跟notification bar的高度
-				
 				canvas.drawCircle(px, py, radius, p);
-				
+
 				for (Target t : showTarget) {
 
 					float deg = (int) (t.degree) % 360;
@@ -121,13 +115,7 @@ public class RealSurface extends SurfaceView {
 				}
 
 				canvas.drawCircle(px, py, radius - 5, p2);
-				if(selectedPhoto != 2 && selectedPhoto != 5 && selectedPhoto != 8 && selectedPhoto != 11){
-					radius = radius * 10 / 8;
-				}
 			}
-			holder.unlockCanvasAndPost(canvas);
-			locked = false;
-		}if (canvas != null && locked == true){
 			holder.unlockCanvasAndPost(canvas);
 		}
 	}
@@ -196,41 +184,39 @@ public class RealSurface extends SurfaceView {
 		int centerHeight = displayHeight / 2;
 		int imgWidth = displayWidth / 4;
 		int imgHeight = displayHeight / 4;
-		int layoutMargin = displayWidth / 10;
-		int imgMargin = displayWidth / 100;
 		
-		if(x >= layoutMargin + imgMargin && x <= layoutMargin + imgMargin + imgWidth){
-			if(y >= layoutMargin + imgMargin && y<= layoutMargin + imgMargin + imgWidth){
+		if(x >= centerWidth - imgWidth / 2 - displayWidth / 100 - imgWidth && x <= centerWidth - imgWidth / 2 - displayWidth / 100){
+			if(y >= centerHeight - (displayHeight / 100) * 1.5 - imgWidth * 2 && y<= centerHeight - (displayHeight / 100) * 1.5 - imgWidth){
 				selectedPhoto = 1;
-			}else if(y >= layoutMargin + imgMargin * 3 + imgWidth && y <= layoutMargin + imgMargin * 3 + imgWidth * 2){
+			}else if(y >= centerHeight - (displayHeight / 100) * 0.5 - imgWidth && y<= centerHeight - (displayHeight / 100) * 0.5){
 				selectedPhoto = 4;
-			}else if(y >= layoutMargin + imgMargin * 5 + imgWidth * 2 && y <= layoutMargin + imgMargin * 5 + imgWidth * 3){
+			}else if(y >= centerHeight + (displayHeight / 100) * 0.5 && y <= centerHeight + (displayHeight / 100) * 0.5 + imgWidth){
 				selectedPhoto = 7;
-			}else if(y >= layoutMargin + imgMargin * 7 + imgWidth * 3 && y <= layoutMargin + imgMargin * 7 + imgWidth * 4){
+			}else if(y >= centerHeight + (displayHeight / 100) * 1.5 + imgWidth && y <= centerHeight + (displayHeight / 100) * 1.5 + 2 * imgWidth){
 				selectedPhoto = 10;
 			}else{
 				selectedPhoto = -1;
 			}
-		}else if(x >= layoutMargin + imgMargin * 3 + imgWidth && x <= layoutMargin + imgMargin * 3 + imgWidth * 2){
-			if(y >= layoutMargin + imgMargin && y<= layoutMargin + imgMargin + imgWidth){
+		}else if(x >= centerWidth - imgWidth / 2 && x <= centerWidth + imgWidth / 2){
+			if(y >= centerHeight - (displayHeight / 100) * 1.5 - imgWidth * 2 && y<= centerHeight - (displayHeight / 100) * 1.5 - imgWidth){
 				selectedPhoto = 2;
-			}else if(y >= layoutMargin + imgMargin * 3 + imgWidth && y <= layoutMargin + imgMargin * 3 + imgWidth * 2){
+			}else if(y >= centerHeight - (displayHeight / 100) * 0.5 - imgWidth && y<= centerHeight - (displayHeight / 100) * 0.5){
 				selectedPhoto = 5;
-			}else if(y >= layoutMargin + imgMargin * 5 + imgWidth * 2 && y <= layoutMargin + imgMargin * 5 + imgWidth * 3){
+			}else if(y >= centerHeight + (displayHeight / 100) * 0.5 && y <= centerHeight + (displayHeight / 100) * 0.5 + imgWidth){
 				selectedPhoto = 8;
-			}else if(y >= layoutMargin + imgMargin * 7 + imgWidth * 3 && y <= layoutMargin + imgMargin * 7 + imgWidth * 4){
+			}else if(y >= centerHeight + (displayHeight / 100) * 1.5 + imgWidth && y <= centerHeight + (displayHeight / 100) * 1.5 + 2 * imgWidth){
 				selectedPhoto = 11;
 			}else{
 				selectedPhoto = -1;
 			}
-		}else if(x >= layoutMargin + imgMargin * 5 + imgWidth * 2 && x <= layoutMargin + imgMargin * 5 + imgWidth * 3){
-			if(y >= layoutMargin + imgMargin && y<= layoutMargin + imgMargin + imgWidth){
+		}else if(x >= centerWidth + imgWidth / 2 + displayWidth / 100 && x <= centerWidth + imgWidth / 2 + displayWidth / 100 + imgWidth){
+			if(y >= centerHeight - (displayHeight / 100) * 1.5 - imgWidth * 2 && y<= centerHeight - (displayHeight / 100) * 1.5 - imgWidth){
 				selectedPhoto = 3;
-			}else if(y >= layoutMargin + imgMargin * 3 + imgWidth && y <= layoutMargin + imgMargin * 3 + imgWidth * 2){
+			}else if(y >= centerHeight - (displayHeight / 100) * 0.5 - imgWidth && y<= centerHeight - (displayHeight / 100) * 0.5){
 				selectedPhoto = 6;
-			}else if(y >= layoutMargin + imgMargin * 5 + imgWidth * 2 && y <= layoutMargin + imgMargin * 5 + imgWidth * 3){
+			}else if(y >= centerHeight + (displayHeight / 100) * 0.5 && y <= centerHeight + (displayHeight / 100) * 0.5 + imgWidth){
 				selectedPhoto = 9;
-			}else if(y >= layoutMargin + imgMargin * 7 + imgWidth * 3 && y <= layoutMargin + imgMargin * 7 + imgWidth * 4){
+			}else if(y >= centerHeight + (displayHeight / 100) * 1.5 + imgWidth && y <= centerHeight + (displayHeight / 100) * 1.5 + 2 * imgWidth){
 				selectedPhoto = 12;
 			}else{
 				selectedPhoto = -1;
@@ -239,7 +225,6 @@ public class RealSurface extends SurfaceView {
 			selectedPhoto = -1;
 		}
 		Log.e("selectedPhotoIndex", selectedPhoto + "");
-		
 	}
 
 	

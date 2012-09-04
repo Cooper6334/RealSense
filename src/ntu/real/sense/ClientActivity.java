@@ -5,14 +5,16 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
-
-import ntu.real.sense.ServerActivity.ServerFileOutputTransferThread;
+import java.util.Vector;
 
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -20,9 +22,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.net.DhcpInfo;
 import android.net.Uri;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -44,13 +44,25 @@ public class ClientActivity extends Activity implements SensorEventListener {
 	RealSurface surface;
 	RelativeLayout layout;
 	int CurrentButtonNumber = 0; // CurrentButtonNumber流水號 設定物件ID
-
+	
 	ListAllPath demoTest;
 	UriRelatedOperation UriRelatedOperation;
 	
+	 
+	RelativeLayout RL_temp;
 	Agent mca = Global.mClientAgent;
 	int cId;
 	int users;
+	int picCycling;//1~12，看新進來的圖片要取代哪個thumbnails
+
+	
+	ServerSocket serverSocket = null;
+	Socket socket = null;
+
+	
+	
+	ImageButton image_temp;//暫存之後要更新的ImageButton
+	Bitmap bitmap;
 	//用來handle client本身要傳的訊息
 	Handler handler = new Handler() {
 		@Override
@@ -79,9 +91,12 @@ public class ClientActivity extends Activity implements SensorEventListener {
 					Log.e("houpan","開始傳摟到:"+t);
 					if(t==(users-1)){//對象是server
 						Log.e("houpan","對象是server");
-						new Thread(new ClientFileOutputTransferThread_toServer(t, outputFileUri)).start();
+						add_ClientFileOutputTransferThread_toServer(outputFileUri);
+						//new Thread(new ClientFileOutputTransferThread_toServer(outputFileUri)).start();//處理network不能在mainThread上，所以要搬出去處理
 					}else{
-						new Thread(new ClientFileOutputTransferThread_toClient(t, outputFileUri)).start();
+						add_ClientFileOutputTransferThread_toClient(t, outputFileUri);
+						//傳到其他client
+						//new ClientFileOutputTransferThread_toClient(t, outputFileUri).run();
 					}
 					
 					
@@ -103,7 +118,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 				.show();
 				
 				//要送出去的檔案
-				Log.e("houpan","要收摟");
+				Log.e("houpan","要收摟");	
 				new Thread(new ClinetFileInputTransferThread_fromServer()).start();
 				break;
 				
@@ -114,10 +129,27 @@ public class ClientActivity extends Activity implements SensorEventListener {
 				//要送出去的檔案
 				Log.e("houpan","收結束");
 				
+				
+				//重新設定view
+				demoTest.file_list.setElementAt((String)m.obj, picCycling);
+				image_temp = (ImageButton) RL_temp.findViewById(picCycling);
+				Log.e("houpan","picCycling:"+picCycling);
+				Bitmap bitmap = decodeBitmap(demoTest.file_list.get(picCycling));
+				image_temp.setImageBitmap(bitmap);
+				picCycling=((picCycling-1)%12+2)%12;
+				Log.e("houpan","picCycling:"+picCycling);
+				
 				break;
 
 			case Global.SERVER_RECEIVE_FILE_COMPLETED://直接傳給server結束了
 				Toast.makeText(ClientActivity.this, "傳輸完成(toServer)", Toast.LENGTH_SHORT)
+				.show();
+				//要送出去的檔案
+				Log.e("houpan","收結束");
+				break;
+				
+			case Global.CLIENT_RECEIVE_COMPLETED://傳給某client結束了
+				Toast.makeText(ClientActivity.this, "傳輸完成(toClient)", Toast.LENGTH_SHORT)
 				.show();
 				//要送出去的檔案
 				Log.e("houpan","收結束");
@@ -132,13 +164,22 @@ public class ClientActivity extends Activity implements SensorEventListener {
 				//要送出去的檔案
 				Log.e("houpan","要收摟");
 				
-				new Thread(new ClinetFileInputTransferThread_fromClient(Integer.parseInt((String) m.obj),null)).start();
+				new Thread(new ClinetFileInputTransferThread_fromClient((String)m.obj)).start();
 				break;
 				
 			case Global.CLIENT_SEND_FILE_COMPLETED://收到其他client的資料
 				Global.flagIsReceiving=false;
 				Toast.makeText(ClientActivity.this, "接收完成(fromClient)", Toast.LENGTH_SHORT)
 				.show();
+				
+				//重新設定view
+				demoTest.file_list.setElementAt((String)m.obj, picCycling);
+				ImageButton image_temp = (ImageButton) RL_temp.findViewById(picCycling);
+				Log.e("houpan","picCycling:"+picCycling);
+				bitmap = decodeBitmap(demoTest.file_list.get(picCycling));
+				image_temp.setImageBitmap(bitmap);
+				picCycling=((picCycling-1)%12+2)%12;
+				Log.e("houpan","picCycling:"+picCycling);
 				
 				break;
 				
@@ -152,29 +193,136 @@ public class ClientActivity extends Activity implements SensorEventListener {
 
 		}
 	};
+
+	//儲存parameter方便之後用
+	Vector<Uri> toClient_outputFileUri;
+	Vector<Integer> toClient_i;
+	Vector<Uri> toServer_outputFileUri;
+	Vector<Integer> operationQueue;//1:toServer, 2:toClient
+
+	public void add_ClientFileOutputTransferThread_toServer(Uri outputFileUri){
+		toServer_outputFileUri.add(outputFileUri);
+		operationQueue.add(1);
+	}
+	public void add_ClientFileOutputTransferThread_toClient(Integer i,Uri outputFileUri){
+		toClient_outputFileUri.add(outputFileUri);
+		toClient_i.add(i);
+		operationQueue.add(2);			
+	}
 	
+	//用Queue管理傳輸
+	public class ClientFileOutputTransferThread_manager implements Runnable {
+
+		
+		ClientFileOutputTransferThread_manager(){
+			toClient_outputFileUri=new Vector<Uri>();
+			toClient_i=new Vector<Integer>();
+			toServer_outputFileUri=new Vector<Uri>();
+			operationQueue=new Vector<Integer>();
+		}
+		
+		
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			while(true){
+				if(operationQueue.size()!=0){//做下一個該做的operation
+					switch(operationQueue.remove(0)){
+						case 1:
+							new ClientFileOutputTransferThread_toServer(toServer_outputFileUri.remove(0)).run();
+							break;
+						case 2:
+							new ClientFileOutputTransferThread_toClient(toClient_i.remove(0),toClient_outputFileUri.remove(0)).run();
+							break;
+					}
+				}else{
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+				}
+			}
+			
+		}
+		
+	}
 	public class ClientFileOutputTransferThread_toServer implements Runnable {
-		Integer targetId;//為了把內thread不能改動外變數的錯誤濾掉
 		Uri outputFileUri;
 		
 		
-		ClientFileOutputTransferThread_toServer(Integer i,Uri outputFileUri){
-			this.targetId=i;
+		ClientFileOutputTransferThread_toServer(Uri outputFileUri){
 			this.outputFileUri=outputFileUri;
 		}
+		
 		@Override
 		public void run() {
-			Socket socket = null;
-			Log.e("houpan","why");
+
+			mca.write("ClientSend_start_"+cId);
+
 			
-			mca.write("ClientSend_start_server");
-				
+			socket = null;
+			
+			while(socket==null){
+				try {
+					socket = serverSocket.accept();
+					Thread.sleep(1000);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}			
+
+			
+
+			Log.e("houpan","傳L1");
+			ContentResolver cr = getContentResolver();
+		    //要傳出去的圖片
+			InputStream inputUriStream = null;
+		    //要收下的client
+			OutputStream outputDataStream=null;
+			
+		    try {
+				inputUriStream = cr.openInputStream(outputFileUri);
+				Log.e("houpan","傳L2");
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		    try {
+		    	Log.e("houpan","傳L2");
+				outputDataStream = socket.getOutputStream();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		      
+		    Log.e("houpan","傳L3");
+		    ntu.real.sense.UriRelatedOperation.copyFile(inputUriStream, outputDataStream);
+		    Log.e("houpan","傳L4");
+		    
+		    try {
+		    	socket.close();
+		    	//serverSocket.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			
 			
 			Message m = new Message();
 			m.what = Global.SERVER_RECEIVE_FILE_COMPLETED;
 			handler.sendMessage(m);
 		}
 	}
+	
+	
 	
 	public class ClientFileOutputTransferThread_toClient implements Runnable {
 		Integer targetId;//為了把內thread不能改動外變數的錯誤濾掉
@@ -187,47 +335,187 @@ public class ClientActivity extends Activity implements SensorEventListener {
 		}
 		@Override
 		public void run() {
-			Socket socket = null;
-			Log.e("houpan","why");
-			
 			mca.write("ClientSend_start_"+Global.mClientAgent.id+"_"+targetId);
 				
+
+			socket=null;
+			while(socket==null){
+				try {
+					socket = serverSocket.accept();
+					Thread.sleep(1000);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}			
+
+			
+
+			Log.e("houpan","傳L1");
+			ContentResolver cr = getContentResolver();
+		    //要傳出去的圖片
+			InputStream inputUriStream = null;
+		    //要收下的client
+			OutputStream outputDataStream=null;
+			
+		    try {
+				inputUriStream = cr.openInputStream(outputFileUri);
+				Log.e("houpan","傳L2");
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		    try {
+		    	Log.e("houpan","傳L2");
+				outputDataStream = socket.getOutputStream();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		      
+		    Log.e("houpan","傳L3");
+		    ntu.real.sense.UriRelatedOperation.copyFile(inputUriStream, outputDataStream);
+		    Log.e("houpan","傳L4");
+		    
+		    try {
+		    	socket.close();
+		    	//serverSocket.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			
 			
 			Message m = new Message();
-			m.what = Global.SERVER_RECEIVE_FILE_COMPLETED;
+			m.what = Global.CLIENT_RECEIVE_COMPLETED;
 			handler.sendMessage(m);
 		}
 	}
 	
+	
+	
+	
+	
 	public class ClinetFileInputTransferThread_fromServer implements Runnable {
-		Integer targetId;//為了把內thread不能改動外變數的錯誤濾掉
-		Uri outputFileUri;
 		
 		
 		@Override
 		public void run() {
-			/*
-			Socket mmSocket = null;
-			while(mmSocket!=null){
-				WifiManager mWifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
-				DhcpInfo mDhcpInfo = mWifiManager.getDhcpInfo();
-				int ipadd = mDhcpInfo.gateway;
-				Global.IP = ((ipadd & 0xFF) + "." + (ipadd >> 8 & 0xFF)
-						+ "." + (ipadd >> 16 & 0xFF) + "." + (ipadd >> 24 & 0xFF));
-				Log.e("ip", Global.IP);
+
+			
+			socket = null;
+			
+			while(socket==null){
 				try {
-					mmSocket = new Socket(Global.IP, Global.FILE_PORT);
+					socket = serverSocket.accept();
+					Thread.sleep(1000);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}			
+			
+			
+			
+			
+			Log.e("houpan","收L1");
+			String fileAbsolutePath="/sdcard/DCIM/Camera/wifihpshared_" + System.currentTimeMillis()+ ".jpg";
+			File fileOutputStream= new File(fileAbsolutePath);
+			InputStream inputstream =null;//client自己的socket input處
+			
+			 File dirs = new File(fileOutputStream.getParent());
+			 
+	         if (!dirs.exists())
+	              dirs.mkdirs();
+	         try {
+	        	 fileOutputStream.createNewFile();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+			 }
+			
+ 			  try {
+ 				  inputstream = socket.getInputStream();
+ 				 Log.e("houpan","收L2");
+ 			  } catch (IOException e) {
+ 				// TODO Auto-generated catch block
+ 				e.printStackTrace();
+ 			  }
+			try {
+				Log.e("houpan","收L3");
+				ntu.real.sense.UriRelatedOperation.copyFile(inputstream, new FileOutputStream(fileOutputStream));
+				
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			Log.e("houpan","收L4");
+				//serverSocket.close();
+			
+			Log.e("houpan","收L5");
+			
+			//更新圖示
+
+			
+			
+			Message tempMessage = new Message();
+			tempMessage.what = Global.SERVER_SEND_FILE_COMPLETED;//傳完了
+			tempMessage.obj=fileAbsolutePath;
+			handler.sendMessage(tempMessage);
+			
+			mca.write("ClientReceive_completed_server");
+			
+			
+
+			
+		}
+	}
+	
+
+	public class ClinetFileInputTransferThread_fromClient implements Runnable {
+		Integer sourceId;//為了把內thread不能改動外變數的錯誤濾掉
+		String sourceIP;
+		
+		ClinetFileInputTransferThread_fromClient(String inputString){
+			this.sourceId=Integer.parseInt(inputString.split("_")[0]);
+			this.sourceIP=inputString.split("_")[1];
+			//this.outputFileUri=outputFileUri;
+		}
+		
+		@Override
+		public void run() {
+
+			
+			Socket mmSocket = null;
+			while(mmSocket==null){
+				try {
+					Log.e("houpan","IP是"+sourceIP);
+					mmSocket = new Socket(sourceIP, Global.FILE_PORT);
+					Thread.sleep(1000);
 				} catch (UnknownHostException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 			}
+		
 			
+
 			Log.e("houpan","收L1");
-			File fileOutputStream= new File("/sdcard/DCIM/wifihpshared-" + System.currentTimeMillis()	+ ".jpg");
+			String fileAbsolutePath="/sdcard/DCIM/Camera/wifihpshared_" + System.currentTimeMillis()+ ".jpg";
+			File fileOutputStream= new File(fileAbsolutePath);
 			InputStream inputstream =null;//client自己的socket input處
 			
 			 File dirs = new File(fileOutputStream.getParent());
@@ -251,36 +539,27 @@ public class ClientActivity extends Activity implements SensorEventListener {
 			try {
 				Log.e("houpan","收L3");
 				ntu.real.sense.UriRelatedOperation.copyFile(inputstream, new FileOutputStream(fileOutputStream));
+				
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			Log.e("houpan","收L4");
+			try {
+				mmSocket.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			
-			*/
-			Message tempMessage = new Message();
-			tempMessage.what = Global.SERVER_SEND_FILE_COMPLETED;//傳完了
-			handler.sendMessage(tempMessage);
+			Log.e("houpan","收L5");
 			
-			mca.write("ClientReceive_completed_server");	
-		}
-	}
-	
-
-	public class ClinetFileInputTransferThread_fromClient implements Runnable {
-		Integer sourceId;//為了把內thread不能改動外變數的錯誤濾掉
-		Uri outputFileUri;
-		
-		ClinetFileInputTransferThread_fromClient(Integer i,Uri outputFileUri){
-			this.sourceId=i;
-			//this.outputFileUri=outputFileUri;
-		}
-		
-		@Override
-		public void run() {
-
+			
+			
+			
 			Message tempMessage = new Message();
 			tempMessage.what = Global.CLIENT_SEND_FILE_COMPLETED;//傳完了
+			tempMessage.obj=fileAbsolutePath;
 			handler.sendMessage(tempMessage);
 			
 			mca.write("ClientReceive_completed_client_"+sourceId);	
@@ -311,30 +590,40 @@ public class ClientActivity extends Activity implements SensorEventListener {
 		demoTest.print(rootFile, 0);
 
 		InputStream inputStream = null;
-		RelativeLayout RL_temp = new RelativeLayout(this);
+		RL_temp = new RelativeLayout(this);
 		RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
 				RelativeLayout.LayoutParams.WRAP_CONTENT,
 				RelativeLayout.LayoutParams.WRAP_CONTENT);
-//		params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
-		params.setMargins(dm.widthPixels / 10, dm.widthPixels / 10, dm.widthPixels / 10, dm.widthPixels / 10);
+		params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
 		RL_temp.setLayoutParams(params);
 		layout.addView(RL_temp);
+		
+		
+		;
 		// 注意顯示太多照片會out of memory
 		int index = demoTest.file_list.size();
-		if (index > 15) {
+		picCycling=index;//把cycling先設在下一個要補的地方
+		if (index >= 13) {
 			index = 13;
+			picCycling=1;
 		}
-		for (int i = 1; i < index; i++) {
+		
+		
+		for (int i = 1; i < 13; i++) {
 
-			Log.e("圖片網址：", demoTest.file_list.get(i));
-			Bitmap bitmap = decodeBitmap(demoTest.file_list.get(i));
-
+			
 			ImageButton image_temp = new ImageButton(this);
-			image_temp.setImageBitmap(bitmap);
+			if(i<index){//實際上方格裡面有東西的狀態
+				Log.e("圖片網址：", demoTest.file_list.get(i));
+				Bitmap bitmap = decodeBitmap(demoTest.file_list.get(i));
+				image_temp.setImageBitmap(bitmap);
+				
+			}else{
+				demoTest.file_list.add(null);
+			}
+			
 			image_temp.setBackgroundColor(Color.BLUE);
-			Log.e("oriID", Integer.toString(image_temp.getId()));
 			image_temp.setId(i); // ID不能是零，不然會爛掉！
-			Log.e("newID", Integer.toString(image_temp.getId()));
 			image_temp.setLayoutParams(params);
 			params = new RelativeLayout.LayoutParams(imgBtnSize, imgBtnSize);
 			params.setMargins(imgMargin, imgMargin, imgMargin, imgMargin);
@@ -351,8 +640,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 			}
 
 			image_temp.setLayoutParams(params);
-			RL_temp.addView(image_temp);
-
+			RL_temp.addView(image_temp);				
 		}
 
 		Global.flagIsPlaying = true;
@@ -366,10 +654,19 @@ public class ClientActivity extends Activity implements SensorEventListener {
 		}
 
 		// 加入RealSense
-		surface = new RealSurface(this, dm.widthPixels, dm.heightPixels, index);
+		surface = new RealSurface(this, dm.widthPixels, dm.heightPixels);
 		this.addContentView(surface, new LayoutParams(LayoutParams.FILL_PARENT,
 				LayoutParams.FILL_PARENT));
 
+		//設定serverSocket
+		try {
+			serverSocket = new ServerSocket(Global.FILE_PORT);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+
+		
 		// 設定繪圖與傳遞照片之Thread
 		new Thread(new Runnable() {
 
@@ -453,7 +750,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 							
 							Message tempMessage = new Message();
 							tempMessage.what = Global.CLIENT_SEND_FILE_START;//client傳檔案
-							tempMessage.obj=m.split("_")[2];
+							tempMessage.obj=m.split("_",3)[2];
 							Log.e("houpan","client("+tempMessage.obj+")送檔案過來");
 							handler.sendMessage(tempMessage);
 						}else if("ClientReceive_completed_client".equals(m)){
@@ -472,6 +769,9 @@ public class ClientActivity extends Activity implements SensorEventListener {
 				}
 			}
 		}).start();
+		
+		
+		new Thread(new ClientFileOutputTransferThread_manager()).start();//開啟傳送檔案管理者的thread
 	}
 
 	@Override

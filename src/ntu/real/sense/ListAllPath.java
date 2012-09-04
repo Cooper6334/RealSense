@@ -2,14 +2,15 @@ package ntu.real.sense;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Vector;
 
 import android.util.Log;
 
 class ListAllPath{
 	
-	public ArrayList<String> file_list=new ArrayList<String>();
+	public Vector<String> file_list=new Vector<String>();
 	ListAllPath(){
-		file_list=new ArrayList<String>();
+		file_list=new Vector<String>();
 		file_list.add(null);
 		}
 	
