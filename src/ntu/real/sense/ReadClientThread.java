@@ -39,7 +39,7 @@ public class ReadClientThread implements Runnable {
 					Message m = new Message();
 					Log.e("houpan","收到來自client的訊息");
 					m.what = Global.CLIENT_SEND_FILE_START;
-					m.obj=tmp.split("_",3)[2];//目標:server或是 id to id
+					m.obj=tmp.split("_",3)[2];//目標:來源id(to server)或是 id to id
 					//把訊息送回server端
 					gameHandler.sendMessage(m);
 						
