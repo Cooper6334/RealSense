@@ -387,11 +387,13 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		File rootFile = new File("/sdcard/DCIM");
 		demoTest.print(rootFile, 0);
 
-		RL_temp = new RelativeLayout(this);
+		RelativeLayout RL_temp = new RelativeLayout(this);
 		RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
-				RelativeLayout.LayoutParams.WRAP_CONTENT,
-				RelativeLayout.LayoutParams.WRAP_CONTENT);
-		params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+				RelativeLayout.LayoutParams.FILL_PARENT,
+				RelativeLayout.LayoutParams.FILL_PARENT);  	
+	    // params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);	
+				params.setMargins(dm.widthPixels / 10, dm.widthPixels / 10, 	
+				dm.widthPixels / 10, dm.widthPixels / 10);
 		RL_temp.setLayoutParams(params);
 		layout.addView(RL_temp);
 		// 注意顯示太多照片會out of memory
@@ -453,7 +455,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		}
 
 		// 加入RealSense
-		surface = new RealSurface(this, dm.widthPixels, dm.heightPixels);
+		surface = new RealSurface(this, dm.widthPixels, dm.heightPixels, index);
 		this.addContentView(surface, new LayoutParams(LayoutParams.FILL_PARENT,
 				LayoutParams.FILL_PARENT));
 

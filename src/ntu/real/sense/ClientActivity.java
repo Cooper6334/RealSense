@@ -586,7 +586,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 		// 設定顯示照片的layout
-		layout = new RelativeLayout(this);
+		RelativeLayout RL_temp = new RelativeLayout(this);
 		layout.setBackgroundColor(Color.BLACK);
 		setContentView(layout);
 		// 讀取照片
@@ -599,7 +599,8 @@ public class ClientActivity extends Activity implements SensorEventListener {
 		RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
 				RelativeLayout.LayoutParams.WRAP_CONTENT,
 				RelativeLayout.LayoutParams.WRAP_CONTENT);
-		params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+		//    params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);	  	
+		params.setMargins(dm.widthPixels / 10, dm.widthPixels / 10, dm.widthPixels / 10, dm.widthPixels / 10);
 		RL_temp.setLayoutParams(params);
 		layout.addView(RL_temp);
 		
@@ -662,7 +663,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 		}
 
 		// 加入RealSense
-		surface = new RealSurface(this, dm.widthPixels, dm.heightPixels);
+		surface = new RealSurface(this, dm.widthPixels, dm.heightPixels, index);
 		this.addContentView(surface, new LayoutParams(LayoutParams.FILL_PARENT,
 				LayoutParams.FILL_PARENT));
 
