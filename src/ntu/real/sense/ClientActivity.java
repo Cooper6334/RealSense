@@ -407,7 +407,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 		public void run() {
 
 			
-			socket = null;
+			Socket socket = null;
 			
 			while(socket==null){
 				try {
@@ -458,7 +458,12 @@ public class ClientActivity extends Activity implements SensorEventListener {
 			}
 			Log.e("houpan","收L4");
 				//serverSocket.close();
-			
+			try {
+				socket.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			Log.e("houpan","收L5");
 			
 			//更新圖示
