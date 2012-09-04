@@ -184,7 +184,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 
 				e1.printStackTrace();
 			}
-			//
+			Log.e("houpan", "傳L0");
 			//
 			if (socket != null) {
 

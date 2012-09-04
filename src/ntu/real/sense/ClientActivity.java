@@ -206,17 +206,11 @@ public class ClientActivity extends Activity implements SensorEventListener {
 		
 		@Override
 		public void run() {
-			/*
+		
 			Socket mmSocket = null;
 			while(mmSocket!=null){
-				WifiManager mWifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
-				DhcpInfo mDhcpInfo = mWifiManager.getDhcpInfo();
-				int ipadd = mDhcpInfo.gateway;
-				Global.IP = ((ipadd & 0xFF) + "." + (ipadd >> 8 & 0xFF)
-						+ "." + (ipadd >> 16 & 0xFF) + "." + (ipadd >> 24 & 0xFF));
-				Log.e("ip", Global.IP);
 				try {
-					mmSocket = new Socket(Global.IP, Global.FILE_PORT);
+					mmSocket = new Socket(Global.IP, 6666);
 				} catch (UnknownHostException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -257,7 +251,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 			}
 			Log.e("houpan","收L4");
 			
-			*/
+			
 			Message tempMessage = new Message();
 			tempMessage.what = Global.SERVER_SEND_FILE_COMPLETED;//傳完了
 			handler.sendMessage(tempMessage);
@@ -433,6 +427,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 				while (Global.flagIsPlaying) {
 					if(!Global.flagIsReceiving){
 						String m = mca.read();
+						Log.e("houpan","讀到"+m);
 						if ("init".equals(m)) {
 							cId = Integer.parseInt(mca.read());
 							users = Integer.parseInt(mca.read());
