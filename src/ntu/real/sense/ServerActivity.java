@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
+import javax.xml.transform.Source;
+
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.graphics.Bitmap;
@@ -63,11 +65,15 @@ public class ServerActivity extends Activity implements SensorEventListener {
 			switch (m.what) {
 			// 改變角度時廣播給所有client
 			case 0x101:
-
 				surface.target.get(m.arg1).degree = m.arg2;
 				msa.writeAll("setdeg");
 				msa.writeAll("" + m.arg1);
-				msa.writeAll("" + m.arg2);
+				msa.writeAll("" + m.arg2);;
+				int k;
+				for(k=0; k < Global.mServerAgent.clients.size(); k++){
+					Log.e("WeiChen", surface.target.get(k).degree + "ID " + k);
+				}
+//				Log.e("WeiChen", surface.target.get(k + 1).degree + "ID " + k);
 				break;
 
 			// 點擊
