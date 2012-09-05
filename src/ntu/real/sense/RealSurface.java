@@ -1,6 +1,7 @@
 	package ntu.real.sense;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -9,19 +10,21 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
-import android.graphics.RectF;
 import android.graphics.PorterDuff.Mode;
+import android.graphics.RectF;
 import android.os.Handler;
 import android.os.Message;
+import android.text.format.Time;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.widget.Toast;
 
 public class RealSurface extends SurfaceView {
 	int selectedPhoto = -1;
 	int photoNum = 0;
+	boolean isLogged = false;
+	String serverName = " ";
 	boolean flagTouchUp = false;
 	boolean flagLongTouch = false;
 	boolean flagCanSend = false;
@@ -61,7 +64,7 @@ public class RealSurface extends SurfaceView {
 		holder.setFormat(PixelFormat.TRANSPARENT);
 		// TODO Auto-generated constructor stub
 	}
-
+	
 	public RealSurface(Context context, int width, int height,int num) {
 		super(context);
 		setZOrderOnTop(true);
@@ -74,6 +77,19 @@ public class RealSurface extends SurfaceView {
 		// TODO Auto-generated constructor stub
 	}
 
+	public RealSurface(Context context, int width, int height,int num ,String name) {
+		super(context);
+		setZOrderOnTop(true);
+		holder = getHolder();
+		holder.setFormat(PixelFormat.TRANSPARENT);
+		displayWidth = width;
+		displayHeight = height;
+		radius = radius * displayWidth / 768;
+		photoNum = num;
+		serverName = name;
+		// TODO Auto-generated constructor stub
+	}
+
 	void drawView() {
 
 		Canvas canvas = holder.lockCanvas();
@@ -81,8 +97,27 @@ public class RealSurface extends SurfaceView {
 		if (canvas != null) {
 			// canvas.drawColor(Color.argb(0, 0, 0, 0));
 			canvas.drawColor(Color.TRANSPARENT, Mode.CLEAR);
+			
+			for (Target t : target) {
+				  if(serverName.equals(t.name)){
+					  Paint degreeP = new Paint();
+					  degreeP.setColor(Color.YELLOW);
+					  degreeP.setTextSize(32);
+					  canvas.drawText(t.degree + "", displayWidth / 2 - 50, displayHeight * 4 / 5, degreeP);
+				  }
+				}
 
 			if (flagLongTouch) {
+			
+				if(isLogged == false){
+					Global.startTime = new Time();
+					Global.startTime.setToNow();
+					Global.storedDegree = (ArrayList<Target>) target.clone();
+//					for(Target t : target){
+//						Log.e("WeiChen" , t.degree + "Name: " + t.name);
+//					}
+					isLogged = true;
+				}
 
 				if(selectedPhoto != 2 && selectedPhoto != 5 && selectedPhoto != 8 && selectedPhoto != 11){
 					radius = radius * 8 / 10;
@@ -95,6 +130,7 @@ public class RealSurface extends SurfaceView {
 				p.setColor(Color.RED);
 				// 除去title bar跟notification bar的高度
 				canvas.drawCircle(px, py, radius, p);
+				
 
 				for (Target t : showTarget) {
 
@@ -125,6 +161,8 @@ public class RealSurface extends SurfaceView {
 					 radius = radius * 10 / 8;
 
 				 }
+			}else{
+				isLogged = false;
 			}
 			holder.unlockCanvasAndPost(canvas);
 			}
@@ -141,7 +179,7 @@ public class RealSurface extends SurfaceView {
 		switch (e.getAction()) {
 		case MotionEvent.ACTION_DOWN:
 			h.removeMessages(0x101);
-			h.sendEmptyMessageDelayed(0x101, 500);
+			h.sendEmptyMessageDelayed(0x101, 200);
 			flagTouchUp = false;
 			setSelectedNumber(e.getX(), e.getY());
 			return true;

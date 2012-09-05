@@ -25,6 +25,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.text.format.Time;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.ViewGroup.LayoutParams;
@@ -85,6 +86,13 @@ public class ServerActivity extends Activity implements SensorEventListener {
 				File tmpFile = new File(demoTest.file_list.get(picNumber));
 				Uri outputFileUri = Uri.fromFile(tmpFile);
 				
+				Global.endTime = new Time();
+				Global.endTime.setToNow();
+				Log.e("WeiChen", Global.startTime + " start");
+				Log.e("WeiChen", Global.endTime + " end");
+				for(Target t : Global.storedDegree){
+					Log.e("WeiChen" , t.degree + "Name: " + t.name);
+				}
 				
 				//一個一個target送出
 				Integer i;
@@ -117,6 +125,11 @@ public class ServerActivity extends Activity implements SensorEventListener {
 				
 				//接收由client而來的傳輸
 				case Global.CLIENT_SEND_FILE_START:
+					
+					for(Target tg : Global.storedDegree){
+						Log.e("WeiChen" , tg.degree + "Name: " + tg.name);
+					}
+					
 					if(((String)m.obj).split("_").length==1){//直接傳到server
 						//開始接收
 						Log.e("houpan","收到來自client的訊息(toServer)");
@@ -455,7 +468,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		}
 
 		// 加入RealSense
-		surface = new RealSurface(this, dm.widthPixels, dm.heightPixels,index);
+		surface = new RealSurface(this, dm.widthPixels, dm.heightPixels,index, Global.userName[msa.getCount()]);
 		this.addContentView(surface, new LayoutParams(LayoutParams.FILL_PARENT,
 				LayoutParams.FILL_PARENT));
 

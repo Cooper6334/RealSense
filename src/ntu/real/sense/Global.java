@@ -1,9 +1,11 @@
 package ntu.real.sense;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 import android.bluetooth.BluetoothDevice;
 import android.graphics.Color;
+import android.text.format.Time;
 
 public class Global {
 	protected static final String TAG = "WifiDev";
@@ -64,5 +66,9 @@ public class Global {
 	static boolean flagIsReceiving = false;
 	static Agent mClientAgent;
 	static ServerAgent mServerAgent;
+	
+	static Time startTime;
+	static Time endTime;
+	static ArrayList<Target> storedDegree;
 
 }

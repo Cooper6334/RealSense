@@ -26,6 +26,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.text.format.Time;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.ViewGroup.LayoutParams;
@@ -79,6 +80,10 @@ public class ClientActivity extends Activity implements SensorEventListener {
 				File tmpFile = new File(demoTest.file_list.get(picNumber));
 				Uri outputFileUri = Uri.fromFile(tmpFile);
 				
+				Global.endTime = new Time();
+				Global.endTime.setToNow();
+				Log.e("WeiChen", Global.startTime + " start");
+				Log.e("WeiChen", Global.endTime + " end");
 				
 				//一個一個target送出
 				Integer i;
