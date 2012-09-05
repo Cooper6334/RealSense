@@ -575,18 +575,21 @@ public class ClientActivity extends Activity implements SensorEventListener {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		DisplayMetrics dm = new DisplayMetrics();
-		this.getWindowManager().getDefaultDisplay().getMetrics(dm);
-		imgBtnSize = dm.widthPixels / 4;
-		imgMargin = dm.widthPixels / 100;
-		Log.e("123", dm.widthPixels + "" + dm.heightPixels);
-		// 隱藏title bar&notifiaction bar
+
+		 DisplayMetrics dm = new DisplayMetrics();
+		 this.getWindowManager().getDefaultDisplay().getMetrics(dm);
+		 imgBtnSize = dm.widthPixels / 4;
+		 imgMargin = dm.widthPixels / 100;
+		 Log.e("123", dm.widthPixels + "" + dm.heightPixels);
+	    
+	    
+	    // 隱藏title bar&notifiaction bar
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 		// 設定顯示照片的layout
-		RelativeLayout RL_temp = new RelativeLayout(this);
+		layout = new RelativeLayout(this);
 		layout.setBackgroundColor(Color.BLACK);
 		setContentView(layout);
 		// 讀取照片
@@ -594,18 +597,17 @@ public class ClientActivity extends Activity implements SensorEventListener {
 		File rootFile = new File("/sdcard/DCIM");
 		demoTest.print(rootFile, 0);
 
-		InputStream inputStream = null;
-		RL_temp = new RelativeLayout(this);
+	    RL_temp = new RelativeLayout(this);
 		RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
-				RelativeLayout.LayoutParams.WRAP_CONTENT,
-				RelativeLayout.LayoutParams.WRAP_CONTENT);
-		//    params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);	  	
-		params.setMargins(dm.widthPixels / 10, dm.widthPixels / 10, dm.widthPixels / 10, dm.widthPixels / 10);
+				  RelativeLayout.LayoutParams.FILL_PARENT,
+				  RelativeLayout.LayoutParams.FILL_PARENT);
+				  params.setMargins(dm.widthPixels / 10, dm.widthPixels / 10,
+				  dm.widthPixels / 10, dm.widthPixels / 10);
+				  
+		
+		params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
 		RL_temp.setLayoutParams(params);
 		layout.addView(RL_temp);
-		
-		
-		;
 		// 注意顯示太多照片會out of memory
 		int index = demoTest.file_list.size();
 		picCycling=7;//把cycling先設在下一個要補的地方
@@ -663,7 +665,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 		}
 
 		// 加入RealSense
-		surface = new RealSurface(this, dm.widthPixels, dm.heightPixels, index);
+		surface = new RealSurface(this, dm.widthPixels, dm.heightPixels,index);
 		this.addContentView(surface, new LayoutParams(LayoutParams.FILL_PARENT,
 				LayoutParams.FILL_PARENT));
 

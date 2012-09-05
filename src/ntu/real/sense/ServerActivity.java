@@ -12,8 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
-import javax.xml.transform.Source;
-
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.graphics.Bitmap;
@@ -65,15 +63,11 @@ public class ServerActivity extends Activity implements SensorEventListener {
 			switch (m.what) {
 			// 改變角度時廣播給所有client
 			case 0x101:
+
 				surface.target.get(m.arg1).degree = m.arg2;
 				msa.writeAll("setdeg");
 				msa.writeAll("" + m.arg1);
-				msa.writeAll("" + m.arg2);;
-//				int k;
-//				for(k=0; k < Global.mServerAgent.clients.size(); k++){
-//					Log.e("WeiChen", surface.target.get(k).degree + "ID " + k);
-//				}
-//				Log.e("WeiChen", surface.target.get(k).degree + "ID " + k);
+				msa.writeAll("" + m.arg2);
 				break;
 
 			// 點擊
@@ -368,12 +362,16 @@ public class ServerActivity extends Activity implements SensorEventListener {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		DisplayMetrics dm = new DisplayMetrics(); 
-	    this.getWindowManager().getDefaultDisplay().getMetrics(dm);
-	    imgBtnSize = dm.widthPixels / 4;
-	    imgMargin = dm.widthPixels / 100;
-	    Log.e("123", dm.widthPixels + "" + dm.heightPixels);
-		// 隱藏title bar&notifiaction bar
+		
+		
+		 DisplayMetrics dm = new DisplayMetrics();
+		 this.getWindowManager().getDefaultDisplay().getMetrics(dm);
+		 imgBtnSize = dm.widthPixels / 4;
+		 imgMargin = dm.widthPixels / 100;
+		 Log.e("123", dm.widthPixels + "" + dm.heightPixels);
+	    
+	    
+	    // 隱藏title bar&notifiaction bar
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -387,13 +385,15 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		File rootFile = new File("/sdcard/DCIM");
 		demoTest.print(rootFile, 0);
 
-		RelativeLayout RL_temp = new RelativeLayout(this);
+	    RL_temp = new RelativeLayout(this);
 		RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
-				RelativeLayout.LayoutParams.FILL_PARENT,
-				RelativeLayout.LayoutParams.FILL_PARENT);  	
-	    // params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);	
-				params.setMargins(dm.widthPixels / 10, dm.widthPixels / 10, 	
-				dm.widthPixels / 10, dm.widthPixels / 10);
+				  RelativeLayout.LayoutParams.FILL_PARENT,
+				  RelativeLayout.LayoutParams.FILL_PARENT);
+				  params.setMargins(dm.widthPixels / 10, dm.widthPixels / 10,
+				  dm.widthPixels / 10, dm.widthPixels / 10);
+				  
+		
+		params.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
 		RL_temp.setLayoutParams(params);
 		layout.addView(RL_temp);
 		// 注意顯示太多照片會out of memory
@@ -455,7 +455,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		}
 
 		// 加入RealSense
-		surface = new RealSurface(this, dm.widthPixels, dm.heightPixels, index);
+		surface = new RealSurface(this, dm.widthPixels, dm.heightPixels,index);
 		this.addContentView(surface, new LayoutParams(LayoutParams.FILL_PARENT,
 				LayoutParams.FILL_PARENT));
 
