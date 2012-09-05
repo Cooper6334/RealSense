@@ -69,6 +69,7 @@ public class Global {
 	
 	static Time startTime;
 	static Time endTime;
+	static Time now;
 	static ArrayList<Target> storedDegree;
 
 }

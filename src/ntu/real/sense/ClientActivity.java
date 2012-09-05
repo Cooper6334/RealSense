@@ -1,8 +1,10 @@
 package ntu.real.sense;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -82,8 +84,23 @@ public class ClientActivity extends Activity implements SensorEventListener {
 				
 				Global.endTime = new Time();
 				Global.endTime.setToNow();
-				Log.e("WeiChen", Global.startTime + " start");
-				Log.e("WeiChen", Global.endTime + " end");
+				try{
+			        FileWriter ct = new FileWriter("/sdcard/ClientTimeLog.txt", true);
+			        BufferedWriter bwCT = new BufferedWriter(ct); //將BufferedWeiter與FileWrite物件做連結
+			        Global.now = new Time();
+			        Global.now.setToNow();
+			        bwCT.write("<<\t" + Global.now + "\t>>\n");
+			        bwCT.write("start\t" + Global.startTime + "\n");
+			        bwCT.write("end\t" + Global.endTime + "\n\n");
+			        bwCT.close();
+			    }catch(IOException e){
+			       e.printStackTrace();
+			    }
+				
+//				Global.endTime = new Time();
+//				Global.endTime.setToNow();
+//				Log.e("WeiChen", Global.startTime + " start");
+//				Log.e("WeiChen", Global.endTime + " end");
 				
 				//一個一個target送出
 				Integer i;

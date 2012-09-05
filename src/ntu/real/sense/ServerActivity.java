@@ -1,8 +1,10 @@
 package ntu.real.sense;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -88,11 +90,31 @@ public class ServerActivity extends Activity implements SensorEventListener {
 				
 				Global.endTime = new Time();
 				Global.endTime.setToNow();
-				Log.e("WeiChen", Global.startTime + " start");
-				Log.e("WeiChen", Global.endTime + " end");
-				for(Target t : Global.storedDegree){
-					Log.e("WeiChen" , t.degree + "Name: " + t.name);
-				}
+				try{
+			        FileWriter st = new FileWriter("/sdcard/ServerTimeLog.txt", true);
+			        BufferedWriter bwST = new BufferedWriter(st); //將BufferedWeiter與FileWrite物件做連結
+			        FileWriter ssd = new FileWriter("/sdcard/ServerSendDegree.txt", true);
+			        BufferedWriter bwSSD = new BufferedWriter(ssd);
+			        Global.now = new Time();
+			        Global.now.setToNow();
+			        bwST.write("<<\t" + Global.now + "\t>>\n");
+			        bwST.write("start\t" + Global.startTime + "\n");
+			        bwST.write("end\t" + Global.endTime + "\n\n");
+			        bwSSD.write("<<\t" + Global.now + "\t>>\n");
+			        for(Target t : Global.storedDegree){
+		        			bwSSD.write("Name:\t" + t.name + "\t" + t.degree + "\n");
+			        }bwSSD.newLine();
+					bwST.close();
+					bwSSD.close();
+			    }catch(IOException e){
+			       e.printStackTrace();
+			    }
+				
+//				Log.e("WeiChen", Global.startTime + " start");
+//				Log.e("WeiChen", Global.endTime + " end");
+//				for(Target t : Global.storedDegree){
+//					Log.e("WeiChen" , t.degree + "Name: " + t.name);
+//				}
 				
 				//一個一個target送出
 				Integer i;
@@ -126,9 +148,25 @@ public class ServerActivity extends Activity implements SensorEventListener {
 				//接收由client而來的傳輸
 				case Global.CLIENT_SEND_FILE_START:
 					
-					for(Target tg : Global.storedDegree){
-						Log.e("WeiChen" , tg.degree + "Name: " + tg.name);
-					}
+					Global.endTime = new Time();
+					Global.endTime.setToNow();
+					try{
+				        FileWriter csd = new FileWriter("/sdcard/ClientSendDegree.txt", true);
+				        BufferedWriter bwCSD = new BufferedWriter(csd);
+				        Global.now = new Time();
+				        Global.now.setToNow();
+				        bwCSD.write("<<\t" + Global.now + "\t>>\n");
+				        for(Target tg : Global.storedDegree){
+				        		bwCSD.write("Name:\t" + tg.name + "\t" + tg.degree + "\n");
+				        }bwCSD.newLine();
+				        bwCSD.close();
+				    }catch(IOException e){
+				       e.printStackTrace();
+				    }
+					
+//					for(Target tg : Global.storedDegree){
+//						Log.e("WeiChen" , tg.degree + "Name: " + tg.name);
+//					}
 					
 					if(((String)m.obj).split("_").length==1){//直接傳到server
 						//開始接收
