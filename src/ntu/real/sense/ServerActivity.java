@@ -162,7 +162,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 					        }bwCSD.newLine();
 					        bwCSD.close();
 					    }catch(IOException e){
-					       e.printStackTrace();
+					       e.printStackTrace();.
 					    }	
 			        }else{
 			        	Global.storedDegree=new ArrayList<Target>(); 
