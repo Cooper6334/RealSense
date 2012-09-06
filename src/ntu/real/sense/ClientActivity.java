@@ -41,6 +41,7 @@ import android.widget.Toast;
 public class ClientActivity extends Activity implements SensorEventListener {
 	int imgBtnSize = 150;
 	int imgMargin = 5;
+	boolean separationLine = false;
 
 	SensorManager sensorManager;
 
@@ -88,6 +89,10 @@ public class ClientActivity extends Activity implements SensorEventListener {
 				try{
 			        FileWriter ct = new FileWriter("/sdcard/ClientTimeLog.txt", true);
 			        BufferedWriter bwCT = new BufferedWriter(ct); //將BufferedWeiter與FileWrite物件做連結
+			        if(separationLine == false){
+		        			bwCT.write("-\tSeparation\tLine\t-\n");
+		        			separationLine = true;
+		        		}
 			        Global.now = new Time();
 			        Global.now.setToNow();
 			        bwCT.write("<<\t" + Global.now + "\t>>\n");

@@ -40,6 +40,8 @@ import android.widget.Toast;
 public class ServerActivity extends Activity implements SensorEventListener {
 	int imgBtnSize=150;
 	int imgMargin=5;
+	boolean separationLine = false;
+	boolean separationLineClient = false;
 
 	RealSurface surface;
 	RelativeLayout layout;
@@ -96,6 +98,11 @@ public class ServerActivity extends Activity implements SensorEventListener {
 			        BufferedWriter bwST = new BufferedWriter(st); //將BufferedWeiter與FileWrite物件做連結
 			        FileWriter ssd = new FileWriter("/sdcard/ServerSendDegree.txt", true);
 			        BufferedWriter bwSSD = new BufferedWriter(ssd);
+			        if(separationLine == false){
+			        		bwST.write("-\tSeparation\tLine\t-\n");
+			        		bwSSD.write("-\tSeparation\tLine\t-\n");
+			        		separationLine = true;
+			        		}
 			        Global.now = new Time();
 			        Global.now.setToNow();
 			        bwST.write("<<\t" + Global.now + "\t>>\n");
@@ -154,6 +161,10 @@ public class ServerActivity extends Activity implements SensorEventListener {
 						try{
 					        FileWriter csd = new FileWriter("/sdcard/ClientSendDegree.txt", true);
 					        BufferedWriter bwCSD = new BufferedWriter(csd);
+					        if(separationLineClient == false){
+				        			bwCSD.write("-\tSeparation\tLine\t-\n");
+				        		separationLineClient = true;
+				        		}
 					        Global.now = new Time();
 					        Global.now.setToNow();
 					        bwCSD.write("<<\t" + Global.now + "\t>>\n");
