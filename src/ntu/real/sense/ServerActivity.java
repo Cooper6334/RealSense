@@ -90,6 +90,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 				
 				Global.endTime = new Time();
 				Global.endTime.setToNow();
+				Global.endTimeMs = System.currentTimeMillis();
 				try{
 			        FileWriter st = new FileWriter("/sdcard/ServerTimeLog.txt", true);
 			        BufferedWriter bwST = new BufferedWriter(st); //將BufferedWeiter與FileWrite物件做連結
@@ -99,7 +100,9 @@ public class ServerActivity extends Activity implements SensorEventListener {
 			        Global.now.setToNow();
 			        bwST.write("<<\t" + Global.now + "\t>>\n");
 			        bwST.write("start\t" + Global.startTime + "\n");
-			        bwST.write("end\t" + Global.endTime + "\n\n");
+			        bwST.write("end\t" + Global.endTime + "\n");
+			        bwST.write("startMs\t" + Global.startTimeMs + "\n");
+			        bwST.write("endMs\t" + Global.endTimeMs + "\n\n");
 			        bwSSD.write("<<\t" + Global.now + "\t>>\n");
 			        for(Target t : Global.storedDegree){
 		        			bwSSD.write("Name:\t" + t.name + "\t" + t.degree + "\n");
@@ -148,8 +151,6 @@ public class ServerActivity extends Activity implements SensorEventListener {
 				//接收由client而來的傳輸
 				case Global.CLIENT_SEND_FILE_START:
 					
-					Global.endTime = new Time();
-					Global.endTime.setToNow();
 					try{
 				        FileWriter csd = new FileWriter("/sdcard/ClientSendDegree.txt", true);
 				        BufferedWriter bwCSD = new BufferedWriter(csd);

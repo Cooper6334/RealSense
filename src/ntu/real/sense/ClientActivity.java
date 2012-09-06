@@ -84,6 +84,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 				
 				Global.endTime = new Time();
 				Global.endTime.setToNow();
+				Global.endTimeMs = System.currentTimeMillis();
 				try{
 			        FileWriter ct = new FileWriter("/sdcard/ClientTimeLog.txt", true);
 			        BufferedWriter bwCT = new BufferedWriter(ct); //將BufferedWeiter與FileWrite物件做連結
@@ -91,7 +92,9 @@ public class ClientActivity extends Activity implements SensorEventListener {
 			        Global.now.setToNow();
 			        bwCT.write("<<\t" + Global.now + "\t>>\n");
 			        bwCT.write("start\t" + Global.startTime + "\n");
-			        bwCT.write("end\t" + Global.endTime + "\n\n");
+			        bwCT.write("end\t" + Global.endTime + "\n");
+			        bwCT.write("startMs\t" + Global.startTimeMs + "\n");
+			        bwCT.write("endMs\t" + Global.endTimeMs + "\n\n");
 			        bwCT.close();
 			    }catch(IOException e){
 			       e.printStackTrace();
