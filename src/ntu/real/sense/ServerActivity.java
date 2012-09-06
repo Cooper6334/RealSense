@@ -607,8 +607,15 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		super.onPause();
 		sensorManager.unregisterListener(this);
 		Global.flagIsPlaying = false;
+		
+		if (msa != null) {
+			msa.clear();
+			msa = null;
+		}
+		
 	}
 
+	
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
 		// TODO Auto-generated method stub

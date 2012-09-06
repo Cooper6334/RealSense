@@ -812,8 +812,22 @@ public class ClientActivity extends Activity implements SensorEventListener {
 		super.onPause();
 		sensorManager.unregisterListener(this);
 		Global.flagIsPlaying = false;
+		if (serverSocket != null) {
+			try {
+				serverSocket.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		if (mca != null) {
+			mca.clear();
+			mca = null;
+		}
 	}
 
+	
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
 		// TODO Auto-generated method stub

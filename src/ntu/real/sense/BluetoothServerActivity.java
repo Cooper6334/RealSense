@@ -145,6 +145,27 @@ public class BluetoothServerActivity extends Activity {
 		}
 		Log.e("ba", "back press");
 	}
+	
+	public void onDestroyed(){
+		super.onDestroy();
+		flagExit = true;
+		if (serverSocket != null) {
+			try {
+				serverSocket.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		if (msa != null) {
+			msa.clear();
+			msa = null;
+		}
+		if (mca != null) {
+			mca.clear();
+			mca = null;
+		}
+	}
 
 	void bindViews() {
 		adapter = new ArrayAdapter<String>(this,
