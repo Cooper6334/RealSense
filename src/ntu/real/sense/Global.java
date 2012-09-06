@@ -18,7 +18,7 @@ public class Global {
 
 	static final String[] userName = { "Allen", "Bob", "Cooper", "David",
 			"Eric", "Frank" };
-	static final int[] userColor = { Color.BLACK, Color.BLUE, Color.GREEN,
+	static final int[] userColor = { Color.CYAN, Color.BLUE, Color.GREEN,
 			Color.GRAY, Color.YELLOW, Color.DKGRAY };
 
 	// static String mMAC = "";
