@@ -112,6 +112,7 @@ public class RealSurface extends SurfaceView {
 				if(isLogged == false){
 					Global.startTime = new Time();
 					Global.startTime.setToNow();
+					Global.startTimeMs = System.currentTimeMillis();
 					Global.storedDegree = (ArrayList<Target>) target.clone();
 //					for(Target t : target){
 //						Log.e("WeiChen" , t.degree + "Name: " + t.name);
