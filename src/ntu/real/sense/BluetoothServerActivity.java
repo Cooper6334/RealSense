@@ -145,7 +145,7 @@ public class BluetoothServerActivity extends Activity {
 		}
 		Log.e("ba", "back press");
 	}
-	
+	/*
 	public void onDestroyed(){
 		super.onDestroy();
 		flagExit = true;
@@ -165,7 +165,7 @@ public class BluetoothServerActivity extends Activity {
 			mca.clear();
 			mca = null;
 		}
-	}
+	}*/
 
 	void bindViews() {
 		adapter = new ArrayAdapter<String>(this,

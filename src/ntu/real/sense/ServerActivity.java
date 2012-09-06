@@ -602,7 +602,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		
 		new Thread(new ServerFileOutputTransferThread_manager()).start();
 	}
-
+/*
 	@Override
 	public void onPause() {
 		super.onPause();
@@ -615,7 +615,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		}
 		
 	}
-
+*/
 	
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {

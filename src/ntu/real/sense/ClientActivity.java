@@ -288,7 +288,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 			mca.write("ClientSend_start_"+cId);
 
 			
-			socket = null;
+			Socket socket = null;
 			
 			while(socket==null){
 				try {
@@ -809,7 +809,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 		
 		new Thread(new ClientFileOutputTransferThread_manager()).start();//開啟傳送檔案管理者的thread
 	}
-
+/*
 	@Override
 	public void onPause() {
 		super.onPause();
@@ -829,7 +829,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 			mca = null;
 		}
 	}
-
+*/
 	
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
