@@ -150,21 +150,23 @@ public class ServerActivity extends Activity implements SensorEventListener {
 				
 				//接收由client而來的傳輸
 				case Global.CLIENT_SEND_FILE_START:
-					
-					try{
-				        FileWriter csd = new FileWriter("/sdcard/ClientSendDegree.txt", true);
-				        BufferedWriter bwCSD = new BufferedWriter(csd);
-				        Global.now = new Time();
-				        Global.now.setToNow();
-				        bwCSD.write("<<\t" + Global.now + "\t>>\n");
-				        for(Target tg : Global.storedDegree){
-				        		bwCSD.write("Name:\t" + tg.name + "\t" + tg.degree + "\n");
-				        }bwCSD.newLine();
-				        bwCSD.close();
-				    }catch(IOException e){
-				       e.printStackTrace();
-				    }
-					
+					if(Global.storedDegree!=null){
+						try{
+					        FileWriter csd = new FileWriter("/sdcard/ClientSendDegree.txt", true);
+					        BufferedWriter bwCSD = new BufferedWriter(csd);
+					        Global.now = new Time();
+					        Global.now.setToNow();
+					        bwCSD.write("<<\t" + Global.now + "\t>>\n");
+					        for(Target tg : Global.storedDegree){
+					        		bwCSD.write("Name:\t" + tg.name + "\t" + tg.degree + "\n");
+					        }bwCSD.newLine();
+					        bwCSD.close();
+					    }catch(IOException e){
+					       e.printStackTrace();
+					    }	
+			        }else{
+			        	Global.storedDegree=new ArrayList<Target>(); 
+			        }
 //					for(Target tg : Global.storedDegree){
 //						Log.e("WeiChen" , tg.degree + "Name: " + tg.name);
 //					}
@@ -602,20 +604,20 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		
 		new Thread(new ServerFileOutputTransferThread_manager()).start();
 	}
-/*
+
 	@Override
 	public void onPause() {
 		super.onPause();
 		sensorManager.unregisterListener(this);
 		Global.flagIsPlaying = false;
-		
+		/*		
 		if (msa != null) {
 			msa.clear();
 			msa = null;
 		}
-		
+*/		
 	}
-*/
+
 	
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {

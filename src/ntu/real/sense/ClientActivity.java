@@ -363,7 +363,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 			mca.write("ClientSend_start_"+Global.mClientAgent.id+"_"+targetId);
 				
 
-			socket=null;
+			Socket socket=null;
 			while(socket==null){
 				try {
 					socket = serverSocket.accept();
@@ -766,39 +766,50 @@ public class ClientActivity extends Activity implements SensorEventListener {
 				while (Global.flagIsPlaying) {
 					if(!Global.flagIsReceiving){
 						String m = mca.read();
-						if ("init".equals(m)) {
-							cId = Integer.parseInt(mca.read());
-							users = Integer.parseInt(mca.read());
-							//cId表client自己的id
-							Log.e("init", cId + ":" + users);
-							Global.mClientAgent.id=cId;
-							for (int i = 0; i < users; i++) {
-								surface.target.add(new Target(Global.userName[i],
-										0, Global.userColor[i]));
+						if(m!=null){
+							if ("init".equals(m)) {
+								cId = Integer.parseInt(mca.read());
+								users = Integer.parseInt(mca.read());
+								//cId表client自己的id
+								Log.e("init", cId + ":" + users);
+								Global.mClientAgent.id=cId;
+								for (int i = 0; i < users; i++) {
+									surface.target.add(new Target(Global.userName[i],
+											0, Global.userColor[i]));
+								}
+							}else if ("ServerSendFile_start".equals(m)) {//server傳檔案過來
+								
+								Message tempMessage = new Message();
+								tempMessage.what = Global.SERVER_SEND_FILE_START;//server傳檔案
+								handler.sendMessage(tempMessage);
+								
+							}else if(m.startsWith("ClinetSendFile_start_")){
+								
+								Message tempMessage = new Message();
+								tempMessage.what = Global.CLIENT_SEND_FILE_START;//client傳檔案
+								tempMessage.obj=m.split("_",3)[2];
+								Log.e("houpan","client("+tempMessage.obj+")送檔案過來");
+								handler.sendMessage(tempMessage);
+							}else if("ClientReceive_completed_client".equals(m)){
+								Message tempMessage = new Message();
+								tempMessage.what = Global.CLIENT_SEND_FILE_COMPLETED_REMOTE;//從對面的client得到資訊：他收完了
+								handler.sendMessage(tempMessage);
+								
+							}else if ("setdeg".equals(m)) {
+								int who = Integer.parseInt(mca.read());
+								int deg = Integer.parseInt(mca.read());
+								surface.target.get(who).degree = deg;
 							}
-						}else if ("ServerSendFile_start".equals(m)) {//server傳檔案過來
 							
-							Message tempMessage = new Message();
-							tempMessage.what = Global.SERVER_SEND_FILE_START;//server傳檔案
-							handler.sendMessage(tempMessage);
-							
-						}else if(m.startsWith("ClinetSendFile_start_")){
-							
-							Message tempMessage = new Message();
-							tempMessage.what = Global.CLIENT_SEND_FILE_START;//client傳檔案
-							tempMessage.obj=m.split("_",3)[2];
-							Log.e("houpan","client("+tempMessage.obj+")送檔案過來");
-							handler.sendMessage(tempMessage);
-						}else if("ClientReceive_completed_client".equals(m)){
-							Message tempMessage = new Message();
-							tempMessage.what = Global.CLIENT_SEND_FILE_COMPLETED_REMOTE;//從對面的client得到資訊：他收完了
-							handler.sendMessage(tempMessage);
-							
-						}else if ("setdeg".equals(m)) {
-							int who = Integer.parseInt(mca.read());
-							int deg = Integer.parseInt(mca.read());
-							surface.target.get(who).degree = deg;
+						}else{
+							try {
+								Thread.sleep(1000);
+							} catch (InterruptedException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
 						}
+						
 	
 					}
 										
@@ -809,12 +820,13 @@ public class ClientActivity extends Activity implements SensorEventListener {
 		
 		new Thread(new ClientFileOutputTransferThread_manager()).start();//開啟傳送檔案管理者的thread
 	}
-/*
+
 	@Override
 	public void onPause() {
 		super.onPause();
 		sensorManager.unregisterListener(this);
 		Global.flagIsPlaying = false;
+/*
 		if (serverSocket != null) {
 			try {
 				serverSocket.close();
@@ -828,8 +840,9 @@ public class ClientActivity extends Activity implements SensorEventListener {
 			mca.clear();
 			mca = null;
 		}
+		*/
 	}
-*/
+
 	
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
