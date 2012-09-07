@@ -94,7 +94,10 @@ public class ServerActivity extends Activity implements SensorEventListener {
 				Global.endTime.setToNow();
 				Global.endTimeMs = System.currentTimeMillis();
 				try{
-			        FileWriter st = new FileWriter("/sdcard/ServerTimeLog.txt", true);
+					if(Global.storedDegree==null){
+						Global.storedDegree=new ArrayList<Target>();
+					}
+					FileWriter st = new FileWriter("/sdcard/ServerTimeLog.txt", true);
 			        BufferedWriter bwST = new BufferedWriter(st); //將BufferedWeiter與FileWrite物件做連結
 			        FileWriter ssd = new FileWriter("/sdcard/ServerSendDegree.txt", true);
 			        BufferedWriter bwSSD = new BufferedWriter(ssd);
@@ -115,7 +118,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		        			bwSSD.write("Name:\t" + t.name + "\t" + t.degree + "\n");
 			        }bwSSD.newLine();
 					bwST.close();
-					bwSSD.close();
+					bwSSD.close();			        
 			    }catch(IOException e){
 			       e.printStackTrace();
 			    }
@@ -157,27 +160,26 @@ public class ServerActivity extends Activity implements SensorEventListener {
 				
 				//接收由client而來的傳輸
 				case Global.CLIENT_SEND_FILE_START:
-					if(Global.storedDegree!=null){
-						try{
-					        FileWriter csd = new FileWriter("/sdcard/ClientSendDegree.txt", true);
-					        BufferedWriter bwCSD = new BufferedWriter(csd);
-					        if(separationLineClient == false){
-				        			bwCSD.write("-\tSeparation\tLine\t-\n");
-				        		separationLineClient = true;
-				        		}
-					        Global.now = new Time();
-					        Global.now.setToNow();
-					        bwCSD.write("<<\t" + Global.now + "\t>>\n");
-					        for(Target tg : Global.storedDegree){
-					        		bwCSD.write("Name:\t" + tg.name + "\t" + tg.degree + "\n");
-					        }bwCSD.newLine();
-					        bwCSD.close();
-					    }catch(IOException e){
-					       e.printStackTrace();.
-					    }	
-			        }else{
-			        	Global.storedDegree=new ArrayList<Target>(); 
-			        }
+					if(Global.storedDegree==null){
+						Global.storedDegree=new ArrayList<Target>(); 
+					}
+					try{
+				        FileWriter csd = new FileWriter("/sdcard/ClientSendDegree.txt", true);
+				        BufferedWriter bwCSD = new BufferedWriter(csd);
+				        if(separationLineClient == false){
+			        			bwCSD.write("-\tSeparation\tLine\t-\n");
+			        		separationLineClient = true;
+			        		}
+				        Global.now = new Time();
+				        Global.now.setToNow();
+				        bwCSD.write("<<\t" + Global.now + "\t>>\n");
+				        for(Target tg : Global.storedDegree){
+				        		bwCSD.write("Name:\t" + tg.name + "\t" + tg.degree + "\n");
+				        }bwCSD.newLine();
+				        bwCSD.close();
+				    }catch(IOException e){
+				       e.printStackTrace();
+				    }	
 //					for(Target tg : Global.storedDegree){
 //						Log.e("WeiChen" , tg.degree + "Name: " + tg.name);
 //					}
