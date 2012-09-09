@@ -53,7 +53,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 	UriRelatedOperation UriRelatedOperation;
 
 	RelativeLayout RL_temp;
-//	Agent mca = Global.mClientAgent;
+	Agent mca = Global.mClientAgent;
 	int cId;
 	int users;
 	int picCycling;// 1~12，看新進來的圖片要取代哪個thumbnails
@@ -220,6 +220,32 @@ public class ClientActivity extends Activity implements SensorEventListener {
 				// 要送出去的檔案
 				Log.e("houpan", "收結束");
 				break;
+
+			case 0x114:
+				String s = (String) m.obj;
+				mca.write(s);
+				break;
+			case 0x115:
+				mca.write("setdeg");
+				mca.write("" + m.arg1);
+				break;
+			case 0x116:
+				String s2 = (String) m.obj;
+				mca.write(s2);
+				Thread thr=new Thread(
+				new ClientFileOutputTransferThread_toClient(
+						toClient_i.remove(0),
+						toClient_outputFileUri.remove(0)));
+				thr.start();
+				break;
+			case 0x117:
+				String s3 = (String) m.obj;
+				mca.write(s3);
+				Thread t2=new Thread(
+				new ClientFileOutputTransferThread_toServer(
+						toServer_outputFileUri.remove(0)));
+				t2.start();
+				break;
 			}
 
 		}
@@ -260,13 +286,24 @@ public class ClientActivity extends Activity implements SensorEventListener {
 				if (operationQueue.size() != 0) {// 做下一個該做的operation
 					switch (operationQueue.remove(0)) {
 					case 1:
-						new ClientFileOutputTransferThread_toServer(
-								toServer_outputFileUri.remove(0)).run();
+						
+						Message m = new Message();
+						m.what = 0x117;
+						m.obj = "ClientSend_start_" + cId;
+						handler.sendMessage(m);
+//						new ClientFileOutputTransferThread_toServer(
+//								toServer_outputFileUri.remove(0)).run();
 						break;
 					case 2:
-						new ClientFileOutputTransferThread_toClient(
-								toClient_i.remove(0),
-								toClient_outputFileUri.remove(0)).run();
+						Message m2 = new Message();
+						m2.what = 0x116;
+						m2.obj = "ClientSend_start_" + Global.mClientAgent.id + "_"
+								+ toClient_i.get(0);
+						handler.sendMessage(m2);
+//						new ClientFileOutputTransferThread_toClient(
+//								toClient_i.remove(0),
+//								toClient_outputFileUri.remove(0)).run();
+
 						break;
 					}
 				} else {
@@ -294,7 +331,11 @@ public class ClientActivity extends Activity implements SensorEventListener {
 		@Override
 		public void run() {
 
-//			mca.write("ClientSend_start_" + cId);
+//			Message m=new Message();
+//			m.what=0x114;
+//			m.obj="ClientSend_start_" + cId;
+//			handler.sendMessage(m);
+//			 mca.write("ClientSend_start_" + cId);
 
 			Socket socket = null;
 
@@ -346,9 +387,9 @@ public class ClientActivity extends Activity implements SensorEventListener {
 				e.printStackTrace();
 			}
 
-			Message m = new Message();
-			m.what = Global.SERVER_RECEIVE_FILE_COMPLETED;
-			handler.sendMessage(m);
+			Message m2= new Message();
+			m2.what = Global.SERVER_RECEIVE_FILE_COMPLETED;
+			handler.sendMessage(m2);
 		}
 	}
 
@@ -363,8 +404,13 @@ public class ClientActivity extends Activity implements SensorEventListener {
 
 		@Override
 		public void run() {
-			mca.write("ClientSend_start_" + Global.mClientAgent.id + "_"
-					+ targetId);
+//			Message m = new Message();
+//			m.what = 0x114;
+//			m.obj = "ClientSend_start_" + Global.mClientAgent.id + "_"
+//					+ targetId;
+//			handler.sendMessage(m);
+			// mca.write("ClientSend_start_" + Global.mClientAgent.id + "_"
+			// + targetId);
 
 			Socket socket = null;
 			while (socket == null) {
@@ -415,9 +461,9 @@ public class ClientActivity extends Activity implements SensorEventListener {
 				e.printStackTrace();
 			}
 
-			Message m = new Message();
-			m.what = Global.CLIENT_RECEIVE_COMPLETED;
-			handler.sendMessage(m);
+			Message m2 = new Message();
+			m2.what = Global.CLIENT_RECEIVE_COMPLETED;
+			handler.sendMessage(m2);
 		}
 	}
 
@@ -491,8 +537,11 @@ public class ClientActivity extends Activity implements SensorEventListener {
 			tempMessage.obj = fileAbsolutePath;
 			handler.sendMessage(tempMessage);
 
-			mca.write("ClientReceive_completed_server");
-
+			Message m = new Message();
+			m.what = 0x114;
+			m.obj = "ClientReceive_completed_server";
+			handler.sendMessage(m);
+			// mca.write("ClientReceive_completed_server");
 		}
 	}
 
@@ -575,7 +624,11 @@ public class ClientActivity extends Activity implements SensorEventListener {
 			tempMessage.obj = fileAbsolutePath;
 			handler.sendMessage(tempMessage);
 
-			mca.write("ClientReceive_completed_client_" + sourceId);
+			Message m = new Message();
+			m.what = 0x114;
+			m.obj = "ClientReceive_completed_client_" + sourceId;
+			handler.sendMessage(m);
+			// mca.write("ClientReceive_completed_client_" + sourceId);
 		}
 	}
 
@@ -823,8 +876,13 @@ public class ClientActivity extends Activity implements SensorEventListener {
 		// TODO Auto-generated method stub
 
 		surface.myDeg = (int) event.values[0];
-		mca.write("setdeg");
-		mca.write("" + surface.myDeg);
+
+		Message m = new Message();
+		m.what = 0x115;
+		m.arg1 = surface.myDeg;
+		handler.sendMessage(m);
+		// mca.write("setdeg");
+		// mca.write("" + surface.myDeg);
 
 	}
 
