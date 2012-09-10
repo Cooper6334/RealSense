@@ -802,6 +802,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 								// cId表client自己的id
 								Log.e("init", cId + ":" + users);
 								Global.mClientAgent.id = cId;
+								surface.setId(cId);
 								for (int i = 0; i < users; i++) {
 									surface.target.add(new Target(
 											Global.userName[i], 0,

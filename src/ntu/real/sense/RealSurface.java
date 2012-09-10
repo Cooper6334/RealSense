@@ -34,6 +34,7 @@ public class RealSurface extends SurfaceView {
 	int myDeg;
 	int radius = 130;
 	int cnt = -1;// 0 for testing mode
+	int myId;
 	float px, py;
 	SurfaceHolder holder;
 	ArrayList<Target> target = new ArrayList<Target>();
@@ -47,6 +48,7 @@ public class RealSurface extends SurfaceView {
 			switch (m.what) {
 			case 0x101:
 				if (!flagTouchUp && selectedPhoto > 0 && selectedPhoto <= 6) {
+//					setTempTargetNoDeg();
 					setTempTarget();
 					flagLongTouch = true;
 				}
@@ -303,7 +305,7 @@ public class RealSurface extends SurfaceView {
 	// 建立圓弧
 	void setTempTarget() {
 		showTarget.clear();
-
+		// cnt for testing
 		if (cnt >= 0) {
 			cnt = (cnt + 1) % 2;
 		}
@@ -362,4 +364,29 @@ public class RealSurface extends SurfaceView {
 			showTarget.add(tmp[i]);
 		}
 	}
+
+	void setTempTargetNoDeg() {
+		showTarget.clear();
+		Target[] tmp = new Target[target.size() - 1];
+		for (int i = 0; i < target.size(); i++) {
+			if (i < myId) {
+				tmp[i] = target.get(i).clone();
+			}
+			else if(i>myId){
+				tmp[i-1]=target.get(i).clone();
+			}
+		}
+		for(int i=0;i<tmp.length;i++){
+			tmp[i].degree=(180-(tmp.length-1)*30)+i*60;
+			showTarget.add(tmp[i]);
+		}
+		
+
+	}
+
+	public void setId(int id) {
+
+		myId = id;
+	}
+
 }

@@ -552,6 +552,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		// 加入RealSense
 		surface = new RealSurface(this, dm.widthPixels, dm.heightPixels, index,
 				Global.userName[msa.getCount()]);
+
 		this.addContentView(surface, new LayoutParams(LayoutParams.FILL_PARENT,
 				LayoutParams.FILL_PARENT));
 
@@ -559,7 +560,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		sId = msa.getCount();// Server的id
 		users = sId + 1;// 總共的user數
 		// 沒有意外的話，users的最後一個表server
-
+		surface.setId(sId);
 		for (int i = 0; i < users; i++) {
 			Log.e("HP", "id:" + i + ". is" + Global.userName[i]);
 			surface.target.add(new Target(Global.userName[i], 0,
