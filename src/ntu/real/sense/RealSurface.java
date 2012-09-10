@@ -1,4 +1,4 @@
-	package ntu.real.sense;
+package ntu.real.sense;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,20 +33,20 @@ public class RealSurface extends SurfaceView {
 	int displayHeight = 800;
 	int myDeg;
 	int radius = 130;
-	int cnt = -1;//0 for testing mode
+	int cnt = -1;// 0 for testing mode
 	float px, py;
 	SurfaceHolder holder;
 	ArrayList<Target> target = new ArrayList<Target>();
 	ArrayList<Target> showTarget = new ArrayList<Target>();
 	Set<Target> selected = new HashSet<Target>();
 	TouchPoint tp = new TouchPoint(radius);
-	
+
 	Handler h = new Handler() {
 		@Override
 		public void handleMessage(Message m) {
 			switch (m.what) {
 			case 0x101:
-				if (!flagTouchUp) {
+				if (!flagTouchUp && selectedPhoto > 0 && selectedPhoto <= 6) {
 					setTempTarget();
 					flagLongTouch = true;
 				}
@@ -57,15 +57,15 @@ public class RealSurface extends SurfaceView {
 		}
 	};
 
-	public RealSurface(Context context,int num) {
+	public RealSurface(Context context, int num) {
 		super(context);
 		setZOrderOnTop(true);
 		holder = getHolder();
 		holder.setFormat(PixelFormat.TRANSPARENT);
 		// TODO Auto-generated constructor stub
 	}
-	
-	public RealSurface(Context context, int width, int height,int num) {
+
+	public RealSurface(Context context, int width, int height, int num) {
 		super(context);
 		setZOrderOnTop(true);
 		holder = getHolder();
@@ -77,7 +77,8 @@ public class RealSurface extends SurfaceView {
 		// TODO Auto-generated constructor stub
 	}
 
-	public RealSurface(Context context, int width, int height,int num ,String name) {
+	public RealSurface(Context context, int width, int height, int num,
+			String name) {
 		super(context);
 		setZOrderOnTop(true);
 		holder = getHolder();
@@ -97,31 +98,33 @@ public class RealSurface extends SurfaceView {
 		if (canvas != null) {
 			// canvas.drawColor(Color.argb(0, 0, 0, 0));
 			canvas.drawColor(Color.TRANSPARENT, Mode.CLEAR);
-			
+
 			for (Target t : target) {
-				  if(serverName.equals(t.name)){
-					  Paint degreeP = new Paint();
-					  degreeP.setColor(Color.YELLOW);
-					  degreeP.setTextSize(32);
-					  canvas.drawText(t.degree + "", displayWidth / 2 - 50, displayHeight * 4 / 5, degreeP);
-				  }
+				if (serverName.equals(t.name)) {
+					Paint degreeP = new Paint();
+					degreeP.setColor(Color.YELLOW);
+					degreeP.setTextSize(32);
+					canvas.drawText(t.degree + "", displayWidth / 2 - 50,
+							displayHeight * 4 / 5, degreeP);
 				}
+			}
 
 			if (flagLongTouch) {
-			
-				if(isLogged == false){
-						Global.startTime = new Time();
-						Global.startTime.setToNow();
-						Global.startTimeMs = System.currentTimeMillis();
-						Global.storedDegree = (ArrayList<Target>) target.clone();	
-					
-//					for(Target t : target){
-//						Log.e("WeiChen" , t.degree + "Name: " + t.name);
-//					}
+
+				if (isLogged == false) {
+					Global.startTime = new Time();
+					Global.startTime.setToNow();
+					Global.startTimeMs = System.currentTimeMillis();
+					Global.storedDegree = (ArrayList<Target>) target.clone();
+
+					// for(Target t : target){
+					// Log.e("WeiChen" , t.degree + "Name: " + t.name);
+					// }
 					isLogged = true;
 				}
 
-				if(selectedPhoto != 2 && selectedPhoto != 5 && selectedPhoto != 8 && selectedPhoto != 11){
+				if (selectedPhoto != 2 && selectedPhoto != 5
+						&& selectedPhoto != 8 && selectedPhoto != 11) {
 					radius = radius * 8 / 10;
 				}
 				Paint p2 = new Paint();
@@ -132,7 +135,6 @@ public class RealSurface extends SurfaceView {
 				p.setColor(Color.RED);
 				// 除去title bar跟notification bar的高度
 				canvas.drawCircle(px, py, radius, p);
-				
 
 				for (Target t : showTarget) {
 
@@ -150,24 +152,27 @@ public class RealSurface extends SurfaceView {
 
 					Log.e("deg", deg + "");
 
-					double ox = (radius + 40) * Math.cos((deg + 90) / 180 * Math.PI);
-					double oy = (radius + 40) * Math.sin((deg + 90) / 180 * Math.PI);
+					double ox = (radius + 40)
+							* Math.cos((deg + 90) / 180 * Math.PI);
+					double oy = (radius + 40)
+							* Math.sin((deg + 90) / 180 * Math.PI);
 
 					canvas.drawText(t.name, (float) (px + ox) - 50,
 							(float) (py + oy), p3);
 				}
 
 				canvas.drawCircle(px, py, radius - 5, p2);
-				 if(selectedPhoto != 2 && selectedPhoto != 5 && selectedPhoto != 8 && selectedPhoto != 11){
+				if (selectedPhoto != 2 && selectedPhoto != 5
+						&& selectedPhoto != 8 && selectedPhoto != 11) {
 
-					 radius = radius * 10 / 8;
+					radius = radius * 10 / 8;
 
-				 }
-			}else{
+				}
+			} else {
 				isLogged = false;
 			}
 			holder.unlockCanvasAndPost(canvas);
-			}
+		}
 	}
 
 	@Override
@@ -228,60 +233,74 @@ public class RealSurface extends SurfaceView {
 		}
 		return true;
 	}
-	
-	public void setSelectedNumber(float x, float y){
+
+	public void setSelectedNumber(float x, float y) {
 		int centerWidth = displayWidth / 2;
 		int centerHeight = displayHeight / 2;
 		int imgWidth = displayWidth / 4;
 		int imgHeight = displayHeight / 4;
 		int layoutMargin = displayWidth / 10;
 		int imgMargin = displayWidth / 100;
-		
-		if(x >= layoutMargin + imgMargin && x <= layoutMargin + imgMargin + imgWidth){
-			if(y >= layoutMargin + imgMargin && y<= layoutMargin + imgMargin + imgWidth){
-				
+
+		if (x >= layoutMargin + imgMargin
+				&& x <= layoutMargin + imgMargin + imgWidth) {
+			if (y >= layoutMargin + imgMargin
+					&& y <= layoutMargin + imgMargin + imgWidth) {
+
 				selectedPhoto = 1;
-			 }else if(y >= layoutMargin + imgMargin * 3 + imgWidth && y <= layoutMargin + imgMargin * 3 + imgWidth * 2){
+			} else if (y >= layoutMargin + imgMargin * 3 + imgWidth
+					&& y <= layoutMargin + imgMargin * 3 + imgWidth * 2) {
 				selectedPhoto = 4;
-			 }else if(y >= layoutMargin + imgMargin * 5 + imgWidth * 2 && y <= layoutMargin + imgMargin * 5 + imgWidth * 3){
+			} else if (y >= layoutMargin + imgMargin * 5 + imgWidth * 2
+					&& y <= layoutMargin + imgMargin * 5 + imgWidth * 3) {
 				selectedPhoto = 7;
-			 }else if(y >= layoutMargin + imgMargin * 7 + imgWidth * 3 && y <= layoutMargin + imgMargin * 7 + imgWidth * 4){
+			} else if (y >= layoutMargin + imgMargin * 7 + imgWidth * 3
+					&& y <= layoutMargin + imgMargin * 7 + imgWidth * 4) {
 				selectedPhoto = 10;
-			}else{
+			} else {
 				selectedPhoto = -1;
 			}
-		   }else if(x >= layoutMargin + imgMargin * 3 + imgWidth && x <= layoutMargin + imgMargin * 3 + imgWidth * 2){
-			   if(y >= layoutMargin + imgMargin && y<= layoutMargin + imgMargin + imgWidth){
+		} else if (x >= layoutMargin + imgMargin * 3 + imgWidth
+				&& x <= layoutMargin + imgMargin * 3 + imgWidth * 2) {
+			if (y >= layoutMargin + imgMargin
+					&& y <= layoutMargin + imgMargin + imgWidth) {
 				selectedPhoto = 2;
-			   }else if(y >= layoutMargin + imgMargin * 3 + imgWidth && y <= layoutMargin + imgMargin * 3 + imgWidth * 2){
+			} else if (y >= layoutMargin + imgMargin * 3 + imgWidth
+					&& y <= layoutMargin + imgMargin * 3 + imgWidth * 2) {
 				selectedPhoto = 5;
-			   }else if(y >= layoutMargin + imgMargin * 5 + imgWidth * 2 && y <= layoutMargin + imgMargin * 5 + imgWidth * 3){
+			} else if (y >= layoutMargin + imgMargin * 5 + imgWidth * 2
+					&& y <= layoutMargin + imgMargin * 5 + imgWidth * 3) {
 				selectedPhoto = 8;
-			   }else if(y >= layoutMargin + imgMargin * 7 + imgWidth * 3 && y <= layoutMargin + imgMargin * 7 + imgWidth * 4){
+			} else if (y >= layoutMargin + imgMargin * 7 + imgWidth * 3
+					&& y <= layoutMargin + imgMargin * 7 + imgWidth * 4) {
 				selectedPhoto = 11;
-			}else{
+			} else {
 				selectedPhoto = -1;
 			}
-		   }else if(x >= layoutMargin + imgMargin * 5 + imgWidth * 2 && x <= layoutMargin + imgMargin * 5 + imgWidth * 3){
-		   if(y >= layoutMargin + imgMargin && y<= layoutMargin + imgMargin + imgWidth){
-			selectedPhoto = 3;
-		   }else if(y >= layoutMargin + imgMargin * 3 + imgWidth && y <= layoutMargin + imgMargin * 3 + imgWidth * 2){
-			selectedPhoto = 6;
-		   }else if(y >= layoutMargin + imgMargin * 5 + imgWidth * 2 && y <= layoutMargin + imgMargin * 5 + imgWidth * 3){
-			selectedPhoto = 9;
-		   }else if(y >= layoutMargin + imgMargin * 7 + imgWidth * 3 && y <= layoutMargin + imgMargin * 7 + imgWidth * 4){
+		} else if (x >= layoutMargin + imgMargin * 5 + imgWidth * 2
+				&& x <= layoutMargin + imgMargin * 5 + imgWidth * 3) {
+			if (y >= layoutMargin + imgMargin
+					&& y <= layoutMargin + imgMargin + imgWidth) {
+				selectedPhoto = 3;
+			} else if (y >= layoutMargin + imgMargin * 3 + imgWidth
+					&& y <= layoutMargin + imgMargin * 3 + imgWidth * 2) {
+				selectedPhoto = 6;
+			} else if (y >= layoutMargin + imgMargin * 5 + imgWidth * 2
+					&& y <= layoutMargin + imgMargin * 5 + imgWidth * 3) {
+				selectedPhoto = 9;
+			} else if (y >= layoutMargin + imgMargin * 7 + imgWidth * 3
+					&& y <= layoutMargin + imgMargin * 7 + imgWidth * 4) {
 				selectedPhoto = 12;
-			}else{
+			} else {
 				selectedPhoto = -1;
 			}
-		}else{
+		} else {
 			selectedPhoto = -1;
 		}
 		Log.e("selectedPhotoIndex", selectedPhoto + "");
 	}
 
-	
-	//建立圓弧
+	// 建立圓弧
 	void setTempTarget() {
 		showTarget.clear();
 
