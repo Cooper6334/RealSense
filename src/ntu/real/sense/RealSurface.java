@@ -56,11 +56,10 @@ public class RealSurface extends SurfaceView {
 			switch (m.what) {
 			case 0x101:
 				if (!flagTouchUp && selectedPhoto > 0 && selectedPhoto <= 6) {
-					showTempDialog();
-
+					// showTempDialog();
 					// setTempTargetNoDeg();
-					// setTempTarget();
-					// flagLongTouch = true;
+					setTempTarget();
+
 				}
 				flagTouchUp = false;
 				break;
@@ -128,8 +127,8 @@ public class RealSurface extends SurfaceView {
 						Log.e("list", "<id " + tmp.name);
 						selected.add(tmp);
 					} else {
-						
-						tmp = target.get(list.keyAt(i)+1);
+
+						tmp = target.get(list.keyAt(i) + 1);
 						Log.e("list", ">=id " + tmp.name);
 						selected.add(tmp);
 					}
@@ -363,6 +362,7 @@ public class RealSurface extends SurfaceView {
 
 	// 建立圓弧
 	void setTempTarget() {
+		flagLongTouch = true;
 		showTarget.clear();
 		// cnt for testing
 		if (cnt >= 0) {
@@ -371,9 +371,13 @@ public class RealSurface extends SurfaceView {
 
 		Target tmp[] = null;
 		if (cnt < 0) {
-			tmp = new Target[target.size()];
-			for (int i = 0; i < tmp.length; i++) {
-				tmp[i] = target.get(i).clone(myDeg);
+			tmp = new Target[target.size() - 1];
+			for (int i = 0; i < target.size(); i++) {
+				if (i < myId) {
+					tmp[i] = target.get(i).clone();
+				} else if (i > myId) {
+					tmp[i - 1] = target.get(i).clone();
+				}
 			}
 		} else {
 
@@ -409,7 +413,7 @@ public class RealSurface extends SurfaceView {
 			if (360 - tmp[tmp.length - 1].degree < minDeg) {
 				tmp[tmp.length - 1].degree = 360 - minDeg;
 			}
-			for (int i = tmp.length - 2; i > 0; i--) {
+			for (int i = tmp.length - 2; i >= 0; i--) {
 				if (tmp[i + 1].degree - tmp[i].degree < minDeg) {
 					float d = tmp[i].degree - minDeg;
 					if (d > 0) {
@@ -425,6 +429,7 @@ public class RealSurface extends SurfaceView {
 	}
 
 	void setTempTargetNoDeg() {
+		flagLongTouch = true;
 		showTarget.clear();
 		Target[] tmp = new Target[target.size() - 1];
 		for (int i = 0; i < target.size(); i++) {
