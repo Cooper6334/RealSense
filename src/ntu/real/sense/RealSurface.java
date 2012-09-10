@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -19,6 +20,8 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 public class RealSurface extends SurfaceView {
 	int selectedPhoto = -1;
@@ -48,9 +51,11 @@ public class RealSurface extends SurfaceView {
 			switch (m.what) {
 			case 0x101:
 				if (!flagTouchUp && selectedPhoto > 0 && selectedPhoto <= 6) {
-//					setTempTargetNoDeg();
-					setTempTarget();
-					flagLongTouch = true;
+					 showTempDialog();
+
+					// setTempTargetNoDeg();
+//					setTempTarget();
+//					flagLongTouch = true;
 				}
 				flagTouchUp = false;
 				break;
@@ -371,17 +376,31 @@ public class RealSurface extends SurfaceView {
 		for (int i = 0; i < target.size(); i++) {
 			if (i < myId) {
 				tmp[i] = target.get(i).clone();
-			}
-			else if(i>myId){
-				tmp[i-1]=target.get(i).clone();
+			} else if (i > myId) {
+				tmp[i - 1] = target.get(i).clone();
 			}
 		}
-		for(int i=0;i<tmp.length;i++){
-			tmp[i].degree=(180-(tmp.length-1)*30)+i*60;
+		for (int i = 0; i < tmp.length; i++) {
+			tmp[i].degree = (180 - (tmp.length - 1) * 30) + i * 60;
 			showTarget.add(tmp[i]);
 		}
-		
 
+	}
+
+	void showTempDialog() {
+		Dialog d = new Dialog(this.getContext());
+		d.setContentView(R.layout.realdialog);
+		ListView lv = (ListView) d.findViewById(R.id.listView1);
+		ArrayList<String> nameList = new ArrayList<String>();
+		for (int i = 0; i < target.size(); i++) {
+			if (i != myId) {
+				nameList.add(target.get(i).name);
+			}
+		}
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(),
+				android.R.layout.simple_list_item_multiple_choice, nameList);
+		lv.setAdapter(adapter);
+		d.show();
 	}
 
 	public void setId(int id) {
