@@ -68,11 +68,11 @@ public class ServerActivity extends Activity implements SensorEventListener {
 			switch (m.what) {
 			// 改變角度時廣播給所有client
 			case 0x101:
-
+				
 				surface.target.get(m.arg1).degree = m.arg2;
-				msa.writeAll("setdeg");
-				msa.writeAll("" + m.arg1);
-				msa.writeAll("" + m.arg2);
+				//Log.e("setdeg:","setdeg"+"_"+m.arg1+"_"+m.arg2);
+				msa.writeAll("setdeg"+"_"+m.arg1+"_"+m.arg2);
+				
 				break;
 
 			// 點擊
@@ -272,7 +272,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		@Override
 		public void run() {
 			// TODO Auto-generated method stub
-			while (true) {
+			while (Global.flagIsPlaying) {
 				if (operationQueue.size() != 0) {// queue裡面有東西
 					operationQueue.remove(0);
 					new ServerFileOutputTransferThread(

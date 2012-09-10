@@ -226,12 +226,12 @@ public class ClientActivity extends Activity implements SensorEventListener {
 				mca.write(s);
 				break;
 			case 0x115:
-				mca.write("setdeg");
-				mca.write("" + m.arg1);
+				mca.write("setdeg"+"_"+m.arg1);
 				break;
+				/*
 			case 0x116:
 				String s2 = (String) m.obj;
-				mca.write(s2);
+				mca.write(s2);/*
 				Thread thr=new Thread(
 				new ClientFileOutputTransferThread_toClient(
 						toClient_i.remove(0),
@@ -245,7 +245,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 				new ClientFileOutputTransferThread_toServer(
 						toServer_outputFileUri.remove(0)));
 				t2.start();
-				break;
+				break;*/
 			}
 
 		}
@@ -282,28 +282,20 @@ public class ClientActivity extends Activity implements SensorEventListener {
 		@Override
 		public void run() {
 			// TODO Auto-generated method stub
-			while (true) {
+			while (Global.flagIsPlaying) {
 				if (operationQueue.size() != 0) {// 做下一個該做的operation
 					switch (operationQueue.remove(0)) {
 					case 1:
-						
-						Message m = new Message();
-						m.what = 0x117;
-						m.obj = "ClientSend_start_" + cId;
-						handler.sendMessage(m);
-//						new ClientFileOutputTransferThread_toServer(
-//								toServer_outputFileUri.remove(0)).run();
+						mca.write("ClientSend_start_" + cId);
+						new ClientFileOutputTransferThread_toServer(
+								toServer_outputFileUri.remove(0)).run();
 						break;
 					case 2:
-						Message m2 = new Message();
-						m2.what = 0x116;
-						m2.obj = "ClientSend_start_" + Global.mClientAgent.id + "_"
-								+ toClient_i.get(0);
-						handler.sendMessage(m2);
-//						new ClientFileOutputTransferThread_toClient(
-//								toClient_i.remove(0),
-//								toClient_outputFileUri.remove(0)).run();
-
+						mca.write("ClientSend_start_" + Global.mClientAgent.id + "_"
+								+ toClient_i.get(0));
+						new ClientFileOutputTransferThread_toClient(
+								toClient_i.remove(0),
+								toClient_outputFileUri.remove(0)).run();
 						break;
 					}
 				} else {
@@ -795,6 +787,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 				while (Global.flagIsPlaying) {
 					if (!Global.flagIsReceiving) {
 						String m = mca.read();
+						//Log.e("mca_msg",m);
 						if (m != null) {
 							if ("init".equals(m)) {
 								cId = Integer.parseInt(mca.read());
@@ -808,6 +801,15 @@ public class ClientActivity extends Activity implements SensorEventListener {
 											Global.userName[i], 0,
 											Global.userColor[i]));
 								}
+							}else if (m.startsWith("setdeg")) {
+								String deg_1=m.split("_")[1];
+								String deg_2=m.split("_")[2];
+								//Log.e("mca_msg_DEG1",deg_1);
+								//Log.e("mca_msg_DEG2",deg_2);									
+								
+								surface.target.get(Integer.parseInt(deg_1)).degree = Integer.parseInt(deg_2);
+								
+								
 							} else if ("ServerSendFile_start".equals(m)) {// server傳檔案過來
 
 								Message tempMessage = new Message();
@@ -828,10 +830,6 @@ public class ClientActivity extends Activity implements SensorEventListener {
 								tempMessage.what = Global.CLIENT_SEND_FILE_COMPLETED_REMOTE;// 從對面的client得到資訊：他收完了
 								handler.sendMessage(tempMessage);
 
-							} else if ("setdeg".equals(m)) {
-								int who = Integer.parseInt(mca.read());
-								int deg = Integer.parseInt(mca.read());
-								surface.target.get(who).degree = deg;
 							}
 
 						} else {

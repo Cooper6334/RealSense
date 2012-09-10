@@ -22,12 +22,12 @@ public class ReadClientThread implements Runnable {
 			String tmp = msa.readFromId(cId);
 			//Log.e("rct", cId + " read " + tmp);
 			if (tmp != null) {
-				if (tmp.equals("setdeg")) {
+				if (tmp.startsWith("setdeg")) {
 	
 						Message m = new Message();
 						m.what = 0x101;
 						m.arg1 = cId;
-						m.arg2 = Integer.parseInt(msa.readFromId(cId));
+						m.arg2 = Integer.parseInt(tmp.split("_")[1]);
 						//把訊息送回server端
 						gameHandler.sendMessage(m);
 				}else if(tmp.equals("ClientReceive_completed")){//client接收完成了

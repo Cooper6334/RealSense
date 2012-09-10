@@ -375,14 +375,19 @@ public class RealSurface extends SurfaceView {
 
 		Target tmp[] = null;
 		if (cnt < 0) {
+			float d=target.get(myId).degree;
 			tmp = new Target[target.size() - 1];
 			for (int i = 0; i < target.size(); i++) {
 				if (i < myId) {
-					tmp[i] = target.get(i).clone();
+					tmp[i] = target.get(i).clone(d);
 				} else if (i > myId) {
-					tmp[i - 1] = target.get(i).clone();
+					tmp[i - 1] = target.get(i).clone(d);
 				}
 			}
+//			tmp=new Target[target.size()];
+//			for (int i = 0; i < target.size(); i++) {
+//				tmp[i]=target.get(i);
+//			}
 		} else {
 
 			tmp = new Target[5];
