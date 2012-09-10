@@ -56,9 +56,13 @@ public class RealSurface extends SurfaceView {
 			switch (m.what) {
 			case 0x101:
 				if (!flagTouchUp && selectedPhoto > 0 && selectedPhoto <= 6) {
-					// showTempDialog();
-					// setTempTargetNoDeg();
-					setTempTarget();
+					if (Global.selectWay == 0) {
+						setTempTarget();
+					} else if (Global.selectWay == 1) {
+						setTempTargetNoDeg();
+					} else {
+						showTempDialog();
+					}
 
 				}
 				flagTouchUp = false;

@@ -16,6 +16,8 @@ public class Global {
 	// static String SERVER_KEY = "bombplus";
 	// static String mMAC = "3C:5A:37:89:3F:38";
 
+	static int selectWay;
+
 	static final String[] userName = { "Allen", "Bob", "Cooper", "David",
 			"Eric", "Frank" };
 	static final int[] userColor = { Color.CYAN, Color.BLUE, Color.GREEN,
@@ -42,31 +44,29 @@ public class Global {
 	protected static final int ADD_CLIENT = 6;
 	protected static final int ADD_OUTPUT = 7;
 	protected static final int ADD_INPUT = 8;
-	
-	//client端接收
+
+	// client端接收
 	protected static final int SERVER_SEND_FILE_START = 0x106;
 	protected static final int SERVER_SEND_FILE_COMPLETED = 0x108;
-	
-	//server端傳送
+
+	// server端傳送
 	protected static final int CLIENT_RECEIVE_START = 0x109;
 	protected static final int CLIENT_RECEIVE_COMPLETED = 0x107;
 
-	//client端傳送
+	// client端傳送
 	protected static final int SERVER_RECEIVE_FILE_COMPLETED = 0x110;
-	
-	//server、client端接收(來自client)
-	protected static final int  CLIENT_SEND_FILE_START = 0x111;
-	protected static final int  CLIENT_SEND_FILE_COMPLETED = 0x112;
-	//來自對方client說自己傳完了
-	protected static final int  CLIENT_SEND_FILE_COMPLETED_REMOTE = 0x113;
-	
-	
+
+	// server、client端接收(來自client)
+	protected static final int CLIENT_SEND_FILE_START = 0x111;
+	protected static final int CLIENT_SEND_FILE_COMPLETED = 0x112;
+	// 來自對方client說自己傳完了
+	protected static final int CLIENT_SEND_FILE_COMPLETED_REMOTE = 0x113;
 
 	static boolean flagIsPlaying = false;
 	static boolean flagIsReceiving = false;
 	static Agent mClientAgent;
 	static ServerAgent mServerAgent;
-	
+
 	static Time startTime;
 	static Time endTime;
 	static long startTimeMs;
