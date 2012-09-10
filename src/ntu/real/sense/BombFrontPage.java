@@ -18,10 +18,11 @@ public class BombFrontPage extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.frontpage);
 
-		rb = new RadioButton[3];
+		rb = new RadioButton[4];
 		rb[0] = (RadioButton) findViewById(R.id.radio0);
 		rb[1] = (RadioButton) findViewById(R.id.radio1);
 		rb[2] = (RadioButton) findViewById(R.id.radio2);
+		rb[3] = (RadioButton) findViewById(R.id.radio3);
 		Button b1 = (Button) findViewById(R.id.Host);
 		b1.setOnClickListener(new Button.OnClickListener() {
 

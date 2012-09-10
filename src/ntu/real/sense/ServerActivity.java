@@ -15,7 +15,9 @@ import java.util.List;
 import java.util.Vector;
 
 import android.app.Activity;
+import android.app.PendingIntent;
 import android.content.ContentResolver;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -24,9 +26,15 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.Uri;
+import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
+import android.nfc.NfcAdapter;
+import android.nfc.Tag;
+import android.nfc.tech.Ndef;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Parcelable;
 import android.text.format.Time;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -61,6 +69,10 @@ public class ServerActivity extends Activity implements SensorEventListener {
 	ListAllPath demoTest;
 	UriRelatedOperation UriRelatedOperation;
 
+	// NFC
+	PendingIntent pendingIntent;
+	NfcAdapter mNfcAdapter;
+
 	// 接收來自某client(ReadClientThread傳來的)或server的自己的角度轉變等msg，並作處理(廣播給所有人之類的)
 	Handler handler = new Handler() {
 		@Override
@@ -68,11 +80,11 @@ public class ServerActivity extends Activity implements SensorEventListener {
 			switch (m.what) {
 			// 改變角度時廣播給所有client
 			case 0x101:
-				
+
 				surface.target.get(m.arg1).degree = m.arg2;
-				//Log.e("setdeg:","setdeg"+"_"+m.arg1+"_"+m.arg2);
-				msa.writeAll("setdeg"+"_"+m.arg1+"_"+m.arg2);
-				
+				// Log.e("setdeg:","setdeg"+"_"+m.arg1+"_"+m.arg2);
+				msa.writeAll("setdeg" + "_" + m.arg1 + "_" + m.arg2);
+
 				break;
 
 			// 點擊
@@ -243,6 +255,13 @@ public class ServerActivity extends Activity implements SensorEventListener {
 			case 0x114:
 				String s = (String) m.obj;
 				msa.writeToId(s, m.arg1);
+				break;
+			case 0x117:
+				int toId = (Integer) m.obj;
+				msa.writeToId("nfcphoto_" + toId + "_" + m.arg2, m.arg1);
+				break;
+			case 0x118:
+				surface.sendPhoto(m.arg1, m.arg2);
 				break;
 
 			}
@@ -551,8 +570,18 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		}
 
 		// 加入RealSense
+		mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
+		if (mNfcAdapter == null) {
+			Toast.makeText(this, "NFC is not available", Toast.LENGTH_LONG)
+					.show();
+			finish();
+			return;
+		}
+		pendingIntent = PendingIntent.getActivity(this, 0, new Intent(this,
+				getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+
 		surface = new RealSurface(this, dm.widthPixels, dm.heightPixels, index,
-				Global.userName[msa.getCount()]);
+				Global.userName[msa.getCount()], mNfcAdapter);
 
 		this.addContentView(surface, new LayoutParams(LayoutParams.FILL_PARENT,
 				LayoutParams.FILL_PARENT));
@@ -651,10 +680,66 @@ public class ServerActivity extends Activity implements SensorEventListener {
 	}
 
 	@Override
+	public void onResume() {
+		super.onResume();
+		mNfcAdapter.enableForegroundDispatch(this, pendingIntent, null, null);
+	}
+
+	@Override
 	public void onPause() {
 		super.onPause();
+		mNfcAdapter.disableForegroundDispatch(this);
+		Log.e("nfc", "onPause");
+
+	}
+
+	@Override
+	protected void onNewIntent(Intent intent) {
+		Tag myTag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+
+		Ndef ndefTag = Ndef.get(myTag);
+
+		int size = ndefTag.getMaxSize(); // tag size
+		boolean writable = ndefTag.isWritable(); // is tag writable?
+		String type = ndefTag.getType(); // tag type
+
+		// get NDEF message details
+		NdefMessage ndefMesg = ndefTag.getCachedNdefMessage();
+		NdefRecord[] ndefRecords = ndefMesg.getRecords();
+		int len = ndefRecords.length;
+		String[] recTypes = new String[len]; // will contain the NDEF record
+		String s = ""; // types
+		for (int i = 0; i < len; i++) {
+			recTypes[i] = new String(ndefRecords[i].getPayload());
+			s += recTypes[i] + ",";
+		}
+		// Toast.makeText(this, "nfc message"+recTypes.length +":" + s,
+		// Toast.LENGTH_LONG).show();
+
+		if (recTypes.length == 3) {
+			try {
+				Message m = new Message();
+				m.what = 0x117;
+				m.arg1 = Integer.parseInt(recTypes[0]);
+				m.arg2 = Integer.parseInt(recTypes[1]);
+				m.obj = new Integer(sId);
+				handler.sendMessage(m);
+
+			} catch (NumberFormatException e) {
+
+			}
+		}
+		// Log.e("nfc", "tag:" + tag.toString()+":"+tag.getTechList()[0] );
+		// resolveIntent(intent);
+
+	}
+
+	@Override
+	public void onBackPressed() {
+
 		sensorManager.unregisterListener(this);
 		Global.flagIsPlaying = false;
+		super.onBackPressed();
 		/*
 		 * if (msa != null) { msa.clear(); msa = null; }
 		 */
@@ -690,5 +775,33 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		op.inJustDecodeBounds = false;
 		bmp = BitmapFactory.decodeFile(path, op);
 		return bmp;
+	}
+
+	NdefMessage[] resolveIntent(Intent intent) {
+		// Parse the intent
+		String action = intent.getAction();
+		NdefMessage[] msgs = null;
+		if (action != null) {
+			Log.e("nfc", action);
+			// if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action)) {
+
+			Parcelable[] rawMsgs = intent
+					.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
+
+			if (rawMsgs != null) {
+				msgs = new NdefMessage[rawMsgs.length];
+				for (int i = 0; i < rawMsgs.length; i++) {
+					msgs[i] = (NdefMessage) rawMsgs[i];
+				}
+			} else {
+				// Unknown tag type
+				byte[] empty = new byte[] {};
+				NdefRecord record = new NdefRecord(NdefRecord.TNF_UNKNOWN,
+						empty, empty, empty);
+				NdefMessage msg = new NdefMessage(new NdefRecord[] { record });
+				msgs = new NdefMessage[] { msg };
+			}
+		}
+		return msgs;
 	}
 }

@@ -5,14 +5,24 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff.Mode;
 import android.graphics.RectF;
+import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
+import android.nfc.NfcAdapter;
+import android.nfc.NfcAdapter.CreateNdefMessageCallback;
+import android.nfc.NfcAdapter.OnNdefPushCompleteCallback;
+import android.nfc.NfcEvent;
 import android.os.Handler;
 import android.os.Message;
 import android.text.format.Time;
@@ -25,6 +35,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.nfc.NdefMessage;
 
 public class RealSurface extends SurfaceView {
 	int selectedPhoto = -1;
@@ -46,9 +57,13 @@ public class RealSurface extends SurfaceView {
 	ArrayList<Target> target = new ArrayList<Target>();
 	ArrayList<Target> showTarget = new ArrayList<Target>();
 	Set<Target> selected = new HashSet<Target>();
-	Dialog dialog;
+	Dialog menuDialog;
+	Builder nfcDialog;
+	AlertDialog ad;
 	ListView dlist;
 	TouchPoint tp = new TouchPoint(radius);
+
+	NfcAdapter nfcAdapter;
 
 	Handler h = new Handler() {
 		@Override
@@ -60,8 +75,10 @@ public class RealSurface extends SurfaceView {
 						setTempTarget();
 					} else if (Global.selectWay == 1) {
 						setTempTargetNoDeg();
-					} else {
+					} else if (Global.selectWay == 2) {
 						showTempDialog();
+					} else if (Global.selectWay == 3) {
+						showNfcDialog();
 					}
 
 				}
@@ -72,16 +89,18 @@ public class RealSurface extends SurfaceView {
 		}
 	};
 
-	public RealSurface(Context context, int num) {
+	public RealSurface(Context context, int num, NfcAdapter a) {
 		super(context);
 		setZOrderOnTop(true);
 		holder = getHolder();
 		holder.setFormat(PixelFormat.TRANSPARENT);
+		nfcAdapter = a;
 		initView();
 		// TODO Auto-generated constructor stub
 	}
 
-	public RealSurface(Context context, int width, int height, int num) {
+	public RealSurface(Context context, int width, int height, int num,
+			NfcAdapter a) {
 		super(context);
 		setZOrderOnTop(true);
 		holder = getHolder();
@@ -90,12 +109,13 @@ public class RealSurface extends SurfaceView {
 		displayHeight = height;
 		radius = radius * displayWidth / 768;
 		photoNum = num;
+		nfcAdapter = a;
 		initView();
 		// TODO Auto-generated constructor stub
 	}
 
 	public RealSurface(Context context, int width, int height, int num,
-			String name) {
+			String name, NfcAdapter a) {
 		super(context);
 		setZOrderOnTop(true);
 		holder = getHolder();
@@ -105,16 +125,18 @@ public class RealSurface extends SurfaceView {
 		radius = radius * displayWidth / 768;
 		photoNum = num;
 		serverName = name;
+		nfcAdapter = a;
 		initView();
 		// TODO Auto-generated constructor stub
 	}
 
 	void initView() {
-		dialog = new Dialog(this.getContext());
-		dialog.setContentView(R.layout.realdialog);
-		dlist = (ListView) dialog.findViewById(R.id.listView1);
+		menuDialog = new Dialog(this.getContext());
+		menuDialog.setTitle("Menu");
+		menuDialog.setContentView(R.layout.realdialog);
+		dlist = (ListView) menuDialog.findViewById(R.id.listView1);
 		dlist.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-		Button btn = (Button) dialog.findViewById(R.id.button1);
+		Button btn = (Button) menuDialog.findViewById(R.id.button1);
 		btn.setOnClickListener(new Button.OnClickListener() {
 
 			@Override
@@ -141,18 +163,70 @@ public class RealSurface extends SurfaceView {
 					Log.e("list", "send to " + t.name);
 				}
 				flagCanSend = true;
-				dialog.dismiss();
+				menuDialog.dismiss();
 			}
 		});
-		Button btn2 = (Button) dialog.findViewById(R.id.button2);
+		Button btn2 = (Button) menuDialog.findViewById(R.id.button2);
 		btn2.setOnClickListener(new Button.OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				dialog.dismiss();
+				menuDialog.dismiss();
 			}
 		});
+
+		nfcDialog = new Builder(getContext());
+		nfcDialog.setTitle("NFC");
+		nfcDialog.setMessage("請接觸手機以傳遞照片");
+		nfcDialog.setNegativeButton("取消", new AlertDialog.OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				// TODO Auto-generated method stub
+				nfcAdapter.setNdefPushMessageCallback(
+						new CreateNdefMessageCallback() {
+
+							public NdefMessage createNdefMessage(NfcEvent event) {
+								// TODO Auto-generated method stub
+								return null;
+							}
+						}, (Activity) RealSurface.this.getContext());
+				ad.dismiss();
+			}
+		});
+
+		nfcAdapter.setNdefPushMessageCallback(new CreateNdefMessageCallback() {
+
+			public NdefMessage createNdefMessage(NfcEvent event) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+		}, (Activity) RealSurface.this.getContext());
+
+		nfcAdapter.setOnNdefPushCompleteCallback(
+				new OnNdefPushCompleteCallback() {
+
+					public void onNdefPushComplete(NfcEvent event) {
+						// TODO Auto-generated method stub
+
+						// Toast.makeText(MainActivity.this, "finish",
+						// Toast.LENGTH_LONG).show();
+						nfcAdapter.setNdefPushMessageCallback(
+								new CreateNdefMessageCallback() {
+
+									public NdefMessage createNdefMessage(
+											NfcEvent event) {
+										// TODO Auto-generated method stub
+										return null;
+									}
+								}, (Activity) RealSurface.this.getContext());
+						if (ad != null) {
+							ad.dismiss();
+						}
+
+					}
+				}, (Activity) this.getContext());
 	}
 
 	void drawView() {
@@ -375,7 +449,7 @@ public class RealSurface extends SurfaceView {
 
 		Target tmp[] = null;
 		if (cnt < 0) {
-			float d=target.get(myId).degree;
+			float d = target.get(myId).degree;
 			tmp = new Target[target.size() - 1];
 			for (int i = 0; i < target.size(); i++) {
 				if (i < myId) {
@@ -384,10 +458,10 @@ public class RealSurface extends SurfaceView {
 					tmp[i - 1] = target.get(i).clone(d);
 				}
 			}
-//			tmp=new Target[target.size()];
-//			for (int i = 0; i < target.size(); i++) {
-//				tmp[i]=target.get(i);
-//			}
+			// tmp=new Target[target.size()];
+			// for (int i = 0; i < target.size(); i++) {
+			// tmp[i]=target.get(i);
+			// }
 		} else {
 
 			tmp = new Target[5];
@@ -466,12 +540,49 @@ public class RealSurface extends SurfaceView {
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(),
 				android.R.layout.simple_list_item_multiple_choice, nameList);
 		dlist.setAdapter(adapter);
-		dialog.show();
+		menuDialog.show();
+	}
+
+	void showNfcDialog() {
+		// NdefMessage message = new NdefMessage(new NdefRecord[] {
+		// new NdefRecord(NdefRecord.TNF_MIME_MEDIA,
+		// "text/plain".getBytes(), new byte[] {},
+		// "test123".getBytes()),
+		// new NdefRecord(NdefRecord.TNF_MIME_MEDIA,
+		// "text/plain".getBytes(), new byte[] {},
+		// "test456".getBytes()),
+		// NdefRecord.createApplicationRecord(this.getContext()
+		// .getPackageName()) });
+		// nfcAdapter.setNdefPushMessage(message, (Activity) getContext());
+
+		nfcAdapter.setNdefPushMessageCallback(new CreateNdefMessageCallback() {
+
+			public NdefMessage createNdefMessage(NfcEvent event) {
+				// TODO Auto-generated method stub
+				return new NdefMessage(new NdefRecord[] {
+						new NdefRecord(NdefRecord.TNF_MIME_MEDIA, "text/plain"
+								.getBytes(), new byte[] {}, (myId + "")
+								.getBytes()),
+						new NdefRecord(NdefRecord.TNF_MIME_MEDIA, "text/plain"
+								.getBytes(), new byte[] {},
+								(selectedPhoto + "").getBytes()),
+						NdefRecord.createApplicationRecord(getContext()
+								.getPackageName()) });
+			}
+		}, (Activity) RealSurface.this.getContext());
+		ad = nfcDialog.show();
 	}
 
 	public void setId(int id) {
 
 		myId = id;
+	}
+	
+	public void sendPhoto(int id,int photo){
+		selectedPhoto=photo;
+		selected.clear();
+		selected.add(target.get(id));
+		flagCanSend = true;
 	}
 
 }

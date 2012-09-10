@@ -16,7 +16,9 @@ import java.util.List;
 import java.util.Vector;
 
 import android.app.Activity;
+import android.app.PendingIntent;
 import android.content.ContentResolver;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -25,9 +27,15 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.Uri;
+import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
+import android.nfc.NfcAdapter;
+import android.nfc.Tag;
+import android.nfc.tech.Ndef;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Parcelable;
 import android.text.format.Time;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -63,6 +71,11 @@ public class ClientActivity extends Activity implements SensorEventListener {
 
 	ImageButton image_temp;// 暫存之後要更新的ImageButton
 	Bitmap bitmap;
+
+	// NFC
+	PendingIntent pendingIntent;
+	NfcAdapter mNfcAdapter;
+
 	// 用來handle client本身要傳的訊息
 	Handler handler = new Handler() {
 		@Override
@@ -226,26 +239,21 @@ public class ClientActivity extends Activity implements SensorEventListener {
 				mca.write(s);
 				break;
 			case 0x115:
-				mca.write("setdeg"+"_"+m.arg1);
-				break;
-				/*
-			case 0x116:
-				String s2 = (String) m.obj;
-				mca.write(s2);/*
-				Thread thr=new Thread(
-				new ClientFileOutputTransferThread_toClient(
-						toClient_i.remove(0),
-						toClient_outputFileUri.remove(0)));
-				thr.start();
+				mca.write("setdeg" + "_" + m.arg1);
 				break;
 			case 0x117:
-				String s3 = (String) m.obj;
-				mca.write(s3);
-				Thread t2=new Thread(
-				new ClientFileOutputTransferThread_toServer(
-						toServer_outputFileUri.remove(0)));
-				t2.start();
-				break;*/
+				mca.write("nfcphoto_" + m.arg1 + "_" + m.arg2);
+				Log.e("nfc", "write message to server");
+				break;
+			/*
+			 * case 0x116: String s2 = (String) m.obj; mca.write(s2);/* Thread
+			 * thr=new Thread( new ClientFileOutputTransferThread_toClient(
+			 * toClient_i.remove(0), toClient_outputFileUri.remove(0)));
+			 * thr.start(); break; case 0x117: String s3 = (String) m.obj;
+			 * mca.write(s3); Thread t2=new Thread( new
+			 * ClientFileOutputTransferThread_toServer(
+			 * toServer_outputFileUri.remove(0))); t2.start(); break;
+			 */
 			}
 
 		}
@@ -291,8 +299,8 @@ public class ClientActivity extends Activity implements SensorEventListener {
 								toServer_outputFileUri.remove(0)).run();
 						break;
 					case 2:
-						mca.write("ClientSend_start_" + Global.mClientAgent.id + "_"
-								+ toClient_i.get(0));
+						mca.write("ClientSend_start_" + Global.mClientAgent.id
+								+ "_" + toClient_i.get(0));
 						new ClientFileOutputTransferThread_toClient(
 								toClient_i.remove(0),
 								toClient_outputFileUri.remove(0)).run();
@@ -323,11 +331,11 @@ public class ClientActivity extends Activity implements SensorEventListener {
 		@Override
 		public void run() {
 
-//			Message m=new Message();
-//			m.what=0x114;
-//			m.obj="ClientSend_start_" + cId;
-//			handler.sendMessage(m);
-//			 mca.write("ClientSend_start_" + cId);
+			// Message m=new Message();
+			// m.what=0x114;
+			// m.obj="ClientSend_start_" + cId;
+			// handler.sendMessage(m);
+			// mca.write("ClientSend_start_" + cId);
 
 			Socket socket = null;
 
@@ -379,7 +387,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 				e.printStackTrace();
 			}
 
-			Message m2= new Message();
+			Message m2 = new Message();
 			m2.what = Global.SERVER_RECEIVE_FILE_COMPLETED;
 			handler.sendMessage(m2);
 		}
@@ -396,11 +404,11 @@ public class ClientActivity extends Activity implements SensorEventListener {
 
 		@Override
 		public void run() {
-//			Message m = new Message();
-//			m.what = 0x114;
-//			m.obj = "ClientSend_start_" + Global.mClientAgent.id + "_"
-//					+ targetId;
-//			handler.sendMessage(m);
+			// Message m = new Message();
+			// m.what = 0x114;
+			// m.obj = "ClientSend_start_" + Global.mClientAgent.id + "_"
+			// + targetId;
+			// handler.sendMessage(m);
 			// mca.write("ClientSend_start_" + Global.mClientAgent.id + "_"
 			// + targetId);
 
@@ -712,9 +720,19 @@ public class ClientActivity extends Activity implements SensorEventListener {
 		}
 
 		// 加入RealSense
-		surface = new RealSurface(this, dm.widthPixels, dm.heightPixels, index);
-		this.addContentView(surface, new LayoutParams(LayoutParams.FILL_PARENT,
-				LayoutParams.FILL_PARENT));
+		mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
+		if (mNfcAdapter == null) {
+			Toast.makeText(this, "NFC is not available", Toast.LENGTH_LONG)
+					.show();
+			finish();
+			return;
+		}
+		pendingIntent = PendingIntent.getActivity(this, 0, new Intent(this,
+				getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+		surface = new RealSurface(this, dm.widthPixels, dm.heightPixels, index,
+				mNfcAdapter);
+		this.addContentView(surface, new LayoutParams(
+				LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 
 		// 設定serverSocket
 		try {
@@ -787,7 +805,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 				while (Global.flagIsPlaying) {
 					if (!Global.flagIsReceiving) {
 						String m = mca.read();
-						//Log.e("mca_msg",m);
+						// Log.e("mca_msg",m);
 						if (m != null) {
 							if ("init".equals(m)) {
 								cId = Integer.parseInt(mca.read());
@@ -801,15 +819,15 @@ public class ClientActivity extends Activity implements SensorEventListener {
 											Global.userName[i], 0,
 											Global.userColor[i]));
 								}
-							}else if (m.startsWith("setdeg")) {
-								String deg_1=m.split("_")[1];
-								String deg_2=m.split("_")[2];
-								//Log.e("mca_msg_DEG1",deg_1);
-								//Log.e("mca_msg_DEG2",deg_2);									
-								
-								surface.target.get(Integer.parseInt(deg_1)).degree = Integer.parseInt(deg_2);
-								
-								
+							} else if (m.startsWith("setdeg")) {
+								String deg_1 = m.split("_")[1];
+								String deg_2 = m.split("_")[2];
+								// Log.e("mca_msg_DEG1",deg_1);
+								// Log.e("mca_msg_DEG2",deg_2);
+
+								surface.target.get(Integer.parseInt(deg_1)).degree = Integer
+										.parseInt(deg_2);
+
 							} else if ("ServerSendFile_start".equals(m)) {// server傳檔案過來
 
 								Message tempMessage = new Message();
@@ -829,6 +847,12 @@ public class ClientActivity extends Activity implements SensorEventListener {
 								Message tempMessage = new Message();
 								tempMessage.what = Global.CLIENT_SEND_FILE_COMPLETED_REMOTE;// 從對面的client得到資訊：他收完了
 								handler.sendMessage(tempMessage);
+
+							} else if (m.startsWith("nfcphoto")) {
+								int toId = Integer.parseInt(m.split("_")[1]);
+								int toPhoto = Integer.parseInt(m.split("_")[2]);
+
+								surface.sendPhoto(toId, toPhoto);
 
 							}
 
@@ -851,10 +875,65 @@ public class ClientActivity extends Activity implements SensorEventListener {
 	}
 
 	@Override
+	public void onResume() {
+		super.onResume();
+		mNfcAdapter.enableForegroundDispatch(this, pendingIntent, null, null);
+	}
+
+	@Override
 	public void onPause() {
 		super.onPause();
+		mNfcAdapter.disableForegroundDispatch(this);
+		Log.e("nfc", "onPause");
+
+	}
+
+	@Override
+	protected void onNewIntent(Intent intent) {
+		Tag myTag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+
+		Ndef ndefTag = Ndef.get(myTag);
+
+		int size = ndefTag.getMaxSize(); // tag size
+		boolean writable = ndefTag.isWritable(); // is tag writable?
+		String type = ndefTag.getType(); // tag type
+
+		// get NDEF message details
+		NdefMessage ndefMesg = ndefTag.getCachedNdefMessage();
+		NdefRecord[] ndefRecords = ndefMesg.getRecords();
+		int len = ndefRecords.length;
+		String[] recTypes = new String[len]; // will contain the NDEF record
+												// types
+		String s = ""; // types
+		for (int i = 0; i < len; i++) {
+			recTypes[i] = new String(ndefRecords[i].getPayload());
+			s += recTypes[i] + ",";
+		}
+		if (recTypes.length == 3) {
+			try {
+				Message m = new Message();
+				m.what = 0x117;
+				m.arg1 = Integer.parseInt(recTypes[0]);
+				m.arg2 = Integer.parseInt(recTypes[1]);
+				handler.sendMessage(m);
+
+				Log.e("nfc", "get nfc message");
+			} catch (NumberFormatException e) {
+
+			}
+		}
+
+		// Log.e("nfc", "tag:" + tag.toString()+":"+tag.getTechList()[0] );
+		// resolveIntent(intent);
+
+	}
+
+	@Override
+	public void onBackPressed() {
+
 		sensorManager.unregisterListener(this);
 		Global.flagIsPlaying = false;
+		super.onBackPressed();
 		/*
 		 * if (serverSocket != null) { try { serverSocket.close(); } catch
 		 * (IOException e) { // TODO Auto-generated catch block
@@ -893,5 +972,33 @@ public class ClientActivity extends Activity implements SensorEventListener {
 		op.inJustDecodeBounds = false;
 		bmp = BitmapFactory.decodeFile(path, op);
 		return bmp;
+	}
+
+	NdefMessage[] resolveIntent(Intent intent) {
+		// Parse the intent
+		String action = intent.getAction();
+		NdefMessage[] msgs = null;
+		if (action != null) {
+			Log.e("nfc", action);
+			// if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action)) {
+
+			Parcelable[] rawMsgs = intent
+					.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
+
+			if (rawMsgs != null) {
+				msgs = new NdefMessage[rawMsgs.length];
+				for (int i = 0; i < rawMsgs.length; i++) {
+					msgs[i] = (NdefMessage) rawMsgs[i];
+				}
+			} else {
+				// Unknown tag type
+				byte[] empty = new byte[] {};
+				NdefRecord record = new NdefRecord(NdefRecord.TNF_UNKNOWN,
+						empty, empty, empty);
+				NdefMessage msg = new NdefMessage(new NdefRecord[] { record });
+				msgs = new NdefMessage[] { msg };
+			}
+		}
+		return msgs;
 	}
 }
