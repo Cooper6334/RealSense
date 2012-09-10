@@ -497,8 +497,8 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		// 注意顯示太多照片會out of memory
 		int index = demoTest.file_list.size();
 		picCycling = 7;// 把cycling先設在下一個要補的地方
-		if (index >= 6) {
-			index = 6;
+		if (index > 7) {
+			index = 7;
 		}
 
 		for (int i = 1; i < 13; i++) {
