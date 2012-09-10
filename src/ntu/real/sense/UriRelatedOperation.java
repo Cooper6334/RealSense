@@ -17,7 +17,7 @@ public class UriRelatedOperation {
         try {
 			while ((len = inputStream.read(buf)) != -1) {
 			    out.write(buf, 0, len);
-			    Log.e("filesent",buf+","+len);
+//			    Log.e("filesent",buf+","+len);
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

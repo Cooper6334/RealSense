@@ -17,10 +17,13 @@ import android.os.Handler;
 import android.os.Message;
 import android.text.format.Time;
 import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 
 public class RealSurface extends SurfaceView {
@@ -43,6 +46,8 @@ public class RealSurface extends SurfaceView {
 	ArrayList<Target> target = new ArrayList<Target>();
 	ArrayList<Target> showTarget = new ArrayList<Target>();
 	Set<Target> selected = new HashSet<Target>();
+	Dialog dialog;
+	ListView dlist;
 	TouchPoint tp = new TouchPoint(radius);
 
 	Handler h = new Handler() {
@@ -51,11 +56,11 @@ public class RealSurface extends SurfaceView {
 			switch (m.what) {
 			case 0x101:
 				if (!flagTouchUp && selectedPhoto > 0 && selectedPhoto <= 6) {
-					 showTempDialog();
+					showTempDialog();
 
 					// setTempTargetNoDeg();
-//					setTempTarget();
-//					flagLongTouch = true;
+					// setTempTarget();
+					// flagLongTouch = true;
 				}
 				flagTouchUp = false;
 				break;
@@ -69,6 +74,7 @@ public class RealSurface extends SurfaceView {
 		setZOrderOnTop(true);
 		holder = getHolder();
 		holder.setFormat(PixelFormat.TRANSPARENT);
+		initView();
 		// TODO Auto-generated constructor stub
 	}
 
@@ -81,6 +87,7 @@ public class RealSurface extends SurfaceView {
 		displayHeight = height;
 		radius = radius * displayWidth / 768;
 		photoNum = num;
+		initView();
 		// TODO Auto-generated constructor stub
 	}
 
@@ -95,7 +102,54 @@ public class RealSurface extends SurfaceView {
 		radius = radius * displayWidth / 768;
 		photoNum = num;
 		serverName = name;
+		initView();
 		// TODO Auto-generated constructor stub
+	}
+
+	void initView() {
+		dialog = new Dialog(this.getContext());
+		dialog.setContentView(R.layout.realdialog);
+		dlist = (ListView) dialog.findViewById(R.id.listView1);
+		dlist.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+		Button btn = (Button) dialog.findViewById(R.id.button1);
+		btn.setOnClickListener(new Button.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				selected.clear();
+				SparseBooleanArray list = dlist.getCheckedItemPositions();
+				Log.e("server", "list" + list.size());
+				Target tmp;
+				for (int i = 0; i < list.size(); i++) {
+					Log.e("list", "select" + list.keyAt(i));
+					if (list.keyAt(i) < myId) {
+						tmp = target.get(list.keyAt(i));
+						Log.e("list", "<id " + tmp.name);
+						selected.add(tmp);
+					} else {
+						
+						tmp = target.get(list.keyAt(i)+1);
+						Log.e("list", ">=id " + tmp.name);
+						selected.add(tmp);
+					}
+				}
+				for (Target t : selected) {
+					Log.e("list", "send to " + t.name);
+				}
+				flagCanSend = true;
+				dialog.dismiss();
+			}
+		});
+		Button btn2 = (Button) dialog.findViewById(R.id.button2);
+		btn2.setOnClickListener(new Button.OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				dialog.dismiss();
+			}
+		});
 	}
 
 	void drawView() {
@@ -388,9 +442,7 @@ public class RealSurface extends SurfaceView {
 	}
 
 	void showTempDialog() {
-		Dialog d = new Dialog(this.getContext());
-		d.setContentView(R.layout.realdialog);
-		ListView lv = (ListView) d.findViewById(R.id.listView1);
+
 		ArrayList<String> nameList = new ArrayList<String>();
 		for (int i = 0; i < target.size(); i++) {
 			if (i != myId) {
@@ -399,8 +451,8 @@ public class RealSurface extends SurfaceView {
 		}
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(),
 				android.R.layout.simple_list_item_multiple_choice, nameList);
-		lv.setAdapter(adapter);
-		d.show();
+		dlist.setAdapter(adapter);
+		dialog.show();
 	}
 
 	public void setId(int id) {

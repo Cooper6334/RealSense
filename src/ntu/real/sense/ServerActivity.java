@@ -77,8 +77,9 @@ public class ServerActivity extends Activity implements SensorEventListener {
 
 			// 點擊
 			case 0x102:
-				Toast.makeText(ServerActivity.this, "click", Toast.LENGTH_SHORT)
-						.show();
+				// Toast.makeText(ServerActivity.this, "click",
+				// Toast.LENGTH_SHORT)
+				// .show();
 				break;
 
 			// 由自己傳遞照片(server傳給client，不需重新建立連線)
@@ -592,11 +593,13 @@ public class ServerActivity extends Activity implements SensorEventListener {
 				while (Global.flagIsPlaying) {
 					surface.drawView();
 					if (surface.flagCanSend) {
+						Log.e("server", "start send");
 						surface.flagCanSend = false;
 						// 要送的目標的id們
 						ArrayList<Integer> sendTargetList = new ArrayList<Integer>();
 						int i;
 						// String show = "Send to:";
+						Log.e("server", "target" + surface.selected.size());
 						for (Target t : surface.selected) {
 							// 先把target拿出來，比對id是不是自己，如果是的話就不加入要傳的list中
 							for (i = 0; i < Global.userName.length; i++) {// 不知為何順序是反的，用查的比較安全

@@ -7,8 +7,8 @@
     <ListView
         android:id="@+id/listView1"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" 
-        android:background="#ffffffff">
+        android:layout_height="wrap_content"
+        android:background="#ffffffff" >
     </ListView>
 
     <LinearLayout
@@ -17,16 +17,17 @@
 
         <Button
             android:id="@+id/button1"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Button" />
+            android:layout_weight="1"
+            android:text="傳送照片" />
 
         <Button
             android:id="@+id/button2"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Button" />
-
+            android:layout_weight="1"
+            android:text="取消" />
     </LinearLayout>
 
 </LinearLayout>
