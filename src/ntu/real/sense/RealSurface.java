@@ -333,16 +333,17 @@ public class RealSurface extends SurfaceView {
 				p2.setShadowLayer(2, 0, 0, 0xff6b392d);
 				p2.setTextSize(55);
 				
-				if(Global.flagIsServer){
-					canvas.drawText(Global.userName[Global.userName.length-1], (float) (px) - 70,
-							(float) (py)+15, p2);	
-					
-				}else{
-					canvas.drawText(Global.userName[Global.mClientAgent.id], (float) (px) - 70,
-							(float) (py)+15, p2);	
-					
-				}
-				
+//				if(Global.flagIsServer){
+//					canvas.drawText(target.size()-1).name, (float) (px) - 70,
+//							(float) (py)+15, p2);	
+//					
+//				}else{
+//					canvas.drawText(Global.userName[Global.mClientAgent.id], (float) (px) - 70,
+//							(float) (py)+15, p2);	
+//					
+//				}
+				canvas.drawText(target.get(myId).name, (float) (px) - 70,
+						(float) (py)+15, p2);
 				
 				if (selectedPhoto != 2 && selectedPhoto != 5
 						&& selectedPhoto != 8 && selectedPhoto != 11) {
