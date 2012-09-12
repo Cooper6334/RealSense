@@ -8,10 +8,13 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.RadioButton;
 
 public class BombFrontPage extends Activity {
 	RadioButton[] rb;
+	EditText et;
+	SharedPreferences p;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -23,6 +26,13 @@ public class BombFrontPage extends Activity {
 		rb[1] = (RadioButton) findViewById(R.id.radio1);
 		rb[2] = (RadioButton) findViewById(R.id.radio2);
 		rb[3] = (RadioButton) findViewById(R.id.radio3);
+
+		et = (EditText) findViewById(R.id.editText1);
+		p = getSharedPreferences("preference", 0);
+		String n = p.getString("name", "User");
+		Global.name = n;
+		et.setText(n);
+
 		Button b1 = (Button) findViewById(R.id.Host);
 		b1.setOnClickListener(new Button.OnClickListener() {
 
@@ -34,6 +44,11 @@ public class BombFrontPage extends Activity {
 						Global.selectWay = i;
 						break;
 					}
+				}
+				String n = et.getText().toString();
+				if (!"".equals(n)) {
+					Global.name = n;
+					p.edit().putString("name", n).commit();
 				}
 
 				Intent i1 = new Intent();
@@ -55,6 +70,11 @@ public class BombFrontPage extends Activity {
 						Global.selectWay = i;
 						break;
 					}
+				}
+				String n = et.getText().toString();
+				if (!"".equals(n)) {
+					Global.name = n;
+					p.edit().putString("name", n).commit();
 				}
 				Intent i2 = new Intent();
 				i2.setClass(BombFrontPage.this, BluetoothFindPair.class);

@@ -68,6 +68,14 @@ public class ReadClientThread implements Runnable {
 						gameHandler.sendMessage(m);
 					}
 
+				} else if (tmp.startsWith("setname")) {
+					int setid = Integer.parseInt(tmp.split("_")[1]);
+					String setname = tmp.split("_")[2];
+					Message m = new Message();
+					m.what = 0x119;
+					m.arg1 = setid;
+					m.obj = setname;
+					gameHandler.sendMessage(m);
 				}
 			}
 		}

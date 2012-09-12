@@ -112,6 +112,7 @@ public class BluetoothServerActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.host);
+		Toast.makeText(this, Global.name, Toast.LENGTH_LONG).show();
 		bindViews();
 		initBluetooth();
 
@@ -145,27 +146,14 @@ public class BluetoothServerActivity extends Activity {
 		}
 		Log.e("ba", "back press");
 	}
+
 	/*
-	public void onDestroyed(){
-		super.onDestroy();
-		flagExit = true;
-		if (serverSocket != null) {
-			try {
-				serverSocket.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		if (msa != null) {
-			msa.clear();
-			msa = null;
-		}
-		if (mca != null) {
-			mca.clear();
-			mca = null;
-		}
-	}*/
+	 * public void onDestroyed(){ super.onDestroy(); flagExit = true; if
+	 * (serverSocket != null) { try { serverSocket.close(); } catch (IOException
+	 * e) { // TODO Auto-generated catch block e.printStackTrace(); } } if (msa
+	 * != null) { msa.clear(); msa = null; } if (mca != null) { mca.clear(); mca
+	 * = null; } }
+	 */
 
 	void bindViews() {
 		adapter = new ArrayAdapter<String>(this,
