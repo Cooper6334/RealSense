@@ -621,12 +621,15 @@ public class RealSurface extends SurfaceView {
 
 		myId = id;
 	}
-	
-	public void sendPhoto(int id,int photo){
-		selectedPhoto=photo;
+
+	public void sendPhoto(int id, int photo) {
+		selectedPhoto = photo;
 		selected.clear();
 		selected.add(target.get(id));
 		flagCanSend = true;
 	}
 
+	public void setName(int id, String name) {
+		target.get(id).name = name;
+	}
 }

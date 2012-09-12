@@ -263,7 +263,9 @@ public class ServerActivity extends Activity implements SensorEventListener {
 			case 0x118:
 				surface.sendPhoto(m.arg1, m.arg2);
 				break;
-
+			case 0x119:
+				surface.setName(m.arg1, (String) m.obj);
+				msa.writeAll("setname_" + m.arg1 + "_" + (String) m.obj);
 			}
 
 		}
@@ -583,6 +585,8 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		surface = new RealSurface(this, dm.widthPixels, dm.heightPixels, index,
 				Global.userName[msa.getCount()], mNfcAdapter);
 
+
+
 		this.addContentView(surface, new LayoutParams(LayoutParams.FILL_PARENT,
 				LayoutParams.FILL_PARENT));
 
@@ -597,6 +601,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 					Global.userColor[i]));
 		}
 
+		
 		degs = new int[sId + 1];
 
 		readClientThread = new Thread[sId];
@@ -611,7 +616,8 @@ public class ServerActivity extends Activity implements SensorEventListener {
 			readClientThread[i] = new Thread(new ReadClientThread(i, handler));
 			readClientThread[i].start();
 		}
-
+		surface.setName(sId, Global.name);
+		msa.writeAll("setname_" + sId + "_" + Global.name);
 		// 設定繪圖與傳遞照片之Thread
 		// server自己處理自己的事情
 		new Thread(new Runnable() {

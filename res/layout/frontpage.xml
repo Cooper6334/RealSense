@@ -6,6 +6,15 @@
     android:background="@drawable/homepage"
     android:orientation="vertical" >
 
+    <EditText
+        android:id="@+id/editText1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10" >
+
+        <requestFocus />
+    </EditText>
+
     <RadioGroup
         android:id="@+id/radioGroup1"
         android:layout_width="wrap_content"

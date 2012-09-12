@@ -732,6 +732,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 				getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
 		surface = new RealSurface(this, dm.widthPixels, dm.heightPixels, index,
 				mNfcAdapter);
+
 		this.addContentView(surface, new LayoutParams(
 				LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 
@@ -820,6 +821,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 											Global.userName[i], 0,
 											Global.userColor[i]));
 								}
+								mca.write("setname_" + cId + "_" + Global.name);
 							} else if (m.startsWith("setdeg")) {
 								String deg_1 = m.split("_")[1];
 								String deg_2 = m.split("_")[2];
@@ -855,6 +857,10 @@ public class ClientActivity extends Activity implements SensorEventListener {
 
 								surface.sendPhoto(toId, toPhoto);
 
+							} else if (m.startsWith("setname")) {
+								int setid = Integer.parseInt(m.split("_")[1]);
+								String setname = m.split("_")[2];
+								surface.setName(setid, setname);
 							}
 
 						} else {

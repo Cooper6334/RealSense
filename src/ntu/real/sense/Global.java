@@ -17,7 +17,7 @@ public class Global {
 	// static String mMAC = "3C:5A:37:89:3F:38";
 
 	static int selectWay;
-
+	static String name;
 	static final String[] userName = { "Allen", "Bob", "Cooper", "David",
 		"Eric", "Frank" };
 static final int[] userColor = { 0xfff0e4c4, 0xffd5b989, 0xffcda196,
