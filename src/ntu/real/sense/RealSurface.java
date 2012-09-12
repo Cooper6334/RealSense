@@ -631,5 +631,6 @@ public class RealSurface extends SurfaceView {
 
 	public void setName(int id, String name) {
 		target.get(id).name = name;
+		Global.userName[id]=name;
 	}
 }
