@@ -119,8 +119,11 @@ public class ServerActivity extends Activity implements SensorEventListener {
 							"/sdcard/ServerSendDegree.txt", true);
 					BufferedWriter bwSSD = new BufferedWriter(ssd);
 					if (separationLine == false) {
-						bwST.write("-\tSeparation\tLine\t-\n");
-						bwSSD.write("-\tSeparation\tLine\t-\n");
+						String kind = getKind(Global.selectWay);
+						bwST.write("-\tSeparation\tLine\t" + kind + "\t-\n");
+						if(Global.selectWay == 0){
+							bwSSD.write("-\tSeparation\tLine\t-\n");
+						}
 						separationLine = true;
 					}
 					Global.now = new Time();
@@ -130,11 +133,14 @@ public class ServerActivity extends Activity implements SensorEventListener {
 					bwST.write("end\t" + Global.endTime + "\n");
 					bwST.write("startMs\t" + Global.startTimeMs + "\n");
 					bwST.write("endMs\t" + Global.endTimeMs + "\n\n");
-					bwSSD.write("<<\t" + Global.now + "\t>>\n");
-					for (Target t : Global.storedDegree) {
-						bwSSD.write("Name:\t" + t.name + "\t" + t.degree + "\n");
+					if(Global.selectWay == 0){
+						bwSSD.write("<<\t" + Global.now + "\t>>\n");
+						for (Target t : Global.storedDegree) {
+							bwSSD.write("Name:\t" + t.name + "\t" + t.degree + "\n");
+						}
+						bwSSD.newLine();
 					}
-					bwSSD.newLine();
+					
 					bwST.close();
 					bwSSD.close();
 				} catch (IOException e) {
@@ -182,18 +188,20 @@ public class ServerActivity extends Activity implements SensorEventListener {
 					FileWriter csd = new FileWriter(
 							"/sdcard/ClientSendDegree.txt", true);
 					BufferedWriter bwCSD = new BufferedWriter(csd);
-					if (separationLineClient == false) {
-						bwCSD.write("-\tSeparation\tLine\t-\n");
-						separationLineClient = true;
+					if(Global.selectWay == 0){
+						if (separationLineClient == false) {
+							bwCSD.write("-\tSeparation\tLine\t-\n");
+							separationLineClient = true;
+						}
+						Global.now = new Time();
+						Global.now.setToNow();
+						bwCSD.write("<<\t" + Global.now + "\t>>\n");
+						for (Target tg : Global.storedDegree) {
+							bwCSD.write("Name:\t" + tg.name + "\t" + tg.degree
+									+ "\n");
+						}
+						bwCSD.newLine();
 					}
-					Global.now = new Time();
-					Global.now.setToNow();
-					bwCSD.write("<<\t" + Global.now + "\t>>\n");
-					for (Target tg : Global.storedDegree) {
-						bwCSD.write("Name:\t" + tg.name + "\t" + tg.degree
-								+ "\n");
-					}
-					bwCSD.newLine();
 					bwCSD.close();
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -809,5 +817,19 @@ public class ServerActivity extends Activity implements SensorEventListener {
 			}
 		}
 		return msgs;
+	}
+	
+	public String getKind(int choosen){
+		switch(choosen){
+			case 0 :
+				return "RealSense";
+			case 1 :
+				return "Piemenu";
+			case 2 :
+				return "List";
+			case 3 :
+				return "NFC";
+		}
+		return "RealSense";
 	}
 }

@@ -73,12 +73,16 @@ public class RealSurface extends SurfaceView {
 				if (!flagTouchUp && selectedPhoto > 0 && selectedPhoto <= 6) {
 					if (Global.selectWay == 0) {
 						setTempTarget();
+						logStart();
 					} else if (Global.selectWay == 1) {
 						setTempTargetNoDeg();
+						logStart();
 					} else if (Global.selectWay == 2) {
 						showTempDialog();
+						logStart();
 					} else if (Global.selectWay == 3) {
 						showNfcDialog();
+						logStart();
 					}
 
 				}
@@ -250,18 +254,6 @@ public class RealSurface extends SurfaceView {
 			}
 
 			if (flagLongTouch) {
-
-				if (isLogged == false) {
-					Global.startTime = new Time();
-					Global.startTime.setToNow();
-					Global.startTimeMs = System.currentTimeMillis();
-					Global.storedDegree = (ArrayList<Target>) target.clone();
-
-					// for(Target t : target){
-					// Log.e("WeiChen" , t.degree + "Name: " + t.name);
-					// }
-					isLogged = true;
-				}
 
 				if (selectedPhoto != 2 && selectedPhoto != 5
 						&& selectedPhoto != 8 && selectedPhoto != 11) {
@@ -633,5 +625,12 @@ public class RealSurface extends SurfaceView {
 	public void setName(int id, String name) {
 		target.get(id).name = name;
 		Global.userName[id]=name;
+	}
+	
+	public void logStart(){
+		Global.startTime = new Time();
+		Global.startTime.setToNow();
+		Global.startTimeMs = System.currentTimeMillis();
+		Global.storedDegree = (ArrayList<Target>) target.clone();
 	}
 }

@@ -105,7 +105,8 @@ public class ClientActivity extends Activity implements SensorEventListener {
 							true);
 					BufferedWriter bwCT = new BufferedWriter(ct); // 將BufferedWeiter與FileWrite物件做連結
 					if (separationLine == false) {
-						bwCT.write("-\tSeparation\tLine\t-\n");
+						String kind = getKind(Global.selectWay);
+						bwCT.write("-\tSeparation\tLine\t" + kind + "\t-\n");
 						separationLine = true;
 					}
 					Global.now = new Time();
@@ -1007,5 +1008,19 @@ public class ClientActivity extends Activity implements SensorEventListener {
 			}
 		}
 		return msgs;
+	}
+	
+	public String getKind(int choosen){
+		switch(choosen){
+			case 0 :
+				return "RealSense";
+			case 1 :
+				return "Piemenu";
+			case 2 :
+				return "List";
+			case 3 :
+				return "NFC";
+		}
+		return "RealSense";
 	}
 }
