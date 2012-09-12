@@ -20,8 +20,8 @@ public class Global {
 	static String name;
 	static final String[] userName = { "Allen", "Bob", "Cooper", "David",
 		"Eric", "Frank" };
-static final int[] userColor = { 0xfff0e4c4, 0xffd5b989, 0xffcda196,
-	0xffbeae82, 0xfff1d4b7, Color.DKGRAY };
+	static final int[] userColor = { 0xfffde483, 0xfff7c761, 0xffee8c4d,
+		0xffd03c45, 0xfff1d4b7, Color.DKGRAY };
 
 	// static String mMAC = "";
 	// final static UUID mUUID = UUID

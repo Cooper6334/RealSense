@@ -543,9 +543,9 @@ public class ServerActivity extends Activity implements SensorEventListener {
 				demoTest.file_list.add(null);
 			}
 			if (i <= 6) {
-				image_temp.setBackgroundColor(0x64739083);
+				image_temp.setBackgroundColor(0x6465161b);
 			} else {
-				image_temp.setBackgroundColor(0x643c4b44);
+				image_temp.setBackgroundColor(0x6466161b);
 			}
 
 			image_temp.setId(i); // ID不能是零，不然會爛掉！

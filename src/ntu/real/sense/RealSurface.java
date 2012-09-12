@@ -266,9 +266,9 @@ public class RealSurface extends SurfaceView {
 				}
 				Paint p2 = new Paint();
 				// p2.setColor(0xff6b392d);
-				p2.setColor(Color.rgb(74, 167, 224));
+				p2.setColor(0xff8e1b22);
 				p2.setFlags(Paint.ANTI_ALIAS_FLAG);
-				p2.setShadowLayer(2, 0, 0, 0xff6b392d);
+				p2.setShadowLayer(2, 0, 0, 0xff8e1b22);
 
 				// canvas.drawCircle(px, py, radius * 1.5f, p2);
 				// 內圓的色彩
@@ -324,13 +324,13 @@ public class RealSurface extends SurfaceView {
 							(float) (py + oy), p3);
 				}
 
-				p2.setShadowLayer(2, 0, 0, 0xff522c23);
+				p2.setShadowLayer(2, 0, 0, 0xff78171d);
 				// p2.setColor(0xff522c23);
-				p2.setColor(Color.rgb(74, 167, 224));
+				p2.setColor(0xff78171d);
 				canvas.drawCircle(px, py, radius - 15, p2);
 
-				p2.setColor(0xff6b392d);
-				p2.setShadowLayer(2, 0, 0, 0xff6b392d);
+				p2.setColor(0xff420e12);
+				p2.setShadowLayer(2, 0, 0, 0xff420e12);
 				p2.setTextSize(55);
 
 				// if(Global.flagIsServer){
