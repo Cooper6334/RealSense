@@ -499,7 +499,8 @@ public class ServerActivity extends Activity implements SensorEventListener {
 
 		// 設定顯示照片的layout
 		layout = new RelativeLayout(this);
-		layout.setBackgroundDrawable(getResources().getDrawable(R.drawable.gradient));
+		layout.setBackgroundDrawable(getResources().getDrawable(
+				R.drawable.gradient));
 		setContentView(layout);
 		// 讀取照片
 		demoTest = new ListAllPath();
@@ -585,8 +586,6 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		surface = new RealSurface(this, dm.widthPixels, dm.heightPixels, index,
 				Global.userName[msa.getCount()], mNfcAdapter);
 
-
-
 		this.addContentView(surface, new LayoutParams(LayoutParams.FILL_PARENT,
 				LayoutParams.FILL_PARENT));
 
@@ -601,7 +600,6 @@ public class ServerActivity extends Activity implements SensorEventListener {
 					Global.userColor[i]));
 		}
 
-		
 		degs = new int[sId + 1];
 
 		readClientThread = new Thread[sId];
@@ -760,17 +758,17 @@ public class ServerActivity extends Activity implements SensorEventListener {
 	@Override
 	public void onSensorChanged(SensorEvent event) {
 		// TODO Auto-generated method stub
-
-		if (surface.myDeg - event.values[0] > 10
-				|| event.values[0] - surface.myDeg > 10) {
-			surface.myDeg = (int) event.values[0];
-			Message m = new Message();
-			m.what = 0x101;
-			m.arg1 = sId;
-			m.arg2 = (int) event.values[0];
-			handler.sendMessage(m);
+		if (surface != null) {
+			if (surface.myDeg - event.values[0] > 10
+					|| event.values[0] - surface.myDeg > 10) {
+				surface.myDeg = (int) event.values[0];
+				Message m = new Message();
+				m.what = 0x101;
+				m.arg1 = sId;
+				m.arg2 = (int) event.values[0];
+				handler.sendMessage(m);
+			}
 		}
-
 	}
 
 	private Bitmap decodeBitmap(String path) {

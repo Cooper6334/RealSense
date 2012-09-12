@@ -144,25 +144,30 @@ public class RealSurface extends SurfaceView {
 				// TODO Auto-generated method stub
 				selected.clear();
 				SparseBooleanArray list = dlist.getCheckedItemPositions();
+
 				Log.e("server", "list" + list.size());
 				Target tmp;
 				for (int i = 0; i < list.size(); i++) {
 					Log.e("list", "select" + list.keyAt(i));
-					if (list.keyAt(i) < myId) {
-						tmp = target.get(list.keyAt(i));
-						Log.e("list", "<id " + tmp.name);
-						selected.add(tmp);
-					} else {
+					if (list.get(i)) {
+						if (list.keyAt(i) < myId) {
+							tmp = target.get(list.keyAt(i));
+							Log.e("list", "<id " + tmp.name);
+							selected.add(tmp);
+						} else {
 
-						tmp = target.get(list.keyAt(i) + 1);
-						Log.e("list", ">=id " + tmp.name);
-						selected.add(tmp);
+							tmp = target.get(list.keyAt(i) + 1);
+							Log.e("list", ">=id " + tmp.name);
+							selected.add(tmp);
+						}
 					}
 				}
 				for (Target t : selected) {
 					Log.e("list", "send to " + t.name);
 				}
-				flagCanSend = true;
+				if (cnt < 0) {
+					flagCanSend = true;
+				}
 				menuDialog.dismiss();
 			}
 		});
@@ -268,19 +273,21 @@ public class RealSurface extends SurfaceView {
 					radius = radius * 8 / 10;
 				}
 				Paint p2 = new Paint();
-				p2.setColor(0xff6b392d);
+				// p2.setColor(0xff6b392d);
+				p2.setColor(Color.rgb(74, 167, 224));
 				p2.setFlags(Paint.ANTI_ALIAS_FLAG);
 				p2.setShadowLayer(2, 0, 0, 0xff6b392d);
-				//canvas.drawCircle(px, py, radius * 1.5f, p2);
-				//內圓的色彩
-				
+
+				// canvas.drawCircle(px, py, radius * 1.5f, p2);
+				// 內圓的色彩
+
 				Paint p = new Paint();
 				p.setColor(0xff3d3e1a);
 				p.setFlags(Paint.ANTI_ALIAS_FLAG);
 				p.setShadowLayer(5, 0, 0, Color.BLACK);
 				// 除去title bar跟notification bar的高度
-				
-				//是空的那環
+
+				// 是空的那環
 				canvas.drawCircle(px, py, radius, p2);
 
 				for (Target t : showTarget) {
@@ -290,15 +297,15 @@ public class RealSurface extends SurfaceView {
 					p3.setColor(t.color);
 					p3.setTextSize(32);
 					p3.setShadowLayer(2, 0, 0, t.color);
-					p3.setFlags(Paint.ANTI_ALIAS_FLAG);//反鋸齒標籤，會比較漂亮
+					p3.setFlags(Paint.ANTI_ALIAS_FLAG);// 反鋸齒標籤，會比較漂亮
 					p3.setFakeBoldText(true);
-					
-					Paint pStroke = new Paint();//邊框
-					pStroke.setColor(Color.BLACK);					
+
+					Paint pStroke = new Paint();// 邊框
+					pStroke.setColor(Color.BLACK);
 					pStroke.setTextSize(32);
 					pStroke.setFlags(Paint.ANTI_ALIAS_FLAG);
 					pStroke.setShadowLayer(3, 0, 0, Color.BLACK);
-					
+
 					RectF oval = new RectF();
 					oval.left = px - radius;
 					oval.top = py - radius;
@@ -312,39 +319,41 @@ public class RealSurface extends SurfaceView {
 							* Math.cos((deg + 90) / 180 * Math.PI);
 					double oy = (radius + 40)
 							* Math.sin((deg + 90) / 180 * Math.PI);
-					//畫邊框
-					
+					// 畫邊框
+
 					canvas.drawText(t.name, (float) (px + ox) - 50,
 							(float) (py + oy), pStroke);
 					canvas.drawText(t.name, (float) (px + ox) - 50,
 							(float) (py + oy), pStroke);
 					canvas.drawText(t.name, (float) (px + ox) - 50,
-							(float) (py + oy), pStroke);		
-					
+							(float) (py + oy), pStroke);
+
 					canvas.drawText(t.name, (float) (px + ox) - 50,
 							(float) (py + oy), p3);
 				}
-				
+
 				p2.setShadowLayer(2, 0, 0, 0xff522c23);
-				p2.setColor(0xff522c23);
+				// p2.setColor(0xff522c23);
+				p2.setColor(Color.rgb(74, 167, 224));
 				canvas.drawCircle(px, py, radius - 15, p2);
-				
+
 				p2.setColor(0xff6b392d);
 				p2.setShadowLayer(2, 0, 0, 0xff6b392d);
 				p2.setTextSize(55);
-				
-//				if(Global.flagIsServer){
-//					canvas.drawText(target.size()-1).name, (float) (px) - 70,
-//							(float) (py)+15, p2);	
-//					
-//				}else{
-//					canvas.drawText(Global.userName[Global.mClientAgent.id], (float) (px) - 70,
-//							(float) (py)+15, p2);	
-//					
-//				}
+
+				// if(Global.flagIsServer){
+				// canvas.drawText(target.size()-1).name, (float) (px) - 70,
+				// (float) (py)+15, p2);
+				//
+				// }else{
+				// canvas.drawText(Global.userName[Global.mClientAgent.id],
+				// (float) (px) - 70,
+				// (float) (py)+15, p2);
+				//
+				// }
 				canvas.drawText(target.get(myId).name, (float) (px) - 70,
-						(float) (py)+15, p2);
-				
+						(float) (py) + 15, p2);
+
 				if (selectedPhoto != 2 && selectedPhoto != 5
 						&& selectedPhoto != 8 && selectedPhoto != 11) {
 
@@ -402,8 +411,9 @@ public class RealSurface extends SurfaceView {
 
 				boolean inrange = tp.removeTouch(e.getX(), e.getY());
 				if (inrange && selected.size() > 0) {
-
-					flagCanSend = true;
+					if (cnt < 0) {
+						flagCanSend = true;
+					}
 				}
 				// else {
 				// Toast.makeText(this.getContext(), "not in range",
@@ -627,11 +637,13 @@ public class RealSurface extends SurfaceView {
 		selectedPhoto = photo;
 		selected.clear();
 		selected.add(target.get(id));
-		flagCanSend = true;
+		if (cnt < 0) {
+			flagCanSend = true;
+		}
 	}
 
 	public void setName(int id, String name) {
 		target.get(id).name = name;
-		Global.userName[id]=name;
+		Global.userName[id] = name;
 	}
 }
