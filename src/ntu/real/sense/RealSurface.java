@@ -236,11 +236,13 @@ public class RealSurface extends SurfaceView {
 		if (canvas != null) {
 			// canvas.drawColor(Color.argb(0, 0, 0, 0));
 			canvas.drawColor(Color.TRANSPARENT, Mode.CLEAR);
+			canvas.drawColor(Color.TRANSPARENT, Mode.CLEAR);
 
 			for (Target t : target) {
 				if (serverName.equals(t.name)) {
 					Paint degreeP = new Paint();
-					degreeP.setColor(Color.YELLOW);
+					degreeP.setFlags(Paint.ANTI_ALIAS_FLAG);
+					degreeP.setColor(0xaaf1e5c4);
 					degreeP.setTextSize(32);
 					canvas.drawText(t.degree + "", displayWidth / 2 - 50,
 							displayHeight * 4 / 5, degreeP);
@@ -266,13 +268,20 @@ public class RealSurface extends SurfaceView {
 					radius = radius * 8 / 10;
 				}
 				Paint p2 = new Paint();
-				p2.setColor(Color.WHITE);
-				canvas.drawCircle(px, py, radius * 1.5f, p2);
-
+				p2.setColor(0xff6b392d);
+				p2.setFlags(Paint.ANTI_ALIAS_FLAG);
+				p2.setShadowLayer(2, 0, 0, 0xff6b392d);
+				//canvas.drawCircle(px, py, radius * 1.5f, p2);
+				//內圓的色彩
+				
 				Paint p = new Paint();
-				p.setColor(Color.RED);
+				p.setColor(0xff3d3e1a);
+				p.setFlags(Paint.ANTI_ALIAS_FLAG);
+				p.setShadowLayer(5, 0, 0, Color.BLACK);
 				// 除去title bar跟notification bar的高度
-				canvas.drawCircle(px, py, radius, p);
+				
+				//是空的那環
+				canvas.drawCircle(px, py, radius, p2);
 
 				for (Target t : showTarget) {
 
@@ -280,7 +289,16 @@ public class RealSurface extends SurfaceView {
 					Paint p3 = new Paint();
 					p3.setColor(t.color);
 					p3.setTextSize(32);
-
+					p3.setShadowLayer(2, 0, 0, t.color);
+					p3.setFlags(Paint.ANTI_ALIAS_FLAG);//反鋸齒標籤，會比較漂亮
+					p3.setFakeBoldText(true);
+					
+					Paint pStroke = new Paint();//邊框
+					pStroke.setColor(Color.BLACK);					
+					pStroke.setTextSize(32);
+					pStroke.setFlags(Paint.ANTI_ALIAS_FLAG);
+					pStroke.setShadowLayer(3, 0, 0, Color.BLACK);
+					
 					RectF oval = new RectF();
 					oval.left = px - radius;
 					oval.top = py - radius;
@@ -294,12 +312,38 @@ public class RealSurface extends SurfaceView {
 							* Math.cos((deg + 90) / 180 * Math.PI);
 					double oy = (radius + 40)
 							* Math.sin((deg + 90) / 180 * Math.PI);
-
+					//畫邊框
+					
+					canvas.drawText(t.name, (float) (px + ox) - 50,
+							(float) (py + oy), pStroke);
+					canvas.drawText(t.name, (float) (px + ox) - 50,
+							(float) (py + oy), pStroke);
+					canvas.drawText(t.name, (float) (px + ox) - 50,
+							(float) (py + oy), pStroke);		
+					
 					canvas.drawText(t.name, (float) (px + ox) - 50,
 							(float) (py + oy), p3);
 				}
-
-				canvas.drawCircle(px, py, radius - 5, p2);
+				
+				p2.setShadowLayer(2, 0, 0, 0xff522c23);
+				p2.setColor(0xff522c23);
+				canvas.drawCircle(px, py, radius - 15, p2);
+				
+				p2.setColor(0xff6b392d);
+				p2.setShadowLayer(2, 0, 0, 0xff6b392d);
+				p2.setTextSize(55);
+				
+				if(Global.flagIsServer){
+					canvas.drawText(Global.userName[Global.userName.length-1], (float) (px) - 70,
+							(float) (py)+15, p2);	
+					
+				}else{
+					canvas.drawText(Global.userName[Global.mClientAgent.id], (float) (px) - 70,
+							(float) (py)+15, p2);	
+					
+				}
+				
+				
 				if (selectedPhoto != 2 && selectedPhoto != 5
 						&& selectedPhoto != 8 && selectedPhoto != 11) {
 

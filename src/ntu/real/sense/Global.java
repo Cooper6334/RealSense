@@ -19,9 +19,9 @@ public class Global {
 	static int selectWay;
 
 	static final String[] userName = { "Allen", "Bob", "Cooper", "David",
-			"Eric", "Frank" };
-	static final int[] userColor = { Color.CYAN, Color.BLUE, Color.GREEN,
-			Color.GRAY, Color.YELLOW, Color.DKGRAY };
+		"Eric", "Frank" };
+static final int[] userColor = { 0xfff0e4c4, 0xffd5b989, 0xffcda196,
+	0xffbeae82, 0xfff1d4b7, Color.DKGRAY };
 
 	// static String mMAC = "";
 	// final static UUID mUUID = UUID

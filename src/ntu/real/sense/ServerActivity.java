@@ -497,7 +497,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 
 		// 設定顯示照片的layout
 		layout = new RelativeLayout(this);
-		layout.setBackgroundColor(Color.BLACK);
+		layout.setBackgroundDrawable(getResources().getDrawable(R.drawable.gradient));
 		setContentView(layout);
 		// 讀取照片
 		demoTest = new ListAllPath();
@@ -532,9 +532,9 @@ public class ServerActivity extends Activity implements SensorEventListener {
 				demoTest.file_list.add(null);
 			}
 			if (i <= 6) {
-				image_temp.setBackgroundColor(Color.RED);
+				image_temp.setBackgroundColor(0x64739083);
 			} else {
-				image_temp.setBackgroundColor(Color.BLUE);
+				image_temp.setBackgroundColor(0x643c4b44);
 			}
 
 			image_temp.setId(i); // ID不能是零，不然會爛掉！
