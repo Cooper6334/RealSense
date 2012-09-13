@@ -543,9 +543,9 @@ public class ServerActivity extends Activity implements SensorEventListener {
 				demoTest.file_list.add(null);
 			}
 			if (i <= 6) {
-				image_temp.setBackgroundColor(0x6465161b);
+				image_temp.setBackgroundColor(0x64210630);
 			} else {
-				image_temp.setBackgroundColor(0x6466161b);
+				image_temp.setBackgroundColor(0x64210630);
 			}
 
 			image_temp.setId(i); // ID不能是零，不然會爛掉！
@@ -600,6 +600,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		// 加入使用者名單到RealSense
 		sId = msa.getCount();// Server的id
 		users = sId + 1;// 總共的user數
+		Global.userNumber=users;
 		// 沒有意外的話，users的最後一個表server
 		surface.setId(sId);
 		for (int i = 0; i < users; i++) {

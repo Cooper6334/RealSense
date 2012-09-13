@@ -20,8 +20,8 @@ public class Global {
 	static String name;
 	static final String[] userName = { "Allen", "Bob", "Cooper", "David",
 		"Eric", "Frank" };
-	static final int[] userColor = { 0xfffde483, 0xfff7c761, 0xffee8c4d,
-		0xffd03c45, 0xfff1d4b7, Color.DKGRAY };
+	static final int[] userColor = { 0xffdda628, 0xff9bba3b, 0xff5bb6b9,
+		0xffc9544b, 0xffc5544c, Color.DKGRAY };
 
 	// static String mMAC = "";
 	// final static UUID mUUID = UUID
@@ -73,5 +73,6 @@ public class Global {
 	static long endTimeMs;
 	static Time now;
 	static ArrayList<Target> storedDegree;
+	static int userNumber;
 
 }

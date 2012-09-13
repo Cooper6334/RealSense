@@ -686,9 +686,9 @@ public class ClientActivity extends Activity implements SensorEventListener {
 			}
 			
 			if (i <= 6) {
-				image_temp.setBackgroundColor(0x6465161b);
+				image_temp.setBackgroundColor(0x64210630);
 			} else {
-				image_temp.setBackgroundColor(0x6466161b);
+				image_temp.setBackgroundColor(0x64210630);
 			}
 
 			image_temp.setId(i); // ID不能是零，不然會爛掉！
@@ -813,6 +813,9 @@ public class ClientActivity extends Activity implements SensorEventListener {
 							if ("init".equals(m)) {
 								cId = Integer.parseInt(mca.read());
 								users = Integer.parseInt(mca.read());
+								Global.userNumber=users;
+								
+								
 								// cId表client自己的id
 								Log.e("init", cId + ":" + users);
 								Global.mClientAgent.id = cId;

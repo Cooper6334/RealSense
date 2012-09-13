@@ -276,13 +276,14 @@ public class RealSurface extends SurfaceView {
 			canvas.drawColor(Color.TRANSPARENT, Mode.CLEAR);
 
 			for (Target t : target) {
-				if (serverName.equals(t.name)) {
+				if (Global.name.equals(t.name)) {
 					Paint degreeP = new Paint();
 					degreeP.setFlags(Paint.ANTI_ALIAS_FLAG);
 					degreeP.setColor(0xaaf1e5c4);
 					degreeP.setTextSize(32);
 					canvas.drawText(t.degree + "", displayWidth / 2 - 50,
 							displayHeight * 4 / 5, degreeP);
+					break;
 				}
 			}
 
@@ -293,12 +294,12 @@ public class RealSurface extends SurfaceView {
 					radius = radius * 8 / 10;
 				}
 				Paint p2 = new Paint();
-				// p2.setColor(0xff6b392d);
-				p2.setColor(0xff8e1b22);
+				p2.setColor(0xffeed0ff);
 				p2.setFlags(Paint.ANTI_ALIAS_FLAG);
-				p2.setShadowLayer(2, 0, 0, 0xff8e1b22);
-
-				// canvas.drawCircle(px, py, radius * 1.5f, p2);
+				p2.setShadowLayer(2, 0, 0, 0xffeed0ff);
+				
+				//外圓
+				canvas.drawCircle(px, py, radius * 1f, p2);
 				// 內圓的色彩
 
 				Paint p = new Paint();
@@ -314,10 +315,22 @@ public class RealSurface extends SurfaceView {
 
 					float deg = (int) (t.degree) % 360;
 					Paint p3 = new Paint();
+					
 					p3.setColor(t.color);
 					p3.setTextSize(32);
 					p3.setShadowLayer(2, 0, 0, t.color);
 					p3.setFlags(Paint.ANTI_ALIAS_FLAG);// 反鋸齒標籤，會比較漂亮
+					
+					float growth=(float) 1.3;
+					
+					//被選取到的話就把透明度拉高
+					if(selected.contains(t)){
+						p3.setAlpha(255);
+						growth=(float) 1.5;
+					}else{
+						p3.setAlpha(155);
+						growth=(float) 1.3;//被選到的時候要變大一點
+					}
 					p3.setFakeBoldText(true);
 
 					Paint pStroke = new Paint();// 邊框
@@ -327,11 +340,19 @@ public class RealSurface extends SurfaceView {
 					pStroke.setShadowLayer(3, 0, 0, Color.BLACK);
 
 					RectF oval = new RectF();
-					oval.left = px - radius;
-					oval.top = py - radius;
-					oval.right = px + radius;
-					oval.bottom = py + radius;
-					canvas.drawArc(oval, deg + 60, 60, true, p3);
+					oval.left = (float) (px - radius*growth);
+					oval.top = (float) (py - radius*growth);
+					oval.right = (float) (px + radius*growth);
+					oval.bottom = (float) (py + radius*growth);
+
+					float arcSweepAngle=360/Global.userNumber;
+					Log.e("houpan","Global.userNumber="+Global.userNumber);
+					if(arcSweepAngle<45){
+						arcSweepAngle=45;
+					}
+					
+					canvas.drawArc(oval, deg+45 , arcSweepAngle, true, p3);
+
 
 					Log.e("deg", deg + "");
 
@@ -348,18 +369,18 @@ public class RealSurface extends SurfaceView {
 					canvas.drawText(t.name, (float) (px + ox) - 50,
 							(float) (py + oy), pStroke);
 
+					p3.setColor(Color.WHITE);
 					canvas.drawText(t.name, (float) (px + ox) - 50,
 							(float) (py + oy), p3);
 				}
 
-				p2.setShadowLayer(2, 0, 0, 0xff78171d);
-				// p2.setColor(0xff522c23);
-				p2.setColor(0xff78171d);
+				p2.setShadowLayer(2, 0, 0, 0xffeed0ff);
+				p2.setColor(0xffeed0ff);
 				canvas.drawCircle(px, py, radius - 15, p2);
 
-				p2.setColor(0xff420e12);
-				p2.setShadowLayer(2, 0, 0, 0xff420e12);
-				p2.setTextSize(55);
+				p2.setColor(0xffe5bdfd);
+				p2.setShadowLayer(2, 0, 0, 0xffe5bdfd);
+				p2.setTextSize(45);
 
 				// if(Global.flagIsServer){
 				// canvas.drawText(target.size()-1).name, (float) (px) - 70,
@@ -547,7 +568,7 @@ public class RealSurface extends SurfaceView {
 			tmp[4] = new Target(Global.userName[4], 280, Global.userColor[4]);
 		}
 		float minDeg = 180 / tmp.length;
-		minDeg = 45;
+		minDeg = 90;
 		if (cnt <= 0) {
 			for (int j = 1; j < tmp.length; j++) {
 				for (int i = 0; i < tmp.length - j; i++) {
