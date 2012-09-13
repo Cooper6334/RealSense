@@ -35,6 +35,7 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -144,32 +145,59 @@ public class RealSurface extends SurfaceView {
 		menuDialog.setContentView(R.layout.realdialog);
 		dlist = (ListView) menuDialog.findViewById(R.id.listView1);
 		dlist.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+		dlist.setOnItemClickListener(new ListView.OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> arg0, View arg1, int index,
+					long arg3) {
+				// TODO Auto-generated method stub
+				if (index < myId) {
+					if (selected.contains(target.get(index))) {
+						selected.remove(target.get(index));
+						Log.e("menu", "cancle select " + target.get(index).name);
+					} else {
+						selected.add(target.get(index));
+						Log.e("menu", "select " + target.get(index).name);
+					}
+				} else {
+					if (selected.contains(target.get(index + 1))) {
+						selected.remove(target.get(index + 1));
+						Log.e("menu", "cancle select "
+								+ target.get(index + 1).name);
+					} else {
+						selected.add(target.get(index + 1));
+						Log.e("menu", "select " + target.get(index + 1).name);
+					}
+				}
+
+			}
+		});
 		Button btn = (Button) menuDialog.findViewById(R.id.button1);
 		btn.setOnClickListener(new Button.OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				selected.clear();
-				SparseBooleanArray list = dlist.getCheckedItemPositions();
-
-				Log.e("server", "list" + list.size());
-				Target tmp;
-				for (int i = 0; i < list.size(); i++) {
-					Log.e("list", "select" + list.keyAt(i));
-					if (list.get(i)) {
-						if (list.keyAt(i) < myId) {
-							tmp = target.get(list.keyAt(i));
-							Log.e("list", "<id " + tmp.name);
-							selected.add(tmp);
-						} else {
-
-							tmp = target.get(list.keyAt(i) + 1);
-							Log.e("list", ">=id " + tmp.name);
-							selected.add(tmp);
-						}
-					}
-				}
+//				selected.clear();
+//				SparseBooleanArray list = dlist.getCheckedItemPositions();
+//
+//				Log.e("server", "list" + list.size());
+//				Target tmp;
+//				for (int i = 0; i < list.size(); i++) {
+//					Log.e("list", "select" + list.keyAt(i));
+//					if (list.get(i)) {
+//						if (list.keyAt(i) < myId) {
+//							tmp = target.get(list.keyAt(i));
+//							Log.e("list", "<id " + tmp.name);
+//							selected.add(tmp);
+//						} else {
+//
+//							tmp = target.get(list.keyAt(i) + 1);
+//							Log.e("list", ">=id " + tmp.name);
+//							selected.add(tmp);
+//						}
+//					}
+//				}
 				for (Target t : selected) {
 					Log.e("list", "send to " + t.name);
 				}
@@ -659,8 +687,8 @@ public class RealSurface extends SurfaceView {
 		target.get(id).name = name;
 		Global.userName[id] = name;
 	}
-	
-	public void logStart(){
+
+	public void logStart() {
 		Global.startTime = new Time();
 		Global.startTime.setToNow();
 		Global.startTimeMs = System.currentTimeMillis();
