@@ -54,7 +54,7 @@ public class RealSurface extends SurfaceView {
 	int displayWidth = 480;
 	int displayHeight = 800;
 	int myDeg;
-	int radius = 130;
+	int radius = 195;
 	int cnt = -1;// 0 for testing mode
 	int myId;
 	float px, py;
@@ -309,11 +309,9 @@ public class RealSurface extends SurfaceView {
 ////				canvas.drawBitmap(selectedPhotoBitmap, srcRect, srcDst, null);
 //				canvas.drawBitmap(selectedPhotoBitmap, matrix, null);
 //				isBigImage = true;
-				/*
-				if (selectedPhoto != 2 && selectedPhoto != 5
-						&& selectedPhoto != 8 && selectedPhoto != 11) {
-					radius = radius * 8 / 10;
-				}
+			
+				
+				
 				Paint p2 = new Paint();
 				p2.setColor(0xffeed0ff);
 				p2.setFlags(Paint.ANTI_ALIAS_FLAG);
@@ -416,12 +414,7 @@ public class RealSurface extends SurfaceView {
 				canvas.drawText(target.get(myId).name, (float) (px) - 70,
 						(float) (py) + 15, p2);
 
-				if (selectedPhoto != 2 && selectedPhoto != 5
-						&& selectedPhoto != 8 && selectedPhoto != 11) {
 
-					radius = radius * 10 / 8;
-
-				}*/
 			} else {
 				isLogged = false;
 			}
