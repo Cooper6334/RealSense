@@ -66,7 +66,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 	RelativeLayout RL_temp;
 
 	// 儲存每張圖片資訊的arraylist
-	ListAllPath demoTest;
+
 	UriRelatedOperation UriRelatedOperation;
 
 	// NFC
@@ -102,7 +102,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 				String toastTemp = "The selected picture: " + picNumber
 						+ ". The selected nominances: ";
 				// 要傳的圖片檔案
-				File tmpFile = new File(demoTest.file_list.get(picNumber));
+				File tmpFile = new File(Global.demoTest.file_list.get(picNumber));
 				Uri outputFileUri = Uri.fromFile(tmpFile);
 
 				Global.endTime = new Time();
@@ -248,11 +248,11 @@ public class ServerActivity extends Activity implements SensorEventListener {
 			case Global.CLIENT_SEND_FILE_COMPLETED:
 
 				// 重新設定view
-				demoTest.file_list.setElementAt((String) m.obj, picCycling);
+				Global.demoTest.file_list.setElementAt((String) m.obj, picCycling);
 				ImageButton image_temp = (ImageButton) RL_temp
 						.findViewById(picCycling);
 				Log.e("houpan", "picCycling:" + picCycling);
-				Bitmap bitmap = decodeBitmap(demoTest.file_list.get(picCycling));
+				Bitmap bitmap = decodeBitmap(Global.demoTest.file_list.get(picCycling));
 				image_temp.setImageBitmap(bitmap);
 				picCycling = (picCycling - 6) % 6 + 7;
 				Log.e("houpan", "picCycling:" + picCycling);
@@ -511,9 +511,9 @@ public class ServerActivity extends Activity implements SensorEventListener {
 				R.drawable.gradient));
 		setContentView(layout);
 		// 讀取照片
-		demoTest = new ListAllPath();
+		Global.demoTest = new ListAllPath();
 		File rootFile = new File("/sdcard/DCIM");
-		demoTest.print(rootFile, 0);
+		Global.demoTest.print(rootFile, 0);
 
 		RL_temp = new RelativeLayout(this);
 		RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
@@ -526,7 +526,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		RL_temp.setLayoutParams(params);
 		layout.addView(RL_temp);
 		// 注意顯示太多照片會out of memory
-		int index = demoTest.file_list.size();
+		int index = Global.demoTest.file_list.size();
 		picCycling = 7;// 把cycling先設在下一個要補的地方
 		if (index > 7) {
 			index = 7;
@@ -536,11 +536,11 @@ public class ServerActivity extends Activity implements SensorEventListener {
 
 			ImageButton image_temp = new ImageButton(this);
 			if (i < index) {// 實際上方格裡面有東西的狀態
-				Log.e("圖片網址：", demoTest.file_list.get(i));
-				Bitmap bitmap = decodeBitmap(demoTest.file_list.get(i));
+				Log.e("圖片網址：", Global.demoTest.file_list.get(i));
+				Bitmap bitmap = decodeBitmap(Global.demoTest.file_list.get(i));
 				image_temp.setImageBitmap(bitmap);
 			} else {
-				demoTest.file_list.add(null);
+				Global.demoTest.file_list.add(null);
 			}
 			if (i <= 6) {
 				image_temp.setBackgroundColor(0x6465161b);
@@ -632,6 +632,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 			public void run() {
 				// TODO Auto-generated method stub
 				while (Global.flagIsPlaying) {
+					
 					surface.drawView();
 					if (surface.flagCanSend) {
 						Log.e("server", "start send");
@@ -664,6 +665,8 @@ public class ServerActivity extends Activity implements SensorEventListener {
 
 						// sendTargetList最後一格用來放要傳的圖片的id
 						sendTargetList.add(surface.selectedPhoto);
+						
+						
 
 						Message m = new Message();
 						m.what = 0x103;
@@ -748,10 +751,15 @@ public class ServerActivity extends Activity implements SensorEventListener {
 
 	@Override
 	public void onBackPressed() {
+		if(surface.isBigImage == true){
+			surface.isBigImage = false;
+		}else{
+			sensorManager.unregisterListener(this);
+			Global.flagIsPlaying = false;
+			super.onBackPressed();
+		}
+		
 
-		sensorManager.unregisterListener(this);
-		Global.flagIsPlaying = false;
-		super.onBackPressed();
 		/*
 		 * if (msa != null) { msa.clear(); msa = null; }
 		 */
@@ -830,4 +838,5 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		}
 		return "RealSense";
 	}
+
 }

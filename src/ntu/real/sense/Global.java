@@ -73,5 +73,7 @@ public class Global {
 	static long endTimeMs;
 	static Time now;
 	static ArrayList<Target> storedDegree;
+	
+	static ListAllPath demoTest;
 
 }
