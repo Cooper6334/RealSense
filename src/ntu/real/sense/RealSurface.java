@@ -1,7 +1,6 @@
 package ntu.real.sense;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -11,11 +10,15 @@ import android.app.AlertDialog.Builder;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff.Mode;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
@@ -36,10 +39,11 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
-import android.nfc.NdefMessage;
 
 public class RealSurface extends SurfaceView {
 	int selectedPhoto = -1;
+	Bitmap selectedPhotoBitmap;
+	boolean isBigImage = false;
 	int photoNum = 0;
 	boolean isLogged = false;
 	String serverName = " ";
@@ -71,7 +75,8 @@ public class RealSurface extends SurfaceView {
 		public void handleMessage(Message m) {
 			switch (m.what) {
 			case 0x101:
-				if (!flagTouchUp && selectedPhoto > 0 && selectedPhoto <= 6) {
+				if (!flagTouchUp && isBigImage) {
+					
 					if (Global.selectWay == 0) {
 						setTempTarget();
 						logStart();
@@ -267,13 +272,19 @@ public class RealSurface extends SurfaceView {
 	}
 
 	void drawView() {
+//		Log.e("bigImage", isBigImage + "");
 
+		
 		Canvas canvas = holder.lockCanvas();
 
 		if (canvas != null) {
 			// canvas.drawColor(Color.argb(0, 0, 0, 0));
+			if(isBigImage){
+				drawBigPicture(canvas);
+			}
+			else{
 			canvas.drawColor(Color.TRANSPARENT, Mode.CLEAR);
-			canvas.drawColor(Color.TRANSPARENT, Mode.CLEAR);
+			}
 
 			for (Target t : target) {
 				if (Global.name.equals(t.name)) {
@@ -286,9 +297,19 @@ public class RealSurface extends SurfaceView {
 					break;
 				}
 			}
+			
 
 			if (flagLongTouch) {
-
+//				BitmapFactory.Options op = new BitmapFactory.Options();
+//				selectedPhotoBitmap = BitmapFactory.decodeFile(Global.demoTest.file_list.get(selectedPhoto), op);
+//				Matrix matrix = new Matrix();
+//				matrix.postScale(displayWidth / (float) selectedPhotoBitmap.getWidth(),displayHeight / (float) selectedPhotoBitmap.getHeight());
+////				Rect srcRect = new Rect(0, 0, displayWidth, displayHeight);
+////				RectF srcDst = new RectF(0, 0, displayWidth, displayHeight);
+////				canvas.drawBitmap(selectedPhotoBitmap, srcRect, srcDst, null);
+//				canvas.drawBitmap(selectedPhotoBitmap, matrix, null);
+//				isBigImage = true;
+				/*
 				if (selectedPhoto != 2 && selectedPhoto != 5
 						&& selectedPhoto != 8 && selectedPhoto != 11) {
 					radius = radius * 8 / 10;
@@ -400,7 +421,7 @@ public class RealSurface extends SurfaceView {
 
 					radius = radius * 10 / 8;
 
-				}
+				}*/
 			} else {
 				isLogged = false;
 			}
@@ -421,7 +442,10 @@ public class RealSurface extends SurfaceView {
 			h.removeMessages(0x101);
 			h.sendEmptyMessageDelayed(0x101, 200);
 			flagTouchUp = false;
+			if(!isBigImage){
 			setSelectedNumber(e.getX(), e.getY());
+			Log.e("123", "set:"+selectedPhoto+"");
+			}
 			return true;
 		case MotionEvent.ACTION_MOVE:
 			Log.e("tar", "  ");
@@ -693,5 +717,19 @@ public class RealSurface extends SurfaceView {
 		Global.startTime.setToNow();
 		Global.startTimeMs = System.currentTimeMillis();
 		Global.storedDegree = (ArrayList<Target>) target.clone();
+	}
+	
+	public void drawBigPicture(Canvas canvas){
+//		Canvas canvas = holder.lockCanvas();
+		BitmapFactory.Options op = new BitmapFactory.Options();
+		op.inSampleSize = 4;
+		Log.e("123", "1:"+selectedPhoto+"");
+		selectedPhotoBitmap = BitmapFactory.decodeFile(Global.demoTest.file_list.get(selectedPhoto), op);
+		
+		
+		Matrix matrix = new Matrix();
+		matrix.postScale(displayWidth / (float) selectedPhotoBitmap.getWidth(),displayHeight / (float) selectedPhotoBitmap.getHeight());
+		canvas.drawBitmap(selectedPhotoBitmap, matrix, null);
+//		holder.unlockCanvasAndPost(canvas);
 	}
 }

@@ -74,5 +74,6 @@ public class Global {
 	static Time now;
 	static ArrayList<Target> storedDegree;
 	static int userNumber;
+	static ListAllPath demoTest;
 
 }
