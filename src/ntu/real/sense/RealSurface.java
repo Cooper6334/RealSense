@@ -66,8 +66,8 @@ public class RealSurface extends SurfaceView {
 	Builder nfcDialog;
 	AlertDialog ad;
 	ListView dlist;
-	TouchPoint tp = new TouchPoint(radius);
-
+	TouchPoint tp = new TouchPoint();
+	float minDeg;
 	NfcAdapter nfcAdapter;
 
 	Handler h = new Handler() {
@@ -76,7 +76,7 @@ public class RealSurface extends SurfaceView {
 			switch (m.what) {
 			case 0x101:
 				if (!flagTouchUp && isBigImage) {
-					
+
 					if (Global.selectWay == 0) {
 						setTempTarget();
 						logStart();
@@ -141,6 +141,7 @@ public class RealSurface extends SurfaceView {
 	}
 
 	void initView() {
+
 		menuDialog = new Dialog(this.getContext());
 		menuDialog.setTitle("Menu");
 		menuDialog.setContentView(R.layout.realdialog);
@@ -179,30 +180,31 @@ public class RealSurface extends SurfaceView {
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-//				selected.clear();
-//				SparseBooleanArray list = dlist.getCheckedItemPositions();
-//
-//				Log.e("server", "list" + list.size());
-//				Target tmp;
-//				for (int i = 0; i < list.size(); i++) {
-//					Log.e("list", "select" + list.keyAt(i));
-//					if (list.get(i)) {
-//						if (list.keyAt(i) < myId) {
-//							tmp = target.get(list.keyAt(i));
-//							Log.e("list", "<id " + tmp.name);
-//							selected.add(tmp);
-//						} else {
-//
-//							tmp = target.get(list.keyAt(i) + 1);
-//							Log.e("list", ">=id " + tmp.name);
-//							selected.add(tmp);
-//						}
-//					}
-//				}
+				// selected.clear();
+				// SparseBooleanArray list = dlist.getCheckedItemPositions();
+				//
+				// Log.e("server", "list" + list.size());
+				// Target tmp;
+				// for (int i = 0; i < list.size(); i++) {
+				// Log.e("list", "select" + list.keyAt(i));
+				// if (list.get(i)) {
+				// if (list.keyAt(i) < myId) {
+				// tmp = target.get(list.keyAt(i));
+				// Log.e("list", "<id " + tmp.name);
+				// selected.add(tmp);
+				// } else {
+				//
+				// tmp = target.get(list.keyAt(i) + 1);
+				// Log.e("list", ">=id " + tmp.name);
+				// selected.add(tmp);
+				// }
+				// }
+				// }
 				for (Target t : selected) {
 					Log.e("list", "send to " + t.name);
 				}
 				if (cnt < 0) {
+					isBigImage = false;
 					flagCanSend = true;
 				}
 				menuDialog.dismiss();
@@ -272,18 +274,16 @@ public class RealSurface extends SurfaceView {
 	}
 
 	void drawView() {
-//		Log.e("bigImage", isBigImage + "");
+		// Log.e("bigImage", isBigImage + "");
 
-		
 		Canvas canvas = holder.lockCanvas();
 
 		if (canvas != null) {
 			// canvas.drawColor(Color.argb(0, 0, 0, 0));
-			if(isBigImage){
+			if (isBigImage) {
 				drawBigPicture(canvas);
-			}
-			else{
-			canvas.drawColor(Color.TRANSPARENT, Mode.CLEAR);
+			} else {
+				canvas.drawColor(Color.TRANSPARENT, Mode.CLEAR);
 			}
 
 			for (Target t : target) {
@@ -297,27 +297,31 @@ public class RealSurface extends SurfaceView {
 					break;
 				}
 			}
-			
 
 			if (flagLongTouch) {
-//				BitmapFactory.Options op = new BitmapFactory.Options();
-//				selectedPhotoBitmap = BitmapFactory.decodeFile(Global.demoTest.file_list.get(selectedPhoto), op);
-//				Matrix matrix = new Matrix();
-//				matrix.postScale(displayWidth / (float) selectedPhotoBitmap.getWidth(),displayHeight / (float) selectedPhotoBitmap.getHeight());
-////				Rect srcRect = new Rect(0, 0, displayWidth, displayHeight);
-////				RectF srcDst = new RectF(0, 0, displayWidth, displayHeight);
-////				canvas.drawBitmap(selectedPhotoBitmap, srcRect, srcDst, null);
-//				canvas.drawBitmap(selectedPhotoBitmap, matrix, null);
-//				isBigImage = true;
-			
-				
-				
+				// BitmapFactory.Options op = new BitmapFactory.Options();
+				// selectedPhotoBitmap =
+				// BitmapFactory.decodeFile(Global.demoTest.file_list.get(selectedPhoto),
+				// op);
+				// Matrix matrix = new Matrix();
+				// matrix.postScale(displayWidth / (float)
+				// selectedPhotoBitmap.getWidth(),displayHeight / (float)
+				// selectedPhotoBitmap.getHeight());
+				// // Rect srcRect = new Rect(0, 0, displayWidth,
+				// displayHeight);
+				// // RectF srcDst = new RectF(0, 0, displayWidth,
+				// displayHeight);
+				// // canvas.drawBitmap(selectedPhotoBitmap, srcRect, srcDst,
+				// null);
+				// canvas.drawBitmap(selectedPhotoBitmap, matrix, null);
+				// isBigImage = true;
+
 				Paint p2 = new Paint();
 				p2.setColor(0xffeed0ff);
 				p2.setFlags(Paint.ANTI_ALIAS_FLAG);
 				p2.setShadowLayer(2, 0, 0, 0xffeed0ff);
-				
-				//外圓
+
+				// 外圓
 				canvas.drawCircle(px, py, radius * 1f, p2);
 				// 內圓的色彩
 
@@ -334,21 +338,21 @@ public class RealSurface extends SurfaceView {
 
 					float deg = (int) (t.degree) % 360;
 					Paint p3 = new Paint();
-					
+
 					p3.setColor(t.color);
 					p3.setTextSize(32);
 					p3.setShadowLayer(2, 0, 0, t.color);
 					p3.setFlags(Paint.ANTI_ALIAS_FLAG);// 反鋸齒標籤，會比較漂亮
-					
-					float growth=(float) 1.3;
-					
-					//被選取到的話就把透明度拉高
-					if(selected.contains(t)){
+
+					float growth = (float) 1.3;
+
+					// 被選取到的話就把透明度拉高
+					if (selected.contains(t)) {
 						p3.setAlpha(255);
-						growth=(float) 1.5;
-					}else{
+						growth = (float) 1.5;
+					} else {
 						p3.setAlpha(155);
-						growth=(float) 1.3;//被選到的時候要變大一點
+						growth = (float) 1.3;// 被選到的時候要變大一點
 					}
 					p3.setFakeBoldText(true);
 
@@ -359,26 +363,26 @@ public class RealSurface extends SurfaceView {
 					pStroke.setShadowLayer(3, 0, 0, Color.BLACK);
 
 					RectF oval = new RectF();
-					oval.left = (float) (px - radius*growth);
-					oval.top = (float) (py - radius*growth);
-					oval.right = (float) (px + radius*growth);
-					oval.bottom = (float) (py + radius*growth);
+					oval.left = (float) (px - radius * growth);
+					oval.top = (float) (py - radius * growth);
+					oval.right = (float) (px + radius * growth);
+					oval.bottom = (float) (py + radius * growth);
+					//
+					// float arcSweepAngle = 360 / Global.userNumber;
+					// Log.e("houpan", "Global.userNumber=" +
+					// Global.userNumber);
+					// if (arcSweepAngle < 45) {
+					// arcSweepAngle = 45;
+					// }
 
-					float arcSweepAngle=360/Global.userNumber;
-					Log.e("houpan","Global.userNumber="+Global.userNumber);
-					if(arcSweepAngle<45){
-						arcSweepAngle=45;
-					}
-					
-					canvas.drawArc(oval, deg+45 , arcSweepAngle, true, p3);
-
+					canvas.drawArc(oval, deg + 90, minDeg, true, p3);
 
 					Log.e("deg", deg + "");
 
 					double ox = (radius + 40)
-							* Math.cos((deg + 90) / 180 * Math.PI);
+							* Math.cos((deg + 90 + minDeg / 2) / 180 * Math.PI);
 					double oy = (radius + 40)
-							* Math.sin((deg + 90) / 180 * Math.PI);
+							* Math.sin((deg + 90 + minDeg / 2) / 180 * Math.PI);
 					// 畫邊框
 
 					canvas.drawText(t.name, (float) (px + ox) - 50,
@@ -414,7 +418,6 @@ public class RealSurface extends SurfaceView {
 				canvas.drawText(target.get(myId).name, (float) (px) - 70,
 						(float) (py) + 15, p2);
 
-
 			} else {
 				isLogged = false;
 			}
@@ -435,15 +438,15 @@ public class RealSurface extends SurfaceView {
 			h.removeMessages(0x101);
 			h.sendEmptyMessageDelayed(0x101, 200);
 			flagTouchUp = false;
-			if(!isBigImage){
-			setSelectedNumber(e.getX(), e.getY());
-			Log.e("123", "set:"+selectedPhoto+"");
+			if (!isBigImage) {
+				setSelectedNumber(e.getX(), e.getY());
+				Log.e("123", "set:" + selectedPhoto + "");
 			}
 			return true;
 		case MotionEvent.ACTION_MOVE:
 			Log.e("tar", "  ");
 			if (flagLongTouch) {
-				double deg = tp.moveTouch(e.getX(), e.getY());
+				double deg = tp.moveTouch(e.getX(), e.getY(), radius);
 
 				if (deg == -1) {
 					selected.clear();
@@ -455,7 +458,7 @@ public class RealSurface extends SurfaceView {
 							td += 360;
 						}
 						Log.e("tar", t.name + ":" + td + " " + deg);
-						if (td - deg < 30 && td - deg > -30) {
+						if (deg - td > 0 && deg - td < minDeg) {
 							selected.add(t);
 						}
 					}
@@ -467,9 +470,10 @@ public class RealSurface extends SurfaceView {
 			if (flagLongTouch) {
 				flagLongTouch = false;
 
-				boolean inrange = tp.removeTouch(e.getX(), e.getY());
+				boolean inrange = tp.removeTouch(e.getX(), e.getY(), radius);
 				if (inrange && selected.size() > 0) {
 					if (cnt < 0) {
+						isBigImage = false;
 						flagCanSend = true;
 					}
 				}
@@ -555,6 +559,8 @@ public class RealSurface extends SurfaceView {
 	void setTempTarget() {
 		flagLongTouch = true;
 		showTarget.clear();
+		minDeg = 360f / (float) target.size();
+		Log.e("real", "min deg=" + minDeg);
 		// cnt for testing
 		if (cnt >= 0) {
 			cnt = (cnt + 1) % 2;
@@ -584,47 +590,56 @@ public class RealSurface extends SurfaceView {
 			tmp[3] = new Target(Global.userName[3], 260, Global.userColor[3]);
 			tmp[4] = new Target(Global.userName[4], 280, Global.userColor[4]);
 		}
-		float minDeg = 180 / tmp.length;
-		minDeg = 90;
-		if (cnt <= 0) {
-			for (int j = 1; j < tmp.length; j++) {
-				for (int i = 0; i < tmp.length - j; i++) {
-					if (tmp[i].degree > tmp[i + 1].degree) {
-						Target t = tmp[i];
-						tmp[i] = tmp[i + 1];
-						tmp[i + 1] = t;
-					}
-				}
-			}
 
-			for (int i = 1; i < tmp.length; i++) {
-				if (tmp[i].degree - tmp[i - 1].degree < minDeg) {
-					float d = tmp[i - 1].degree + minDeg;
-					if (d < 360 - minDeg) {
-						tmp[i].degree = tmp[i - 1].degree + minDeg;
-					}
+		for (int j = 1; j < tmp.length; j++) {
+			for (int i = 0; i < tmp.length - j; i++) {
+				if (tmp[i].degree > tmp[i + 1].degree) {
+					Target t = tmp[i];
+					tmp[i] = tmp[i + 1];
+					tmp[i + 1] = t;
 				}
-
-			}
-			if (360 - tmp[tmp.length - 1].degree < minDeg) {
-				tmp[tmp.length - 1].degree = 360 - minDeg;
-			}
-			for (int i = tmp.length - 2; i >= 0; i--) {
-				if (tmp[i + 1].degree - tmp[i].degree < minDeg) {
-					float d = tmp[i].degree - minDeg;
-					if (d > 0) {
-						tmp[i].degree = tmp[i + 1].degree - minDeg;
-					}
-				}
-
 			}
 		}
+
+		for (int i = 0; i < tmp.length; i++) {
+			tmp[i].degree = minDeg * (i + 0.5f);
+		}
+		if (minDeg < 45) {
+			minDeg = 45;
+		}
+		// minDeg = 90;
+		// if (cnt <= 0) {
+
+		//
+		// for (int i = 1; i < tmp.length; i++) {
+		// if (tmp[i].degree - tmp[i - 1].degree < minDeg) {
+		// float d = tmp[i - 1].degree + minDeg;
+		// if (d < 360 - minDeg) {
+		// tmp[i].degree = tmp[i - 1].degree + minDeg;
+		// }
+		// }
+		//
+		// }
+		// if (360 - tmp[tmp.length - 1].degree < minDeg) {
+		// tmp[tmp.length - 1].degree = 360 - minDeg;
+		// }
+		// for (int i = tmp.length - 2; i >= 0; i--) {
+		// if (tmp[i + 1].degree - tmp[i].degree < minDeg) {
+		// float d = tmp[i].degree - minDeg;
+		// if (d > 0) {
+		// tmp[i].degree = tmp[i + 1].degree - minDeg;
+		// }
+		// }
+		//
+		// }
+		// }
 		for (int i = 0; i < tmp.length; i++) {
 			showTarget.add(tmp[i]);
 		}
 	}
 
 	void setTempTargetNoDeg() {
+		minDeg = 360f / (float) target.size();
 		flagLongTouch = true;
 		showTarget.clear();
 		Target[] tmp = new Target[target.size() - 1];
@@ -635,11 +650,26 @@ public class RealSurface extends SurfaceView {
 				tmp[i - 1] = target.get(i).clone();
 			}
 		}
-		for (int i = 0; i < tmp.length; i++) {
-			tmp[i].degree = (180 - (tmp.length - 1) * 30) + i * 60;
-			showTarget.add(tmp[i]);
+
+		for (int j = 1; j < tmp.length; j++) {
+			for (int i = 0; i < tmp.length - j; i++) {
+				if (tmp[i].name.compareTo(tmp[i + 1].name) > 0) {
+					Target t = tmp[i];
+					tmp[i] = tmp[i + 1];
+					tmp[i + 1] = t;
+				}
+			}
 		}
 
+		for (int i = 0; i < tmp.length; i++) {
+			tmp[i].degree = minDeg * (i + 0.5f);
+		}
+		if (minDeg < 45) {
+			minDeg = 45;
+		}
+		for (int i = 0; i < tmp.length; i++) {
+			showTarget.add(tmp[i]);
+		}
 	}
 
 	void showTempDialog() {
@@ -696,6 +726,7 @@ public class RealSurface extends SurfaceView {
 		selected.clear();
 		selected.add(target.get(id));
 		if (cnt < 0) {
+			isBigImage = false;
 			flagCanSend = true;
 		}
 	}
@@ -711,18 +742,19 @@ public class RealSurface extends SurfaceView {
 		Global.startTimeMs = System.currentTimeMillis();
 		Global.storedDegree = (ArrayList<Target>) target.clone();
 	}
-	
-	public void drawBigPicture(Canvas canvas){
-//		Canvas canvas = holder.lockCanvas();
+
+	public void drawBigPicture(Canvas canvas) {
+		// Canvas canvas = holder.lockCanvas();
 		BitmapFactory.Options op = new BitmapFactory.Options();
 		op.inSampleSize = 4;
-		Log.e("123", "1:"+selectedPhoto+"");
-		selectedPhotoBitmap = BitmapFactory.decodeFile(Global.demoTest.file_list.get(selectedPhoto), op);
-		
-		
+		Log.e("123", "1:" + selectedPhoto + "");
+		selectedPhotoBitmap = BitmapFactory.decodeFile(
+				Global.demoTest.file_list.get(selectedPhoto), op);
+
 		Matrix matrix = new Matrix();
-		matrix.postScale(displayWidth / (float) selectedPhotoBitmap.getWidth(),displayHeight / (float) selectedPhotoBitmap.getHeight());
+		matrix.postScale(displayWidth / (float) selectedPhotoBitmap.getWidth(),
+				displayHeight / (float) selectedPhotoBitmap.getHeight());
 		canvas.drawBitmap(selectedPhotoBitmap, matrix, null);
-//		holder.unlockCanvasAndPost(canvas);
+		// holder.unlockCanvasAndPost(canvas);
 	}
 }
