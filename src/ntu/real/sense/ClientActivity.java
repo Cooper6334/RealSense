@@ -57,7 +57,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 	RelativeLayout layout;
 	int CurrentButtonNumber = 0; // CurrentButtonNumber流水號 設定物件ID
 
-	ListAllPath demoTest;
+
 	UriRelatedOperation UriRelatedOperation;
 
 	RelativeLayout RL_temp;
@@ -83,6 +83,17 @@ public class ClientActivity extends Activity implements SensorEventListener {
 			switch (m.what) {
 
 			// 傳遞照片(可能是往server或往client)
+			// 點擊
+			case 0x102:
+				Log.e("123", "102:"+surface.selectedPhoto+"");
+				if(surface.selectedPhoto >= 1 && surface.selectedPhoto <= 6){
+					surface.isBigImage = true;
+				}
+				
+				// Toast.makeText(ServerActivity.this, "click",
+				// Toast.LENGTH_SHORT)
+				// .show();
+				break;
 			case 0x103:
 
 				ArrayList<Integer> sendTargetList = (ArrayList<Integer>) m.obj;
@@ -90,11 +101,11 @@ public class ClientActivity extends Activity implements SensorEventListener {
 						.remove(sendTargetList.size() - 1);// 要傳的圖片id
 				String toastTemp = "The selected picture: " + picNumber
 						+ ". The selected nominances: ";
-				if (demoTest.file_list.size() <= picNumber) {
+				if (Global.demoTest.file_list.size() <= picNumber) {
 					return;
 				}
 				// 要傳的圖片檔案
-				File tmpFile = new File(demoTest.file_list.get(picNumber));
+				File tmpFile = new File(Global.demoTest.file_list.get(picNumber));
 				Uri outputFileUri = Uri.fromFile(tmpFile);
 
 				Global.endTime = new Time();
@@ -175,10 +186,10 @@ public class ClientActivity extends Activity implements SensorEventListener {
 				Log.e("houpan", "收結束");
 
 				// 重新設定view
-				demoTest.file_list.setElementAt((String) m.obj, picCycling);
+				Global.demoTest.file_list.setElementAt((String) m.obj, picCycling);
 				image_temp = (ImageButton) RL_temp.findViewById(picCycling);
 				Log.e("houpan", "picCycling:" + picCycling);
-				Bitmap bitmap = decodeBitmap(demoTest.file_list.get(picCycling));
+				Bitmap bitmap = decodeBitmap(Global.demoTest.file_list.get(picCycling));
 				image_temp.setImageBitmap(bitmap);
 				picCycling = (picCycling - 6) % 6 + 7;
 				Log.e("houpan", "picCycling:" + picCycling);
@@ -217,11 +228,11 @@ public class ClientActivity extends Activity implements SensorEventListener {
 						Toast.LENGTH_SHORT).show();
 
 				// 重新設定view
-				demoTest.file_list.setElementAt((String) m.obj, picCycling);
+				Global.demoTest.file_list.setElementAt((String) m.obj, picCycling);
 				ImageButton image_temp = (ImageButton) RL_temp
 						.findViewById(picCycling);
 				Log.e("houpan", "picCycling:" + picCycling);
-				bitmap = decodeBitmap(demoTest.file_list.get(picCycling));
+				bitmap = decodeBitmap(Global.demoTest.file_list.get(picCycling));
 				image_temp.setImageBitmap(bitmap);
 				picCycling = (picCycling - 6) % 6 + 7;
 				Log.e("houpan", "picCycling:" + picCycling);
@@ -653,9 +664,9 @@ public class ClientActivity extends Activity implements SensorEventListener {
 		layout.setBackgroundDrawable(getResources().getDrawable(R.drawable.gradient));
 		setContentView(layout);
 		// 讀取照片
-		demoTest = new ListAllPath();
+		Global.demoTest = new ListAllPath();
 		File rootFile = new File("/sdcard/DCIM");
-		demoTest.print(rootFile, 0);
+		Global.demoTest.print(rootFile, 0);
 
 		RL_temp = new RelativeLayout(this);
 		RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
@@ -668,7 +679,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 		RL_temp.setLayoutParams(params);
 		layout.addView(RL_temp);
 		// 注意顯示太多照片會out of memory
-		int index = demoTest.file_list.size();
+		int index = Global.demoTest.file_list.size();
 		picCycling = 7;// 把cycling先設在下一個要補的地方
 		if (index > 7) {
 			index = 7;
@@ -678,11 +689,11 @@ public class ClientActivity extends Activity implements SensorEventListener {
 
 			ImageButton image_temp = new ImageButton(this);
 			if (i < index) {// 實際上方格裡面有東西的狀態
-				Log.e("圖片網址：", demoTest.file_list.get(i));
-				Bitmap bitmap = decodeBitmap(demoTest.file_list.get(i));
+				Log.e("圖片網址：", Global.demoTest.file_list.get(i));
+				Bitmap bitmap = decodeBitmap(Global.demoTest.file_list.get(i));
 				image_temp.setImageBitmap(bitmap);
 			} else {
-				demoTest.file_list.add(null);
+				Global.demoTest.file_list.add(null);
 			}
 			
 			if (i <= 6) {
@@ -939,9 +950,13 @@ public class ClientActivity extends Activity implements SensorEventListener {
 	@Override
 	public void onBackPressed() {
 
-		sensorManager.unregisterListener(this);
-		Global.flagIsPlaying = false;
-		super.onBackPressed();
+		if(surface.isBigImage == true){
+			surface.isBigImage = false;
+		}else{
+			sensorManager.unregisterListener(this);
+			Global.flagIsPlaying = false;
+			super.onBackPressed();
+		}
 		/*
 		 * if (serverSocket != null) { try { serverSocket.close(); } catch
 		 * (IOException e) { // TODO Auto-generated catch block

@@ -75,7 +75,8 @@ public class RealSurface extends SurfaceView {
 		public void handleMessage(Message m) {
 			switch (m.what) {
 			case 0x101:
-				if (!flagTouchUp && selectedPhoto > 0 && selectedPhoto <= 6) {
+				if (!flagTouchUp && isBigImage) {
+					
 					if (Global.selectWay == 0) {
 						setTempTarget();
 						logStart();
@@ -271,13 +272,19 @@ public class RealSurface extends SurfaceView {
 	}
 
 	void drawView() {
-		Log.e("bigImage", isBigImage + "");
+//		Log.e("bigImage", isBigImage + "");
+
+		
 		Canvas canvas = holder.lockCanvas();
 
 		if (canvas != null) {
 			// canvas.drawColor(Color.argb(0, 0, 0, 0));
+			if(isBigImage){
+				drawBigPicture(canvas);
+			}
+			else{
 			canvas.drawColor(Color.TRANSPARENT, Mode.CLEAR);
-			canvas.drawColor(Color.TRANSPARENT, Mode.CLEAR);
+			}
 
 			for (Target t : target) {
 				if (serverName.equals(t.name)) {
@@ -290,24 +297,17 @@ public class RealSurface extends SurfaceView {
 				}
 			}
 			
-			if(isBigImage == true){
-				BitmapFactory.Options op = new BitmapFactory.Options();
-				selectedPhotoBitmap = BitmapFactory.decodeFile(Global.demoTest.file_list.get(selectedPhoto), op);
-				Matrix matrix = new Matrix();
-				matrix.postScale(displayWidth / (float) selectedPhotoBitmap.getWidth(),displayHeight / (float) selectedPhotoBitmap.getHeight());
-				canvas.drawBitmap(selectedPhotoBitmap, matrix, null);
-			}
 
 			if (flagLongTouch) {
-				BitmapFactory.Options op = new BitmapFactory.Options();
-				selectedPhotoBitmap = BitmapFactory.decodeFile(Global.demoTest.file_list.get(selectedPhoto), op);
-				Matrix matrix = new Matrix();
-				matrix.postScale(displayWidth / (float) selectedPhotoBitmap.getWidth(),displayHeight / (float) selectedPhotoBitmap.getHeight());
-//				Rect srcRect = new Rect(0, 0, displayWidth, displayHeight);
-//				RectF srcDst = new RectF(0, 0, displayWidth, displayHeight);
-//				canvas.drawBitmap(selectedPhotoBitmap, srcRect, srcDst, null);
-				canvas.drawBitmap(selectedPhotoBitmap, matrix, null);
-				isBigImage = true;
+//				BitmapFactory.Options op = new BitmapFactory.Options();
+//				selectedPhotoBitmap = BitmapFactory.decodeFile(Global.demoTest.file_list.get(selectedPhoto), op);
+//				Matrix matrix = new Matrix();
+//				matrix.postScale(displayWidth / (float) selectedPhotoBitmap.getWidth(),displayHeight / (float) selectedPhotoBitmap.getHeight());
+////				Rect srcRect = new Rect(0, 0, displayWidth, displayHeight);
+////				RectF srcDst = new RectF(0, 0, displayWidth, displayHeight);
+////				canvas.drawBitmap(selectedPhotoBitmap, srcRect, srcDst, null);
+//				canvas.drawBitmap(selectedPhotoBitmap, matrix, null);
+//				isBigImage = true;
 				/*
 				if (selectedPhoto != 2 && selectedPhoto != 5
 						&& selectedPhoto != 8 && selectedPhoto != 11) {
@@ -421,7 +421,10 @@ public class RealSurface extends SurfaceView {
 			h.removeMessages(0x101);
 			h.sendEmptyMessageDelayed(0x101, 200);
 			flagTouchUp = false;
+			if(!isBigImage){
 			setSelectedNumber(e.getX(), e.getY());
+			Log.e("123", "set:"+selectedPhoto+"");
+			}
 			return true;
 		case MotionEvent.ACTION_MOVE:
 			Log.e("tar", "  ");
@@ -695,7 +698,17 @@ public class RealSurface extends SurfaceView {
 		Global.storedDegree = (ArrayList<Target>) target.clone();
 	}
 	
-	public void setSelectedPhotoBitmap(Bitmap bm){
-		selectedPhotoBitmap = bm;
+	public void drawBigPicture(Canvas canvas){
+//		Canvas canvas = holder.lockCanvas();
+		BitmapFactory.Options op = new BitmapFactory.Options();
+		op.inSampleSize = 4;
+		Log.e("123", "1:"+selectedPhoto+"");
+		selectedPhotoBitmap = BitmapFactory.decodeFile(Global.demoTest.file_list.get(selectedPhoto), op);
+		
+		
+		Matrix matrix = new Matrix();
+		matrix.postScale(displayWidth / (float) selectedPhotoBitmap.getWidth(),displayHeight / (float) selectedPhotoBitmap.getHeight());
+		canvas.drawBitmap(selectedPhotoBitmap, matrix, null);
+//		holder.unlockCanvasAndPost(canvas);
 	}
 }

@@ -89,6 +89,10 @@ public class ServerActivity extends Activity implements SensorEventListener {
 
 			// 點擊
 			case 0x102:
+				if(surface.selectedPhoto >= 1 && surface.selectedPhoto <= 6){
+					surface.isBigImage = true;
+				}
+				
 				// Toast.makeText(ServerActivity.this, "click",
 				// Toast.LENGTH_SHORT)
 				// .show();
@@ -634,6 +638,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 				while (Global.flagIsPlaying) {
 					
 					surface.drawView();
+					
 					if (surface.flagCanSend) {
 						Log.e("server", "start send");
 						surface.flagCanSend = false;
