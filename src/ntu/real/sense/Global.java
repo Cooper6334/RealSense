@@ -21,7 +21,7 @@ public class Global {
 	static final String[] userName = { "Allen", "Bob", "Cooper", "David",
 			"Eric", "Frank", "Grace", "Herry" };
 	static final int[] userColor = { 0xffdda628, 0xff9bba3b, 0xff5bb6b9,
-			0xffc9544b, 0xffc5544c, Color.BLUE, Color.MAGENTA, Color.DKGRAY };
+			0xffc9544b, Color.YELLOW, Color.BLUE, Color.MAGENTA, Color.DKGRAY };
 
 	// static String mMAC = "";
 	// final static UUID mUUID = UUID
