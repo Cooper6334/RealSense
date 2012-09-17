@@ -54,6 +54,7 @@ public class RealSurface extends SurfaceView {
 	int displayWidth = 480;
 	int displayHeight = 800;
 	int myDeg;
+	int tmpDeg;
 	int radius = 195;
 	int cnt = -1;// 0 for testing mode
 	int myId;
@@ -180,26 +181,7 @@ public class RealSurface extends SurfaceView {
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
-				// selected.clear();
-				// SparseBooleanArray list = dlist.getCheckedItemPositions();
-				//
-				// Log.e("server", "list" + list.size());
-				// Target tmp;
-				// for (int i = 0; i < list.size(); i++) {
-				// Log.e("list", "select" + list.keyAt(i));
-				// if (list.get(i)) {
-				// if (list.keyAt(i) < myId) {
-				// tmp = target.get(list.keyAt(i));
-				// Log.e("list", "<id " + tmp.name);
-				// selected.add(tmp);
-				// } else {
-				//
-				// tmp = target.get(list.keyAt(i) + 1);
-				// Log.e("list", ">=id " + tmp.name);
-				// selected.add(tmp);
-				// }
-				// }
-				// }
+
 				for (Target t : selected) {
 					Log.e("list", "send to " + t.name);
 				}
@@ -299,25 +281,10 @@ public class RealSurface extends SurfaceView {
 			}
 
 			if (flagLongTouch) {
-				// BitmapFactory.Options op = new BitmapFactory.Options();
-				// selectedPhotoBitmap =
-				// BitmapFactory.decodeFile(Global.demoTest.file_list.get(selectedPhoto),
-				// op);
-				// Matrix matrix = new Matrix();
-				// matrix.postScale(displayWidth / (float)
-				// selectedPhotoBitmap.getWidth(),displayHeight / (float)
-				// selectedPhotoBitmap.getHeight());
-				// // Rect srcRect = new Rect(0, 0, displayWidth,
-				// displayHeight);
-				// // RectF srcDst = new RectF(0, 0, displayWidth,
-				// displayHeight);
-				// // canvas.drawBitmap(selectedPhotoBitmap, srcRect, srcDst,
-				// null);
-				// canvas.drawBitmap(selectedPhotoBitmap, matrix, null);
-				// isBigImage = true;
 
 				Paint p2 = new Paint();
-				p2.setColor(0xffeed0ff);
+				// p2.setColor(0xffeed0ff);
+				p2.setColor(Color.rgb(74, 167, 224));
 				p2.setFlags(Paint.ANTI_ALIAS_FLAG);
 				p2.setShadowLayer(2, 0, 0, 0xffeed0ff);
 
@@ -326,7 +293,8 @@ public class RealSurface extends SurfaceView {
 				// 內圓的色彩
 
 				Paint p = new Paint();
-				p.setColor(0xff3d3e1a);
+				// p.setColor(0xff3d3e1a);
+				p.setColor(Color.rgb(74, 167, 224));
 				p.setFlags(Paint.ANTI_ALIAS_FLAG);
 				p.setShadowLayer(5, 0, 0, Color.BLACK);
 				// 除去title bar跟notification bar的高度
@@ -336,7 +304,8 @@ public class RealSurface extends SurfaceView {
 
 				for (Target t : showTarget) {
 
-					float deg = (int) (t.degree) % 360;
+//					float deg = (int) (t.degree - (myDeg - tmpDeg)) % 360;
+					float deg = t.degree;
 					Paint p3 = new Paint();
 
 					p3.setColor(t.color);
@@ -398,7 +367,8 @@ public class RealSurface extends SurfaceView {
 				}
 
 				p2.setShadowLayer(2, 0, 0, 0xffeed0ff);
-				p2.setColor(0xffeed0ff);
+				// p2.setColor(0xffeed0ff);
+				p2.setColor(Color.rgb(161, 197, 224));
 				canvas.drawCircle(px, py, radius - 15, p2);
 
 				p2.setColor(0xffe5bdfd);
@@ -557,6 +527,7 @@ public class RealSurface extends SurfaceView {
 
 	// 建立圓弧
 	void setTempTarget() {
+		tmpDeg = myDeg;
 		flagLongTouch = true;
 		showTarget.clear();
 		minDeg = 360f / (float) target.size();
