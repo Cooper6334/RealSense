@@ -15,8 +15,11 @@ import java.util.List;
 import java.util.Vector;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.PendingIntent;
 import android.content.ContentResolver;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -38,10 +41,13 @@ import android.os.Parcelable;
 import android.text.format.Time;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.RadioButton;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -73,6 +79,8 @@ public class ServerActivity extends Activity implements SensorEventListener {
 	PendingIntent pendingIntent;
 	NfcAdapter mNfcAdapter;
 
+	Dialog selectWayDialog;
+	RadioButton[] selectRadio = new RadioButton[4];
 	// 接收來自某client(ReadClientThread傳來的)或server的自己的角度轉變等msg，並作處理(廣播給所有人之類的)
 	Handler handler = new Handler() {
 		@Override
@@ -89,10 +97,10 @@ public class ServerActivity extends Activity implements SensorEventListener {
 
 			// 點擊
 			case 0x102:
-				if(surface.selectedPhoto >= 1 && surface.selectedPhoto <= 6){
+				if (surface.selectedPhoto >= 1 && surface.selectedPhoto <= 6) {
 					surface.isBigImage = true;
 				}
-				
+
 				// Toast.makeText(ServerActivity.this, "click",
 				// Toast.LENGTH_SHORT)
 				// .show();
@@ -106,7 +114,8 @@ public class ServerActivity extends Activity implements SensorEventListener {
 				String toastTemp = "The selected picture: " + picNumber
 						+ ". The selected nominances: ";
 				// 要傳的圖片檔案
-				File tmpFile = new File(Global.demoTest.file_list.get(picNumber));
+				File tmpFile = new File(
+						Global.demoTest.file_list.get(picNumber));
 				Uri outputFileUri = Uri.fromFile(tmpFile);
 
 				Global.endTime = new Time();
@@ -125,7 +134,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 					if (separationLine == false) {
 						String kind = getKind(Global.selectWay);
 						bwST.write("-\tSeparation\tLine\t" + kind + "\t-\n");
-						if(Global.selectWay == 0){
+						if (Global.selectWay == 0) {
 							bwSSD.write("-\tSeparation\tLine\t-\n");
 						}
 						separationLine = true;
@@ -137,14 +146,15 @@ public class ServerActivity extends Activity implements SensorEventListener {
 					bwST.write("end\t" + Global.endTime + "\n");
 					bwST.write("startMs\t" + Global.startTimeMs + "\n");
 					bwST.write("endMs\t" + Global.endTimeMs + "\n\n");
-					if(Global.selectWay == 0){
+					if (Global.selectWay == 0) {
 						bwSSD.write("<<\t" + Global.now + "\t>>\n");
 						for (Target t : Global.storedDegree) {
-							bwSSD.write("Name:\t" + t.name + "\t" + t.degree + "\n");
+							bwSSD.write("Name:\t" + t.name + "\t" + t.degree
+									+ "\n");
 						}
 						bwSSD.newLine();
 					}
-					
+
 					bwST.close();
 					bwSSD.close();
 				} catch (IOException e) {
@@ -192,7 +202,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 					FileWriter csd = new FileWriter(
 							"/sdcard/ClientSendDegree.txt", true);
 					BufferedWriter bwCSD = new BufferedWriter(csd);
-					if(Global.selectWay == 0){
+					if (Global.selectWay == 0) {
 						if (separationLineClient == false) {
 							bwCSD.write("-\tSeparation\tLine\t-\n");
 							separationLineClient = true;
@@ -252,11 +262,13 @@ public class ServerActivity extends Activity implements SensorEventListener {
 			case Global.CLIENT_SEND_FILE_COMPLETED:
 
 				// 重新設定view
-				Global.demoTest.file_list.setElementAt((String) m.obj, picCycling);
+				Global.demoTest.file_list.setElementAt((String) m.obj,
+						picCycling);
 				ImageButton image_temp = (ImageButton) RL_temp
 						.findViewById(picCycling);
 				Log.e("houpan", "picCycling:" + picCycling);
-				Bitmap bitmap = decodeBitmap(Global.demoTest.file_list.get(picCycling));
+				Bitmap bitmap = decodeBitmap(Global.demoTest.file_list
+						.get(picCycling));
 				image_temp.setImageBitmap(bitmap);
 				picCycling = (picCycling - 6) % 6 + 7;
 				Log.e("houpan", "picCycling:" + picCycling);
@@ -604,7 +616,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		// 加入使用者名單到RealSense
 		sId = msa.getCount();// Server的id
 		users = sId + 1;// 總共的user數
-		Global.userNumber=users;
+		Global.userNumber = users;
 		// 沒有意外的話，users的最後一個表server
 		surface.setId(sId);
 		for (int i = 0; i < users; i++) {
@@ -637,9 +649,9 @@ public class ServerActivity extends Activity implements SensorEventListener {
 			public void run() {
 				// TODO Auto-generated method stub
 				while (Global.flagIsPlaying) {
-					
+
 					surface.drawView();
-					
+
 					if (surface.flagCanSend) {
 						Log.e("server", "start send");
 						surface.flagCanSend = false;
@@ -671,8 +683,6 @@ public class ServerActivity extends Activity implements SensorEventListener {
 
 						// sendTargetList最後一格用來放要傳的圖片的id
 						sendTargetList.add(surface.selectedPhoto);
-						
-						
 
 						Message m = new Message();
 						m.what = 0x103;
@@ -698,6 +708,45 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		}).start();
 
 		new Thread(new ServerFileOutputTransferThread_manager()).start();
+
+		selectWayDialog = new Dialog(this);
+		selectWayDialog.setContentView(R.layout.selectway);
+		selectRadio[0] = (RadioButton) selectWayDialog
+				.findViewById(R.id.radio0);
+		selectRadio[1] = (RadioButton) selectWayDialog
+				.findViewById(R.id.radio1);
+		selectRadio[2] = (RadioButton) selectWayDialog
+				.findViewById(R.id.radio2);
+		selectRadio[3] = (RadioButton) selectWayDialog
+				.findViewById(R.id.radio3);
+
+		Button btn1 = (Button) selectWayDialog.findViewById(R.id.button1);
+		btn1.setOnClickListener(new Button.OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+				for (int i = 0; i < 4; i++) {
+					if (selectRadio[i].isChecked()) {
+						Global.selectWay = i;
+						break;
+					}
+				}
+				selectWayDialog.dismiss();
+			}
+
+		});
+		Button btn2 = (Button) selectWayDialog.findViewById(R.id.button2);
+		btn2.setOnClickListener(new Button.OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+				selectWayDialog.dismiss();
+			}
+
+		});
+
 	}
 
 	@Override
@@ -757,14 +806,15 @@ public class ServerActivity extends Activity implements SensorEventListener {
 
 	@Override
 	public void onBackPressed() {
-		if(surface.isBigImage == true){
+		if (surface.isBigImage == true) {
 			surface.isBigImage = false;
-		}else{
-			sensorManager.unregisterListener(this);
-			Global.flagIsPlaying = false;
-			super.onBackPressed();
+		} else {
+
+			// super.onBackPressed();
+			selectRadio[Global.selectWay].setChecked(true);
+			selectWayDialog.setTitle(Global.userName[surface.myId]);
+			selectWayDialog.show();
 		}
-		
 
 		/*
 		 * if (msa != null) { msa.clear(); msa = null; }
@@ -830,17 +880,17 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		}
 		return msgs;
 	}
-	
-	public String getKind(int choosen){
-		switch(choosen){
-			case 0 :
-				return "RealSense";
-			case 1 :
-				return "Piemenu";
-			case 2 :
-				return "List";
-			case 3 :
-				return "NFC";
+
+	public String getKind(int choosen) {
+		switch (choosen) {
+		case 0:
+			return "RealSense";
+		case 1:
+			return "Piemenu";
+		case 2:
+			return "List";
+		case 3:
+			return "NFC";
 		}
 		return "RealSense";
 	}

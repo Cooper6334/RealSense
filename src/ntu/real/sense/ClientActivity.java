@@ -16,8 +16,11 @@ import java.util.List;
 import java.util.Vector;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.PendingIntent;
 import android.content.ContentResolver;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -40,9 +43,12 @@ import android.text.format.Time;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.ViewGroup.LayoutParams;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.RadioButton;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -56,7 +62,6 @@ public class ClientActivity extends Activity implements SensorEventListener {
 	RealSurface surface;
 	RelativeLayout layout;
 	int CurrentButtonNumber = 0; // CurrentButtonNumber流水號 設定物件ID
-
 
 	UriRelatedOperation UriRelatedOperation;
 
@@ -76,6 +81,8 @@ public class ClientActivity extends Activity implements SensorEventListener {
 	PendingIntent pendingIntent;
 	NfcAdapter mNfcAdapter;
 
+	Dialog selectWayDialog;
+	RadioButton[] selectRadio = new RadioButton[4];
 	// 用來handle client本身要傳的訊息
 	Handler handler = new Handler() {
 		@Override
@@ -85,11 +92,11 @@ public class ClientActivity extends Activity implements SensorEventListener {
 			// 傳遞照片(可能是往server或往client)
 			// 點擊
 			case 0x102:
-				Log.e("123", "102:"+surface.selectedPhoto+"");
-				if(surface.selectedPhoto >= 1 && surface.selectedPhoto <= 6){
+				Log.e("123", "102:" + surface.selectedPhoto + "");
+				if (surface.selectedPhoto >= 1 && surface.selectedPhoto <= 6) {
 					surface.isBigImage = true;
 				}
-				
+
 				// Toast.makeText(ServerActivity.this, "click",
 				// Toast.LENGTH_SHORT)
 				// .show();
@@ -105,7 +112,8 @@ public class ClientActivity extends Activity implements SensorEventListener {
 					return;
 				}
 				// 要傳的圖片檔案
-				File tmpFile = new File(Global.demoTest.file_list.get(picNumber));
+				File tmpFile = new File(
+						Global.demoTest.file_list.get(picNumber));
 				Uri outputFileUri = Uri.fromFile(tmpFile);
 
 				Global.endTime = new Time();
@@ -186,10 +194,12 @@ public class ClientActivity extends Activity implements SensorEventListener {
 				Log.e("houpan", "收結束");
 
 				// 重新設定view
-				Global.demoTest.file_list.setElementAt((String) m.obj, picCycling);
+				Global.demoTest.file_list.setElementAt((String) m.obj,
+						picCycling);
 				image_temp = (ImageButton) RL_temp.findViewById(picCycling);
 				Log.e("houpan", "picCycling:" + picCycling);
-				Bitmap bitmap = decodeBitmap(Global.demoTest.file_list.get(picCycling));
+				Bitmap bitmap = decodeBitmap(Global.demoTest.file_list
+						.get(picCycling));
 				image_temp.setImageBitmap(bitmap);
 				picCycling = (picCycling - 6) % 6 + 7;
 				Log.e("houpan", "picCycling:" + picCycling);
@@ -228,7 +238,8 @@ public class ClientActivity extends Activity implements SensorEventListener {
 						Toast.LENGTH_SHORT).show();
 
 				// 重新設定view
-				Global.demoTest.file_list.setElementAt((String) m.obj, picCycling);
+				Global.demoTest.file_list.setElementAt((String) m.obj,
+						picCycling);
 				ImageButton image_temp = (ImageButton) RL_temp
 						.findViewById(picCycling);
 				Log.e("houpan", "picCycling:" + picCycling);
@@ -661,7 +672,8 @@ public class ClientActivity extends Activity implements SensorEventListener {
 
 		// 設定顯示照片的layout
 		layout = new RelativeLayout(this);
-		layout.setBackgroundDrawable(getResources().getDrawable(R.drawable.gradient));
+		layout.setBackgroundDrawable(getResources().getDrawable(
+				R.drawable.gradient));
 		setContentView(layout);
 		// 讀取照片
 		Global.demoTest = new ListAllPath();
@@ -695,7 +707,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 			} else {
 				Global.demoTest.file_list.add(null);
 			}
-			
+
 			if (i <= 6) {
 				image_temp.setBackgroundColor(0x64210630);
 			} else {
@@ -824,9 +836,8 @@ public class ClientActivity extends Activity implements SensorEventListener {
 							if ("init".equals(m)) {
 								cId = Integer.parseInt(mca.read());
 								users = Integer.parseInt(mca.read());
-								Global.userNumber=users;
-								
-								
+								Global.userNumber = users;
+
 								// cId表client自己的id
 								Log.e("init", cId + ":" + users);
 								Global.mClientAgent.id = cId;
@@ -894,6 +905,45 @@ public class ClientActivity extends Activity implements SensorEventListener {
 		}).start();
 
 		new Thread(new ClientFileOutputTransferThread_manager()).start();// 開啟傳送檔案管理者的thread
+
+		selectWayDialog = new Dialog(this);
+		selectWayDialog.setContentView(R.layout.selectway);
+		selectRadio[0] = (RadioButton) selectWayDialog
+				.findViewById(R.id.radio0);
+		selectRadio[1] = (RadioButton) selectWayDialog
+				.findViewById(R.id.radio1);
+		selectRadio[2] = (RadioButton) selectWayDialog
+				.findViewById(R.id.radio2);
+		selectRadio[3] = (RadioButton) selectWayDialog
+				.findViewById(R.id.radio3);
+
+		Button btn1 = (Button) selectWayDialog.findViewById(R.id.button1);
+		btn1.setOnClickListener(new Button.OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+				
+				for (int i = 0; i < 4; i++) {
+					if (selectRadio[i].isChecked()) {
+						Global.selectWay = i;
+						break;
+					}
+				}
+				selectWayDialog.dismiss();
+			}
+
+		});
+		Button btn2 = (Button) selectWayDialog.findViewById(R.id.button2);
+		btn2.setOnClickListener(new Button.OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+				selectWayDialog.dismiss();
+			}
+
+		});
 	}
 
 	@Override
@@ -953,12 +1003,13 @@ public class ClientActivity extends Activity implements SensorEventListener {
 	@Override
 	public void onBackPressed() {
 
-		if(surface.isBigImage == true){
+		if (surface.isBigImage == true) {
 			surface.isBigImage = false;
-		}else{
-			sensorManager.unregisterListener(this);
-			Global.flagIsPlaying = false;
-			super.onBackPressed();
+		} else {
+			
+			selectRadio[Global.selectWay].setChecked(true);
+			selectWayDialog.setTitle(Global.userName[surface.myId]);
+			selectWayDialog.show();
 		}
 		/*
 		 * if (serverSocket != null) { try { serverSocket.close(); } catch
@@ -1027,17 +1078,17 @@ public class ClientActivity extends Activity implements SensorEventListener {
 		}
 		return msgs;
 	}
-	
-	public String getKind(int choosen){
-		switch(choosen){
-			case 0 :
-				return "RealSense";
-			case 1 :
-				return "Piemenu";
-			case 2 :
-				return "List";
-			case 3 :
-				return "NFC";
+
+	public String getKind(int choosen) {
+		switch (choosen) {
+		case 0:
+			return "RealSense";
+		case 1:
+			return "Piemenu";
+		case 2:
+			return "List";
+		case 3:
+			return "NFC";
 		}
 		return "RealSense";
 	}

@@ -145,6 +145,7 @@ public class RealSurface extends SurfaceView {
 
 		menuDialog = new Dialog(this.getContext());
 		menuDialog.setTitle("Menu");
+
 		menuDialog.setContentView(R.layout.realdialog);
 		dlist = (ListView) menuDialog.findViewById(R.id.listView1);
 		dlist.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
