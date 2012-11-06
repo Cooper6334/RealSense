@@ -747,10 +747,10 @@ public class ClientActivity extends Activity implements SensorEventListener {
 		// 加入RealSense
 		mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
 		if (mNfcAdapter == null) {
-			Toast.makeText(this, "NFC is not available", Toast.LENGTH_LONG)
-					.show();
-			finish();
-			return;
+			// Toast.makeText(this, "NFC is not available", Toast.LENGTH_LONG)
+			// .show();
+			// finish();
+			// return;
 		}
 		pendingIntent = PendingIntent.getActivity(this, 0, new Intent(this,
 				getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
@@ -923,7 +923,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 			@Override
 			public void onClick(View arg0) {
 				// TODO Auto-generated method stub
-				
+
 				for (int i = 0; i < 4; i++) {
 					if (selectRadio[i].isChecked()) {
 						Global.selectWay = i;
@@ -949,15 +949,19 @@ public class ClientActivity extends Activity implements SensorEventListener {
 	@Override
 	public void onResume() {
 		super.onResume();
-		mNfcAdapter.enableForegroundDispatch(this, pendingIntent, null, null);
+		if (mNfcAdapter != null) {
+			mNfcAdapter.enableForegroundDispatch(this, pendingIntent, null,
+					null);
+		}
 	}
 
 	@Override
 	public void onPause() {
 		super.onPause();
-		mNfcAdapter.disableForegroundDispatch(this);
-		Log.e("nfc", "onPause");
-
+		if (mNfcAdapter != null) {
+			mNfcAdapter.disableForegroundDispatch(this);
+			Log.e("nfc", "onPause");
+		}
 	}
 
 	@Override
@@ -1006,7 +1010,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 		if (surface.isBigImage == true) {
 			surface.isBigImage = false;
 		} else {
-			
+
 			selectRadio[Global.selectWay].setChecked(true);
 			selectWayDialog.setTitle(Global.userName[surface.myId]);
 			selectWayDialog.show();
@@ -1029,15 +1033,15 @@ public class ClientActivity extends Activity implements SensorEventListener {
 	@Override
 	public void onSensorChanged(SensorEvent event) {
 		// TODO Auto-generated method stub
+		if (surface != null) {
+			surface.myDeg = (int) event.values[0];
 
-		surface.myDeg = (int) event.values[0];
-
-		Message m = new Message();
-		m.what = 0x115;
-		m.arg1 = surface.myDeg;
-		handler.sendMessage(m);
-		// mca.write("setdeg");
-		// mca.write("" + surface.myDeg);
+			Message m = new Message();
+			m.what = 0x115;
+			m.arg1 = surface.myDeg;
+			handler.sendMessage(m);
+		}// mca.write("setdeg");
+			// mca.write("" + surface.myDeg);
 
 	}
 

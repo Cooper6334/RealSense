@@ -39,6 +39,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
 
 public class RealSurface extends SurfaceView {
 	int selectedPhoto = -1;
@@ -51,6 +52,7 @@ public class RealSurface extends SurfaceView {
 	boolean flagLongTouch = false;
 	boolean flagCanSend = false;
 	boolean flagClick = false;
+	boolean flagHaveNfc = false;
 	int displayWidth = 480;
 	int displayHeight = 800;
 	int myDeg;
@@ -88,7 +90,13 @@ public class RealSurface extends SurfaceView {
 						showTempDialog();
 						logStart();
 					} else if (Global.selectWay == 3) {
-						showNfcDialog();
+						if (flagHaveNfc) {
+							showNfcDialog();
+						} else {
+							Toast.makeText(RealSurface.this.getContext(),
+									"NFC is not avaliable", Toast.LENGTH_LONG)
+									.show();
+						}
 						logStart();
 					}
 
@@ -203,57 +211,64 @@ public class RealSurface extends SurfaceView {
 			}
 		});
 
-		nfcDialog = new Builder(getContext());
-		nfcDialog.setTitle("NFC");
-		nfcDialog.setMessage("請接觸手機以傳遞照片");
-		nfcDialog.setNegativeButton("取消", new AlertDialog.OnClickListener() {
+		if (nfcAdapter != null) {
 
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				// TODO Auto-generated method stub
-				nfcAdapter.setNdefPushMessageCallback(
-						new CreateNdefMessageCallback() {
+			flagHaveNfc = true;
+			nfcDialog = new Builder(getContext());
+			nfcDialog.setTitle("NFC");
+			nfcDialog.setMessage("請接觸手機以傳遞照片");
+			nfcDialog.setNegativeButton("取消",
+					new AlertDialog.OnClickListener() {
 
-							public NdefMessage createNdefMessage(NfcEvent event) {
-								// TODO Auto-generated method stub
-								return null;
-							}
-						}, (Activity) RealSurface.this.getContext());
-				ad.dismiss();
-			}
-		});
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							// TODO Auto-generated method stub
+							nfcAdapter.setNdefPushMessageCallback(
+									new CreateNdefMessageCallback() {
 
-		nfcAdapter.setNdefPushMessageCallback(new CreateNdefMessageCallback() {
-
-			public NdefMessage createNdefMessage(NfcEvent event) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-		}, (Activity) RealSurface.this.getContext());
-
-		nfcAdapter.setOnNdefPushCompleteCallback(
-				new OnNdefPushCompleteCallback() {
-
-					public void onNdefPushComplete(NfcEvent event) {
-						// TODO Auto-generated method stub
-
-						// Toast.makeText(MainActivity.this, "finish",
-						// Toast.LENGTH_LONG).show();
-						nfcAdapter.setNdefPushMessageCallback(
-								new CreateNdefMessageCallback() {
-
-									public NdefMessage createNdefMessage(
-											NfcEvent event) {
-										// TODO Auto-generated method stub
-										return null;
-									}
-								}, (Activity) RealSurface.this.getContext());
-						if (ad != null) {
+										public NdefMessage createNdefMessage(
+												NfcEvent event) {
+											// TODO Auto-generated method stub
+											return null;
+										}
+									}, (Activity) RealSurface.this.getContext());
 							ad.dismiss();
 						}
+					});
 
-					}
-				}, (Activity) this.getContext());
+			nfcAdapter.setNdefPushMessageCallback(
+					new CreateNdefMessageCallback() {
+
+						public NdefMessage createNdefMessage(NfcEvent event) {
+							// TODO Auto-generated method stub
+							return null;
+						}
+					}, (Activity) RealSurface.this.getContext());
+
+			nfcAdapter.setOnNdefPushCompleteCallback(
+					new OnNdefPushCompleteCallback() {
+
+						public void onNdefPushComplete(NfcEvent event) {
+							// TODO Auto-generated method stub
+
+							// Toast.makeText(MainActivity.this, "finish",
+							// Toast.LENGTH_LONG).show();
+							nfcAdapter.setNdefPushMessageCallback(
+									new CreateNdefMessageCallback() {
+
+										public NdefMessage createNdefMessage(
+												NfcEvent event) {
+											// TODO Auto-generated method stub
+											return null;
+										}
+									}, (Activity) RealSurface.this.getContext());
+							if (ad != null) {
+								ad.dismiss();
+							}
+
+						}
+					}, (Activity) this.getContext());
+		}
 	}
 
 	void drawView() {
@@ -305,7 +320,7 @@ public class RealSurface extends SurfaceView {
 
 				for (Target t : showTarget) {
 
-//					float deg = (int) (t.degree - (myDeg - tmpDeg)) % 360;
+					// float deg = (int) (t.degree - (myDeg - tmpDeg)) % 360;
 					float deg = t.degree;
 					Paint p3 = new Paint();
 
