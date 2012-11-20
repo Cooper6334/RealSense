@@ -48,6 +48,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.ScaleAnimation;
+import android.view.animation.TranslateAnimation;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.RadioButton;
@@ -73,7 +78,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 	int users;
 	int picCycling;// 1~12，看新進來的圖片要取代哪個thumbnails
 
-	ServerSocket serverSocket = null;
+	 ServerSocket serverSocket = null;
 	Socket socket = null;
 
 	ImageButton image_temp;// 暫存之後要更新的ImageButton
@@ -203,6 +208,22 @@ public class ClientActivity extends Activity implements SensorEventListener {
 				Bitmap bitmap = decodeBitmap(Global.demoTest.file_list
 						.get(picCycling));
 				image_temp.setImageBitmap(bitmap);
+
+				Animation anime = new ScaleAnimation(3, 1, 3, 1);
+				anime.setInterpolator(new AccelerateDecelerateInterpolator());
+				anime.setDuration(1000);
+
+				Animation ani = null;
+				ani = new TranslateAnimation(-1.5f * imgBtnSize, 0, -1.5f
+						* imgBtnSize, 0);
+				ani.setInterpolator(new AccelerateDecelerateInterpolator());
+				ani.setDuration(1000);
+
+				AnimationSet se = new AnimationSet(true);
+				se.addAnimation(anime);
+				se.addAnimation(ani);
+				image_temp.startAnimation(se);
+
 				picCycling = (picCycling - 6) % 6 + 7;
 				Log.e("houpan", "picCycling:" + picCycling);
 
@@ -269,6 +290,9 @@ public class ClientActivity extends Activity implements SensorEventListener {
 			case 0x117:
 				mca.write("nfcphoto_" + m.arg1 + "_" + m.arg2);
 				Log.e("nfc", "write message to server");
+				break;
+			case 0x118:
+				setTitle(Global.name);
 				break;
 			/*
 			 * case 0x116: String s2 = (String) m.obj; mca.write(s2);/* Thread
@@ -667,10 +691,10 @@ public class ClientActivity extends Activity implements SensorEventListener {
 		imgMargin = dm.widthPixels / 100;
 		Log.e("123", dm.widthPixels + "" + dm.heightPixels);
 
-//		// 隱藏title bar&notifiaction bar
-//		requestWindowFeature(Window.FEATURE_NO_TITLE);
-//		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-//				WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		// // 隱藏title bar&notifiaction bar
+		// requestWindowFeature(Window.FEATURE_NO_TITLE);
+		// getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+		// WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 		// 設定顯示照片的layout
 		layout = new RelativeLayout(this);
@@ -765,9 +789,13 @@ public class ClientActivity extends Activity implements SensorEventListener {
 		// 設定serverSocket
 		try {
 			serverSocket = new ServerSocket(Global.FILE_PORT);
+			if (serverSocket == null) {
+				Toast.makeText(this, "socket null", Toast.LENGTH_LONG).show();
+			}
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
+			Toast.makeText(this, "socket null", Toast.LENGTH_LONG).show();
 		}
 
 		// 設定繪圖與傳遞照片之Thread
@@ -889,6 +917,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 								int setid = Integer.parseInt(m.split("_")[1]);
 								String setname = m.split("_")[2];
 								surface.setName(setid, setname);
+								handler.sendEmptyMessage(0x118);
 							}
 
 						} else {
@@ -1098,12 +1127,14 @@ public class ClientActivity extends Activity implements SensorEventListener {
 		}
 		return "RealSense";
 	}
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		menu.add(0, 0, 0, "clear");
 		menu.add(0, 1, 0, "finish");
 		return true;
 	}
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
@@ -1112,9 +1143,15 @@ public class ClientActivity extends Activity implements SensorEventListener {
 				ImageButton btn = (ImageButton) findViewById(i);
 				btn.setImageBitmap(null);
 			}
-			picCycling=7;
+			picCycling = 7;
 			break;
 		case 1:
+			try {
+				serverSocket.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			finish();
 			break;
 		}

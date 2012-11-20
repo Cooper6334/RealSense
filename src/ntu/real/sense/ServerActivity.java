@@ -45,6 +45,11 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.ScaleAnimation;
+import android.view.animation.TranslateAnimation;
 import android.view.Menu;
 import android.view.Window;
 import android.view.WindowManager;
@@ -273,6 +278,22 @@ public class ServerActivity extends Activity implements SensorEventListener {
 				Bitmap bitmap = decodeBitmap(Global.demoTest.file_list
 						.get(picCycling));
 				image_temp.setImageBitmap(bitmap);
+				
+				Animation anime = new ScaleAnimation(3, 1, 3, 1);
+				anime.setInterpolator(new AccelerateDecelerateInterpolator());
+				anime.setDuration(1000);
+
+				Animation ani = null;
+				ani = new TranslateAnimation(-1.5f * imgBtnSize, 0, -1.5f
+						* imgBtnSize, 0);
+				ani.setInterpolator(new AccelerateDecelerateInterpolator());
+				ani.setDuration(1000);
+
+				AnimationSet se = new AnimationSet(true);
+				se.addAnimation(anime);
+				se.addAnimation(ani);
+				image_temp.startAnimation(se);
+				
 				picCycling = (picCycling - 6) % 6 + 7;
 				Log.e("houpan", "picCycling:" + picCycling);
 
@@ -520,9 +541,9 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		Log.e("123", dm.widthPixels + "" + dm.heightPixels);
 
 		// 隱藏title bar&notifiaction bar
-//		requestWindowFeature(Window.FEATURE_NO_TITLE);
-//		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-//				WindowManager.LayoutParams.FLAG_FULLSCREEN);
+		// requestWindowFeature(Window.FEATURE_NO_TITLE);
+		// getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+		// WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 		// 設定顯示照片的layout
 		layout = new RelativeLayout(this);
@@ -650,6 +671,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 			readClientThread[i].start();
 		}
 		surface.setName(sId, Global.name);
+		setTitle(Global.name);
 		msa.writeAll("setname_" + sId + "_" + Global.name);
 		// 設定繪圖與傳遞照片之Thread
 		// server自己處理自己的事情
@@ -920,7 +942,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 				ImageButton btn = (ImageButton) findViewById(i);
 				btn.setImageBitmap(null);
 			}
-			picCycling=7;
+			picCycling = 7;
 			break;
 		case 1:
 			finish();
