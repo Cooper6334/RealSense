@@ -100,7 +100,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 			// 點擊
 			case 0x102:
 				Log.e("123", "102:" + surface.selectedPhoto + "");
-				if (surface.selectedPhoto >= 1 && surface.selectedPhoto <= 6) {
+				if (surface.selectedPhoto >= 1 && surface.selectedPhoto < picCycling) {
 					surface.isBigImage = true;
 				}
 
