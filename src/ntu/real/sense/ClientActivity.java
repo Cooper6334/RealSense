@@ -43,6 +43,8 @@ import android.text.format.Time;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.ViewGroup.LayoutParams;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -665,10 +667,10 @@ public class ClientActivity extends Activity implements SensorEventListener {
 		imgMargin = dm.widthPixels / 100;
 		Log.e("123", dm.widthPixels + "" + dm.heightPixels);
 
-		// 隱藏title bar&notifiaction bar
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-				WindowManager.LayoutParams.FLAG_FULLSCREEN);
+//		// 隱藏title bar&notifiaction bar
+//		requestWindowFeature(Window.FEATURE_NO_TITLE);
+//		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+//				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 		// 設定顯示照片的layout
 		layout = new RelativeLayout(this);
@@ -1095,5 +1097,27 @@ public class ClientActivity extends Activity implements SensorEventListener {
 			return "NFC";
 		}
 		return "RealSense";
+	}
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		menu.add(0, 0, 0, "clear");
+		menu.add(0, 1, 0, "finish");
+		return true;
+	}
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case 0:
+			for (int i = 7; i <= 12; i++) {
+				ImageButton btn = (ImageButton) findViewById(i);
+				btn.setImageBitmap(null);
+			}
+			picCycling=7;
+			break;
+		case 1:
+			finish();
+			break;
+		}
+		return true;
 	}
 }

@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -41,8 +42,10 @@ import android.os.Parcelable;
 import android.text.format.Time;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
+import android.view.Menu;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -517,15 +520,22 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		Log.e("123", dm.widthPixels + "" + dm.heightPixels);
 
 		// 隱藏title bar&notifiaction bar
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-				WindowManager.LayoutParams.FLAG_FULLSCREEN);
+//		requestWindowFeature(Window.FEATURE_NO_TITLE);
+//		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+//				WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 		// 設定顯示照片的layout
 		layout = new RelativeLayout(this);
 		layout.setBackgroundDrawable(getResources().getDrawable(
 				R.drawable.gradient));
 		setContentView(layout);
+
+		ActionBar actionBar = getActionBar();
+		if (actionBar != null) {
+			actionBar.show();
+		} else {
+			Toast.makeText(this, "NO Action Bar", Toast.LENGTH_SHORT).show();
+		}
 		// 讀取照片
 		Global.demoTest = new ListAllPath();
 		File rootFile = new File("/sdcard/DCIM");
@@ -893,6 +903,30 @@ public class ServerActivity extends Activity implements SensorEventListener {
 			return "NFC";
 		}
 		return "RealSense";
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		menu.add(0, 0, 0, "clear");
+		menu.add(0, 1, 0, "finish");
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case 0:
+			for (int i = 7; i <= 12; i++) {
+				ImageButton btn = (ImageButton) findViewById(i);
+				btn.setImageBitmap(null);
+			}
+			picCycling=7;
+			break;
+		case 1:
+			finish();
+			break;
+		}
+		return true;
 	}
 
 }

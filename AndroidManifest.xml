@@ -47,11 +47,13 @@
         </activity>
         <activity
             android:name=".ClientActivity"
+            android:theme="@android:style/Theme.DeviceDefault"
             android:launchMode="singleInstance"
             android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name=".ServerActivity"
+            android:theme="@android:style/Theme.DeviceDefault"
             android:launchMode="singleInstance"
             android:screenOrientation="portrait" >
         </activity>
