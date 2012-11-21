@@ -734,14 +734,60 @@ public class RealSurface extends SurfaceView {
 		// Canvas canvas = holder.lockCanvas();
 		BitmapFactory.Options op = new BitmapFactory.Options();
 		op.inSampleSize = 4;
-		Log.e("123", "1:" + selectedPhoto + "");
+		// Log.e("123", "1:" + selectedPhoto + "");
 		selectedPhotoBitmap = BitmapFactory.decodeFile(
 				Global.demoTest.file_list.get(selectedPhoto), op);
-
+		Log.e("123", displayWidth + " " + displayHeight);
 		Matrix matrix = new Matrix();
 		matrix.postScale(displayWidth / (float) selectedPhotoBitmap.getWidth(),
 				displayHeight / (float) selectedPhotoBitmap.getHeight());
 		canvas.drawBitmap(selectedPhotoBitmap, matrix, null);
 		// holder.unlockCanvasAndPost(canvas);
+	}
+
+	int getAngle(int tId, int fId) {
+		float m = 360f / (float) target.size();
+		Target tmp[] = new Target[target.size() - 1];
+
+		float d = target.get(myId).degree;
+		for (int i = 0; i < target.size(); i++) {
+			if (i < myId) {
+				tmp[i] = target.get(i).clone(d);
+			} else if (i > myId) {
+				tmp[i - 1] = target.get(i).clone(d);
+			}
+		}
+		if(fId>tId){
+			fId--;
+		}
+		Target tt = tmp[fId];
+		for (int j = 1; j < tmp.length; j++) {
+			for (int i = 0; i < tmp.length - j; i++) {
+				if (tmp[i].degree > tmp[i + 1].degree) {
+					Target t = tmp[i];
+					tmp[i] = tmp[i + 1];
+					tmp[i + 1] = t;
+				}
+			}
+		}
+
+		for (int i = 0; i < tmp.length; i++) {
+			tmp[i].degree = m * (i + 1);
+		}
+		// tmp=new Target[target.size()];
+		// for (int i = 0; i < target.size(); i++) {
+		// tmp[i]=target.get(i);
+		// }
+
+		// setTempTarget();
+		float fd = tt.degree;
+
+		Log.e("deg", "myD=" + d + "," + fId + ":" + "toD=" + fd);
+		if (fd > 210) {
+			return 1;
+		} else if (fd < 150) {
+			return -1;
+		}
+		return 0;
 	}
 }

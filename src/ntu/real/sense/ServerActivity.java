@@ -16,15 +16,16 @@ import java.util.Vector;
 
 import android.app.ActionBar;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.PendingIntent;
 import android.content.ContentResolver;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Matrix;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -47,6 +48,7 @@ import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationSet;
 import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
@@ -55,6 +57,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -67,8 +70,9 @@ public class ServerActivity extends Activity implements SensorEventListener {
 
 	RealSurface surface;
 	RelativeLayout layout;
+	ImageButton animeView;
 	int CurrentButtonNumber = 0; // CurrentButtonNumber流水號 設定物件ID
-
+	int ach = 0;
 	ServerAgent msa = Global.mServerAgent;
 	SensorManager sensorManager;
 
@@ -105,10 +109,10 @@ public class ServerActivity extends Activity implements SensorEventListener {
 
 			// 點擊
 			case 0x102:
-				if (surface.selectedPhoto >= 1 && surface.selectedPhoto < picCycling) {
+				if (surface.selectedPhoto >= 1
+						&& surface.selectedPhoto < picCycling) {
 					surface.isBigImage = true;
 				}
-
 
 				// Toast.makeText(ServerActivity.this, "click",
 				// Toast.LENGTH_SHORT)
@@ -236,6 +240,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 				if (((String) m.obj).split("_").length == 1) {// 直接傳到server
 					// 開始接收
 					Log.e("houpan", "收到來自client的訊息(toServer)");
+
 					Toast.makeText(ServerActivity.this, "開始接收",
 							Toast.LENGTH_SHORT).show();
 					new Thread(new ServerFileInputTransferThread(
@@ -273,29 +278,89 @@ public class ServerActivity extends Activity implements SensorEventListener {
 				// 重新設定view
 				Global.demoTest.file_list.setElementAt((String) m.obj,
 						picCycling);
-				ImageButton image_temp = (ImageButton) RL_temp
-						.findViewById(picCycling);
-				Log.e("houpan", "picCycling:" + picCycling);
-				Bitmap bitmap = decodeBitmap(Global.demoTest.file_list
-						.get(picCycling));
-				image_temp.setImageBitmap(bitmap);
+
+				int fId = m.arg1;
+				int d=surface.getAngle(sId,fId);
 				
-				Animation anime = new ScaleAnimation(3, 1, 3, 1);
+				Animation ani = null;
+				// Log.e("anime","height="+ach);
+
+
+				if(d>0){
+					ani = new TranslateAnimation(1000, 0, -1000, 0);
+				}
+				else if(d<0){
+					ani = new TranslateAnimation(-1000, 0, -1000, 0);
+
+				}
+				else{
+					ani = new TranslateAnimation(0, 0, -1000, 0);
+				}
+				BitmapFactory.Options op = new BitmapFactory.Options();
+				op.inSampleSize = 4;
+				Bitmap b = BitmapFactory.decodeFile(
+						Global.demoTest.file_list.get(picCycling), op);
+				Matrix m2 = new Matrix();
+				m2.postScale(surface.displayWidth / (float) b.getWidth(),
+						surface.displayHeight / (float) b.getHeight());
+
+				Bitmap bit = Bitmap.createBitmap(b, 0, 0, b.getWidth(),
+						b.getHeight(), m2, true);
+				// animeView.setImageBitmap(bit);
+				Drawable drawable = new BitmapDrawable(bit);
+				animeView.setBackgroundDrawable(drawable);
+				layout.addView(animeView);
+
+				ani.setInterpolator(new AccelerateDecelerateInterpolator());
+				ani.setDuration(2000);
+
+				ani.setAnimationListener(new AnimationListener() {
+
+					@Override
+					public void onAnimationEnd(Animation animation) {
+						// TODO Auto-generated method stub
+						surface.selectedPhoto = picCycling;
+						surface.isBigImage = true;
+						surface.drawView();
+						layout.removeView(animeView);
+
+						ImageButton image_temp = (ImageButton) RL_temp
+								.findViewById(picCycling);
+						Log.e("houpan", "picCycling:" + picCycling);
+						Bitmap bitmap = decodeBitmap(Global.demoTest.file_list
+								.get(picCycling));
+						image_temp.setImageBitmap(bitmap);
+
+						picCycling++;
+						if (picCycling > 12) {
+							picCycling = 12;
+						}
+						// Toast.makeText(ServerActivity.this, "end anime",
+						// Toast.LENGTH_SHORT).show();
+					}
+
+					@Override
+					public void onAnimationRepeat(Animation animation) {
+						// TODO Auto-generated method stub
+
+					}
+
+					@Override
+					public void onAnimationStart(Animation animation) {
+						// TODO Auto-generated method stub
+						// Toast.makeText(ServerActivity.this, "start anime",
+						// Toast.LENGTH_SHORT).show();
+					}
+				});
+				Animation anime = new ScaleAnimation(1f, 1f, 1.13f, 1.13f);
 				anime.setInterpolator(new AccelerateDecelerateInterpolator());
 				anime.setDuration(1000);
-
-				Animation ani = null;
-				ani = new TranslateAnimation(-1.5f * imgBtnSize, 0, -1.5f
-						* imgBtnSize, 0);
-				ani.setInterpolator(new AccelerateDecelerateInterpolator());
-				ani.setDuration(1000);
 
 				AnimationSet se = new AnimationSet(true);
 				se.addAnimation(anime);
 				se.addAnimation(ani);
-				image_temp.startAnimation(se);
-				
-				picCycling = (picCycling - 6) % 6 + 7;
+				animeView.startAnimation(se);
+
 				Log.e("houpan", "picCycling:" + picCycling);
 
 				Toast.makeText(ServerActivity.this, "接收完成", Toast.LENGTH_SHORT)
@@ -445,6 +510,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 			Message tempMessage = new Message();
 			tempMessage.what = Global.CLIENT_SEND_FILE_COMPLETED;// 傳完了
 			tempMessage.obj = fileAbsolutePath;
+			tempMessage.arg1 = sourceId;
 			handler.sendMessage(tempMessage);
 
 		}
@@ -555,6 +621,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		ActionBar actionBar = getActionBar();
 		if (actionBar != null) {
 			actionBar.show();
+			ach = actionBar.getHeight();
 		} else {
 			Toast.makeText(this, "NO Action Bar", Toast.LENGTH_SHORT).show();
 		}
@@ -779,6 +846,11 @@ public class ServerActivity extends Activity implements SensorEventListener {
 			}
 
 		});
+
+		animeView = new ImageButton(this);
+		animeView.setBackgroundColor(Color.RED);
+		animeView.setLayoutParams(new LayoutParams(surface.displayWidth,
+				surface.displayHeight));
 
 	}
 

@@ -25,6 +25,9 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Matrix;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -53,6 +56,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
+import android.view.animation.Animation.AnimationListener;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.RadioButton;
@@ -82,6 +86,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 	Socket socket = null;
 
 	ImageButton image_temp;// 暫存之後要更新的ImageButton
+	ImageButton animeView;
 	Bitmap bitmap;
 
 	// NFC
@@ -203,30 +208,84 @@ public class ClientActivity extends Activity implements SensorEventListener {
 				// 重新設定view
 				Global.demoTest.file_list.setElementAt((String) m.obj,
 						picCycling);
-				image_temp = (ImageButton) RL_temp.findViewById(picCycling);
-				Log.e("houpan", "picCycling:" + picCycling);
-				Bitmap bitmap = decodeBitmap(Global.demoTest.file_list
-						.get(picCycling));
-				image_temp.setImageBitmap(bitmap);
+				BitmapFactory.Options op = new BitmapFactory.Options();
+				op.inSampleSize = 4;
+				Bitmap b =  BitmapFactory.decodeFile(
+						Global.demoTest.file_list.get(picCycling), op);
+				Matrix m2 = new Matrix();
+				m2.postScale(surface.displayWidth / (float) b.getWidth(),
+						surface.displayHeight / (float) b.getHeight());
 
-				Animation anime = new ScaleAnimation(3, 1, 3, 1);
+				Bitmap bit = Bitmap.createBitmap(b, 0, 0, b.getWidth(),
+						b.getHeight(), m2, true);
+//				animeView.setImageBitmap(bit);
+				Drawable drawable = new BitmapDrawable(bit);
+				animeView.setBackgroundDrawable(drawable);
+				layout.addView(animeView);
+				Animation ani = null;
+//				Log.e("anime","height="+ach);
+				int d=surface.getAngle(cId,users - 1);
+				if(d>0){
+					ani = new TranslateAnimation(1000, 0, -1000, 0);
+				}
+				else if(d<0){
+					ani = new TranslateAnimation(-1000, 0, -1000, 0);
+
+				}
+				else{
+					ani = new TranslateAnimation(0, 0, -1000, 0);
+				}
+				ani.setInterpolator(new AccelerateDecelerateInterpolator());
+				ani.setDuration(2000);
+
+
+
+				ani.setAnimationListener(new AnimationListener() {
+
+					@Override
+					public void onAnimationEnd(Animation animation) {
+						// TODO Auto-generated method stub
+						surface.selectedPhoto = picCycling;
+						surface.isBigImage = true;
+						surface.drawView();
+						layout.removeView(animeView);
+
+						ImageButton image_temp = (ImageButton) RL_temp
+								.findViewById(picCycling);
+						Log.e("houpan", "picCycling:" + picCycling);
+						Bitmap bitmap = decodeBitmap(Global.demoTest.file_list
+								.get(picCycling));
+						image_temp.setImageBitmap(bitmap);
+
+						picCycling++;
+						if (picCycling > 12) {
+							picCycling = 12;
+						}
+						// Toast.makeText(ServerActivity.this, "end anime",
+						// Toast.LENGTH_SHORT).show();
+					}
+
+					@Override
+					public void onAnimationRepeat(Animation animation) {
+						// TODO Auto-generated method stub
+
+					}
+
+					@Override
+					public void onAnimationStart(Animation animation) {
+						// TODO Auto-generated method stub
+						// Toast.makeText(ServerActivity.this, "start anime",
+						// Toast.LENGTH_SHORT).show();
+					}
+				});
+				Animation anime = new ScaleAnimation(1f,1f,1.13f,1.13f);
 				anime.setInterpolator(new AccelerateDecelerateInterpolator());
 				anime.setDuration(1000);
-
-				Animation ani = null;
-				ani = new TranslateAnimation(-1.5f * imgBtnSize, 0, -1.5f
-						* imgBtnSize, 0);
-				ani.setInterpolator(new AccelerateDecelerateInterpolator());
-				ani.setDuration(1000);
-
-				AnimationSet se = new AnimationSet(true);
-				se.addAnimation(anime);
-				se.addAnimation(ani);
-				image_temp.startAnimation(se);
-
-				picCycling = (picCycling - 6) % 6 + 7;
-				Log.e("houpan", "picCycling:" + picCycling);
-
+				
+				 AnimationSet se = new AnimationSet(true);
+				 se.addAnimation(anime);
+				 se.addAnimation(ani);
+				animeView.startAnimation(se);
 				break;
 
 			case Global.SERVER_RECEIVE_FILE_COMPLETED:// 直接傳給server結束了
@@ -263,12 +322,84 @@ public class ClientActivity extends Activity implements SensorEventListener {
 				// 重新設定view
 				Global.demoTest.file_list.setElementAt((String) m.obj,
 						picCycling);
-				ImageButton image_temp = (ImageButton) RL_temp
-						.findViewById(picCycling);
-				Log.e("houpan", "picCycling:" + picCycling);
-				bitmap = decodeBitmap(Global.demoTest.file_list.get(picCycling));
-				image_temp.setImageBitmap(bitmap);
-				picCycling = (picCycling - 6) % 6 + 7;
+				BitmapFactory.Options op2 = new BitmapFactory.Options();
+				op2.inSampleSize = 4;
+				Bitmap b2 =  BitmapFactory.decodeFile(
+						Global.demoTest.file_list.get(picCycling), op2);
+				Matrix m22 = new Matrix();
+				m22.postScale(surface.displayWidth / (float) b2.getWidth(),
+						surface.displayHeight / (float) b2.getHeight());
+
+				Bitmap bit2 = Bitmap.createBitmap(b2, 0, 0, b2.getWidth(),
+						b2.getHeight(), m22, true);
+//				animeView.setImageBitmap(bit);
+				Drawable drawable2 = new BitmapDrawable(bit2);
+				animeView.setBackgroundDrawable(drawable2);
+				layout.addView(animeView);
+				Animation ani2 = null;
+//				Log.e("anime","height="+ach);
+				int d2=surface.getAngle(cId,m.arg1);
+				if(d2>0){
+					ani2 = new TranslateAnimation(1000, 0, -1000, 0);
+				}
+				else if(d2<0){
+					ani2 = new TranslateAnimation(-1000, 0, -1000, 0);
+
+				}
+				else{
+					ani2 = new TranslateAnimation(0, 0, -1000, 0);
+				}
+				ani2.setInterpolator(new AccelerateDecelerateInterpolator());
+				ani2.setDuration(2000);
+
+
+
+				ani2.setAnimationListener(new AnimationListener() {
+
+					@Override
+					public void onAnimationEnd(Animation animation) {
+						// TODO Auto-generated method stub
+						surface.selectedPhoto = picCycling;
+						surface.isBigImage = true;
+						surface.drawView();
+						layout.removeView(animeView);
+
+						ImageButton image_temp = (ImageButton) RL_temp
+								.findViewById(picCycling);
+						Log.e("houpan", "picCycling:" + picCycling);
+						Bitmap bitmap = decodeBitmap(Global.demoTest.file_list
+								.get(picCycling));
+						image_temp.setImageBitmap(bitmap);
+
+						picCycling++;
+						if (picCycling > 12) {
+							picCycling = 12;
+						}
+						// Toast.makeText(ServerActivity.this, "end anime",
+						// Toast.LENGTH_SHORT).show();
+					}
+
+					@Override
+					public void onAnimationRepeat(Animation animation) {
+						// TODO Auto-generated method stub
+
+					}
+
+					@Override
+					public void onAnimationStart(Animation animation) {
+						// TODO Auto-generated method stub
+						// Toast.makeText(ServerActivity.this, "start anime",
+						// Toast.LENGTH_SHORT).show();
+					}
+				});
+				Animation anime2 = new ScaleAnimation(1f,1f,1.13f,1.13f);
+				anime2.setInterpolator(new AccelerateDecelerateInterpolator());
+				anime2.setDuration(1000);
+				
+				 AnimationSet se2 = new AnimationSet(true);
+				 se2.addAnimation(anime2);
+				 se2.addAnimation(ani2);
+				animeView.startAnimation(se2);
 				Log.e("houpan", "picCycling:" + picCycling);
 
 				break;
@@ -676,6 +807,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 			Message m = new Message();
 			m.what = 0x114;
 			m.obj = "ClientReceive_completed_client_" + sourceId;
+			m.arg1=sourceId;
 			handler.sendMessage(m);
 			// mca.write("ClientReceive_completed_client_" + sourceId);
 		}
@@ -975,6 +1107,10 @@ public class ClientActivity extends Activity implements SensorEventListener {
 			}
 
 		});
+		
+		animeView = new ImageButton(this);
+		animeView.setBackgroundColor(Color.RED);
+		animeView.setLayoutParams(new LayoutParams(surface.displayWidth	,surface.displayHeight));
 	}
 
 	@Override
