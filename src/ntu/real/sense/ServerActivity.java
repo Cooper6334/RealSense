@@ -75,7 +75,6 @@ public class ServerActivity extends Activity implements SensorEventListener {
 	int ach = 0;
 	ServerAgent msa = Global.mServerAgent;
 	SensorManager sensorManager;
-
 	int users;
 	int degs[];
 	int sId;
@@ -280,20 +279,17 @@ public class ServerActivity extends Activity implements SensorEventListener {
 						picCycling);
 
 				int fId = m.arg1;
-				int d=surface.getAngle(sId,fId);
-				
+				int d = surface.getAngle(sId, fId);
+
 				Animation ani = null;
 				// Log.e("anime","height="+ach);
 
-
-				if(d>0){
+				if (d > 0) {
 					ani = new TranslateAnimation(1000, 0, -1000, 0);
-				}
-				else if(d<0){
+				} else if (d < 0) {
 					ani = new TranslateAnimation(-1000, 0, -1000, 0);
 
-				}
-				else{
+				} else {
 					ani = new TranslateAnimation(0, 0, -1000, 0);
 				}
 				BitmapFactory.Options op = new BitmapFactory.Options();
@@ -465,7 +461,7 @@ public class ServerActivity extends Activity implements SensorEventListener {
 			}
 
 			Log.e("houpan", "收L1");
-			String fileAbsolutePath = "/sdcard/DCIM/Camera/wifihpshared_"
+			String fileAbsolutePath = "/sdcard/DCIM/Camera/Awifihpshared_"
 					+ System.currentTimeMillis() + ".jpg";
 			File fileOutputStream = new File(fileAbsolutePath);
 			InputStream inputstream = null;// client自己的socket input處
@@ -700,6 +696,8 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		if (mNfcAdapter == null) {
 			Toast.makeText(this, "NFC is not available", Toast.LENGTH_LONG)
 					.show();
+
+
 			finish();
 			return;
 		}
@@ -1023,5 +1021,6 @@ public class ServerActivity extends Activity implements SensorEventListener {
 		}
 		return true;
 	}
+
 
 }

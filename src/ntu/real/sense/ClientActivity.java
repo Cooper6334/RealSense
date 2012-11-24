@@ -668,7 +668,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 			}
 
 			Log.e("houpan", "收L1");
-			String fileAbsolutePath = "/sdcard/DCIM/Camera/wifihpshared_"
+			String fileAbsolutePath = "/sdcard/DCIM/Camera/Awifihpshared_"
 					+ System.currentTimeMillis() + ".jpg";
 			File fileOutputStream = new File(fileAbsolutePath);
 			InputStream inputstream = null;// client自己的socket input處
@@ -757,7 +757,7 @@ public class ClientActivity extends Activity implements SensorEventListener {
 			}
 
 			Log.e("houpan", "收L1");
-			String fileAbsolutePath = "/sdcard/DCIM/Camera/wifihpshared_"
+			String fileAbsolutePath = "/sdcard/DCIM/Camera/Awifihpshared_"
 					+ System.currentTimeMillis() + ".jpg";
 			File fileOutputStream = new File(fileAbsolutePath);
 			InputStream inputstream = null;// client自己的socket input處
